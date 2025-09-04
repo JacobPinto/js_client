@@ -1,0 +1,52 @@
+:root {
+  --primary-color: #1976d;
+}
+
+form.FormWithButton {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  padding: 0px; /* Space inside the border */
+  border: 2px solid #1976d2; /* Border around the whole form */
+  border-radius: 1px; /* Rounded corners */
+  background: #f9f9f9; /* Light background for contrast */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Optional: subtle shadow */
+}
+
+  form.FormWithButton .form-title {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 1.0em;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+
+  form.FormWithButton label {
+    display: flex; /* newline for each label*/
+    margin-bottom: 0px; /* Reduce space between labels */
+    padding: 0; /* Remove extra padding */
+    width: 100%;
+    text-align: left;
+    font-weight: 500;
+  }
+
+    form.FormWithButton label span {
+      width: 100px;
+      min-width: 50px;
+      display: inline-block;
+    }
+
+  form.FormWithButton input[type="text"] {
+    margin-left: 8px;
+    width: 90%;
+    margin-bottom: 0px; /* Remove extra space below inputs */
+  }
+
+  form.FormWithButton br {
+    display: none; /* Remove line breaks if you don't want extra space */
+  }
+
+  form.FormWithButton button {
+    align-self: flex-start;
+    margin-top: auto; /* Push button to the bottom */
+  }
