@@ -1,6 +1,6 @@
 import { ViewSimEngine } from './v/viewSimEngine.js';
 import { ModelSimEngine } from './m/modelSimEngine.js';
-import { ControllerSimEngine } from './controller/controllerSimEngine.js';
+import { ControllerSimEngine } from './c/controllerSimEngine.js';
 
 export function start() {
 
