@@ -1,4 +1,4 @@
-
+// interface FormElementParams
 class InputElement {
   protected _type: string = 'InputElement';
   protected _name: string;
@@ -239,5 +239,6 @@ export class RadioButton extends InputElement {
     return this._form;
   }
 }
+
 
 
