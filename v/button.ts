@@ -1,4 +1,13 @@
 
+export interface FormElementParams {
+  name: string;
+  displayName: string;
+  questions: { [key: string]: string };
+  contextObj?: { [key: string]: any };
+  onClick?: Function;
+}
+
+
 class InputElement {
   protected _type: string = 'InputElement';
   protected _name: string;
@@ -12,14 +21,13 @@ class InputElement {
     return this._type + '_' + this._name;
   }
 
-  constructor(name: string, displayName: string, questions: { [key: string]: string },
-              contextObj: { [key: string]: any }, onClick: Function = () => { ; }) {
-    this._name = name;
+  constructor( params: FormElementParams) {
+    this._name = params.name;
     this._id = this._getId();
-    this._displayName = displayName;
-    this._questions = questions;
-    this._contextObj = contextObj;
-    this._onClick = onClick.bind(this);
+    this._displayName = params.displayName;
+    this._questions = params.questions;
+    this._contextObj = params.contextObj ?? {};   // default empty object
+    this._onClick = (params.onClick ?? (() => {})).bind(this);
   }
 }
 
@@ -30,9 +38,8 @@ export class TextEntryWithButton extends InputElement {
   public _form: HTMLFormElement;
   private _button: HTMLButtonElement;
 
-  constructor(name: string, displayName: string, questions: { [key: string]: string },
-              contextObj: { [key: string]: any }, onClick: Function = () => { ; }) {
-    super(name, displayName, questions, contextObj, onClick);
+  constructor( params: FormElementParams) {
+    super( params);
 
     this._form = document.createElement('form');
     this._button = document.createElement('button');
@@ -80,9 +87,8 @@ export class FileEntry extends InputElement {
   protected _type: string = 'FileEntryWithButton';
   public _form: HTMLFormElement;
 
-  constructor(name: string, displayName: string, questions: { [key: string]: string },
-    contextObj: { [key: string]: any }, onClick: Function = () => { ; }) {
-    super(name, displayName, questions, contextObj, onClick);
+  constructor( params: FormElementParams) {
+    super( params );
 
     this._form = document.createElement('form');
   }
@@ -141,9 +147,8 @@ export class Checkbox extends InputElement {
   protected _type: string = 'Checkbox';
   public _form: HTMLFormElement;
 
-  constructor(name: string, displayName: string, questions: { [key: string]: string },
-    contextObj: { [key: string]: any }, onClick: Function = () => { ; }) {
-    super(name, displayName, questions, contextObj, onClick);
+  constructor( params: FormElementParams) {
+    super( params );
 
     this._form = document.createElement('form');
   }
@@ -193,9 +198,8 @@ export class RadioButton extends InputElement {
   protected _type: string = 'RadioButton';
   public _form: HTMLFormElement;
 
-  constructor(name: string, displayName: string, questions: { [key: string]: string },
-    contextObj: { [key: string]: any }, onClick: Function = () => { ; }) {
-    super(name, displayName, questions, contextObj, onClick);
+  constructor( params: FormElementParams) {
+    super( params);
 
     this._form = document.createElement('form');
   }
@@ -239,5 +243,61 @@ export class RadioButton extends InputElement {
     return this._form;
   }
 }
+// Dropdown list
+
+export class Dropdown extends InputElement {
+  protected _type: string = "Dropdown";
+  public _form: HTMLFormElement;
+  private _button: HTMLButtonElement;
+  private _select: HTMLSelectElement;
 
 
+  constructor(params: FormElementParams) {
+    super(params);
+    this._form = document.createElement("form");
+    this._button = document.createElement('button');
+    this._select = document.createElement("select");
+  }
+
+  render(): HTMLFormElement {
+    this._form.id = this._id;
+    this._form.name = this._id;
+    this._form.classList.add(this._type);
+
+    // Add form title
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = "form-title";
+    this._form.appendChild(heading);
+
+    // Dropdown
+    this._select = document.createElement("select");
+    this._select.name = this._name;
+
+    Object.entries(this._questions).forEach(([value, labelText]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = labelText;
+      this._select.appendChild(option);
+    });
+
+    this._form.appendChild(this._select);
+
+    // Submit button
+    
+    this._button.name = 'Submit';
+    this._button.textContent = 'Submit';
+    
+    this._button.addEventListener("click", () => {
+      this._onClick(this._select.value);
+    });
+
+    this._form.appendChild(this._button);
+
+    return this._form;
+  }
+
+  getValue(): string {
+    return this._select.value;
+  }
+}
