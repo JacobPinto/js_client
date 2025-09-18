@@ -8,7 +8,7 @@ export interface FormElementParams {
 }
 
 
-class InputElement {
+export class InputElement {
   protected _type: string = 'InputElement';
   protected _name: string;
   protected _id: string;
