@@ -1,11 +1,4 @@
-
-export interface FormElementParams {
-  name: string;
-  displayName: string;
-  questions: { [key: string]: string };
-  contextObj?: { [key: string]: any };
-  onClick?: Function;
-}
+import { FormElementParam } from "./buttonParams";
 
 
 export class InputElement {
@@ -21,7 +14,7 @@ export class InputElement {
     return this._type + '_' + this._name;
   }
 
-  constructor( params: FormElementParams) {
+  constructor( params: FormElementParam) {
     this._name = params.name;
     this._id = this._getId();
     this._displayName = params.displayName;
@@ -38,7 +31,7 @@ export class TextEntryWithButton extends InputElement {
   public _form: HTMLFormElement;
   private _button: HTMLButtonElement;
 
-  constructor( params: FormElementParams) {
+  constructor( params: FormElementParam) {
     super( params);
 
     this._form = document.createElement('form');
@@ -87,7 +80,7 @@ export class FileEntry extends InputElement {
   protected _type: string = 'FileEntryWithButton';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParams) {
+  constructor( params: FormElementParam) {
     super( params );
 
     this._form = document.createElement('form');
@@ -147,7 +140,7 @@ export class Checkbox extends InputElement {
   protected _type: string = 'Checkbox';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParams) {
+  constructor( params: FormElementParam) {
     super( params );
 
     this._form = document.createElement('form');
@@ -198,7 +191,7 @@ export class RadioButton extends InputElement {
   protected _type: string = 'RadioButton';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParams) {
+  constructor( params: FormElementParam) {
     super( params);
 
     this._form = document.createElement('form');
@@ -252,7 +245,7 @@ export class Dropdown extends InputElement {
   private _select: HTMLSelectElement;
 
 
-  constructor(params: FormElementParams) {
+  constructor(params: FormElementParam) {
     super(params);
     this._form = document.createElement("form");
     this._button = document.createElement('button');

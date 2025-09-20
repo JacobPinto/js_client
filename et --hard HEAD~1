@@ -1,0 +1,35 @@
+[33mcommit 14967fe6d76acb11f7aa9fb262b229e6eff5c1a3[m[33m ([m[1;36mHEAD -> [m[1;32mdev_Muziba[m[33m)[m
+Author: muzibashaikh <muzibashaikh@gmail.com>
+Date:   Wed Sep 17 00:50:14 2025 +0530
+
+    DEV: Interface FormElementParams and Dropdown
+
+[33mcommit 3bb07f44e35d5929853106615552258227efbedc[m
+Author: muzibashaikh <muzibashaikh@gmail.com>
+Date:   Tue Sep 9 15:51:49 2025 +0530
+
+    DEV: Changed target to "es2017" in tsconfig.json
+
+[33mcommit 6e78a198fea8fa8f4a0fcc3c9d5f80d44f0812d0[m
+Author: muzibashaikh <muzibashaikh@gmail.com>
+Date:   Tue Sep 9 15:35:15 2025 +0530
+
+    DEV: Added ".gitignore" file
+
+[33mcommit 5a40366547d8c46266971b0787e5b4adc4441a08[m
+Author: muzibashaikh <muzibashaikh@gmail.com>
+Date:   Sat Sep 6 16:39:48 2025 +0530
+
+    DEV: Path Renamed
+
+[33mcommit 694280acd6526d92ffd93488832733d60065be1f[m[33m ([m[1;32mpractise[m[33m, [m[1;32mmaster[m[33m)[m
+Author: JacobPinto <pintobrijesh@gmail.com>
+Date:   Thu Sep 4 20:05:20 2025 +0000
+
+    DEV: Remove unnecessary files and add some info
+
+[33mcommit 2d8e9906dc3ab3b6864399cb5435e78df490db67[m
+Author: JacobPinto <pintobrijesh@gmail.com>
+Date:   Thu Sep 4 20:02:57 2025 +0000
+
+    DEV: First commit
