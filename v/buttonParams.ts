@@ -3,7 +3,8 @@ import {
   Checkbox, 
   RadioButton, 
   FileEntry, 
-  Dropdown 
+  Dropdown, 
+  SimpleButton
 } from './button.js';
 
 // All valid button classes
@@ -12,7 +13,8 @@ export type ButtonType =
   | typeof Checkbox
   | typeof RadioButton
   | typeof FileEntry
-  | typeof Dropdown;
+  | typeof Dropdown
+  | typeof SimpleButton;
 
 
 

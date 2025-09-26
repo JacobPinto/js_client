@@ -1,4 +1,3 @@
-import { VisibilityState } from './visibilityState.js';
 
 export interface RenderableButton {
   render(): HTMLElement;
@@ -9,6 +8,7 @@ export class Toolbar {
   private _name: string;
   private _buttons: RenderableButton[];
   private _container: HTMLElement;
+  private _visible: boolean = true; 
 
   constructor(
     name: string,
@@ -44,11 +44,9 @@ export class Toolbar {
     return this._container;
   }
 
-  setVisibility(state: VisibilityState): void {
-    if (state === VisibilityState.ON) {
-      this._container.classList.remove('hidden');
-    } else {
-      this._container.classList.add('hidden');
-    }
+  setVisibility(isVisible: boolean): void {
+    this._visible = isVisible;
+    this._container.style.display = isVisible ? 'block' : 'none';
   }
+
 }

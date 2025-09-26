@@ -1,4 +1,4 @@
-import { ModelSimEngine } from '../m/modelSimEngine.js';
+import { Color, Dimensions, ModelSimEngine, ShaderType, VertexFormat } from '../m/modelSimEngine.js';
 import { ViewSimEngine } from '../v/viewSimEngine.js';
 export class ControllerSimEngine {
 
@@ -60,5 +60,21 @@ export class ControllerSimEngine {
 
   public updateIterationCount(iterationCount: number): void {
     this._model.iterationCount = iterationCount;
+  }
+
+  public updateDimension(dimension: Dimensions): void {
+    this._model.dimension = dimension;
+  }
+
+  public updateColor(color: Color): void{
+    this._model.color = color;
+  }
+
+  public updateShaderType(shaderType: ShaderType): void{
+    this._model.shaderType = shaderType;
+  }
+
+  public updateVertexFormat(vertexFormat: VertexFormat): void{
+    this._model.vertexFormat = vertexFormat;
   }
 }

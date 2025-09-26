@@ -1,10 +1,10 @@
 import { Toolbar } from './toolbar.js';
-import { VisibilityState } from './visibilityState.js';
 
 export class Workbench {
   private _name: string;
   private _toolbars: Toolbar[];
   private _container: HTMLElement;
+  private _visible: boolean = true;   // new boolean member
 
   constructor(name: string, toolbars: Toolbar[]) {
     this._name = name;
@@ -16,23 +16,20 @@ export class Workbench {
   }
 
   private render(): void {
-    this._toolbars.forEach(toolbar => {
-      this._container.appendChild(toolbar.getElement());
-    });
+    this._toolbars.forEach(tb => this._container.appendChild(tb.getElement()));
   }
 
   getElement(): HTMLElement {
     return this._container;
   }
 
-  setVisibility(state: VisibilityState): void {
-    this._container.style.display = state === VisibilityState.ON ? 'block' : 'none';
+  setVisibility(isVisible: boolean): void {
+    this._visible = isVisible;
+    this._container.style.display = isVisible ? 'block' : 'none';
   }
 
-  setToolbarVisibility(toolbarName: string, state: VisibilityState): void {
-    const toolbar = this._toolbars.find(tb => tb.getElement().id === `toolbar_${toolbarName}`);
-    if (toolbar) {
-      toolbar.setVisibility(state);
-    }
+  setToolbarVisibility(toolbarName: string, isVisible: boolean): void {
+    const tb = this._toolbars.find(t => (t as any)._name === toolbarName);
+    if (tb) tb.setVisibility(isVisible);
   }
 }

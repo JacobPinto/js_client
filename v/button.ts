@@ -25,6 +25,31 @@ export class InputElement {
 }
 
 
+export class SimpleButton extends InputElement {
+  protected _type: string = "SimpleButton";
+  public _button: HTMLButtonElement;
+
+  constructor(params: FormElementParam) {
+    super(params);
+    this._button = document.createElement("button");
+  }
+
+  render(): HTMLButtonElement {
+    this._button.id = this._id;
+    this._button.name = this._id;
+    this._button.classList.add(this._type); 
+    this._button.textContent = this._displayName;
+
+    this._button.addEventListener("click", (e) => {
+      e.preventDefault();
+      this._onClick(this._name); 
+    });
+
+    return this._button;
+  }
+}
+
+
 export class TextEntryWithButton extends InputElement {
 
   protected _type: string = 'TextEntryWithButton';
@@ -235,6 +260,11 @@ export class RadioButton extends InputElement {
 
     return this._form;
   }
+  public getValue(): string | null {
+  const selected = this._form.querySelector("input:checked") as HTMLInputElement | null;
+  return selected ? selected.value : null;
+}
+
 }
 // Dropdown list
 

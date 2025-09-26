@@ -1,8 +1,8 @@
-import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown } from './button.js';
+import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown, SimpleButton } from './button.js';
 import { ButtonBuilder } from './buttonBuilder.js';
 import { Toolbar } from './toolbar.js';
 import { Workbench } from './workbench.js';
-import { VisibilityState } from './visibilityState.js';
+import { Dimensions, ShaderType, VertexFormat, Color } from '../m/modelSimEngine.js';
 
 export class ViewSimEngine {
   private workbench: Workbench;
@@ -66,6 +66,66 @@ export class ViewSimEngine {
       })
       .build();
 
+     const dimensionsButton = new ButtonBuilder()
+      .setButtonType(RadioButton)
+      .setButtonName("Dimensions")
+      .setButtonDisplayName("Dimensions")
+      .setQuestions({ d2: Dimensions.D2, d3: Dimensions.D3 })
+      .setOnClick(function (this: RadioButton) {
+        console.log("Selected dimension:", this.getValue() as Dimensions);
+      })
+      .build();
+
+    const colorDropdown = new ButtonBuilder()
+      .setButtonType(Dropdown)
+      .setButtonName("Color")
+      .setButtonDisplayName("Color")
+      .setQuestions({
+        red: Color.Red,
+        blue: Color.Blue,
+        green: Color.Green
+      })
+      .setOnClick(function (this: Dropdown, selected?: string) {
+        console.log("Selected color:", selected ?? this.getValue());
+      })
+      .build();
+
+    const shaderDropdown = new ButtonBuilder()
+      .setButtonType(Dropdown)
+      .setButtonName("ShaderType")
+      .setButtonDisplayName("Shader Type")
+      .setQuestions({
+        flat: ShaderType.Flat,
+        smooth: ShaderType.Smooth
+      })
+      .setOnClick(function (this: Dropdown, selected?: string) {
+        console.log("Shader type:", selected ?? this.getValue());
+      })
+      .build();
+
+    const vertexDropdown = new ButtonBuilder()
+      .setButtonType(Dropdown)
+      .setButtonName("VertexFormat")
+      .setButtonDisplayName("Vertex Format")
+      .setQuestions({
+        list: VertexFormat.List,
+        strip: VertexFormat.Strip,
+        index: VertexFormat.Index
+      })
+      .setOnClick(function (this: Dropdown, selected?: string) {
+        console.log("Vertex format:", selected ?? this.getValue());
+      })
+      .build();
+
+    const simpleBtn = new ButtonBuilder()
+      .setButtonType(SimpleButton)
+      .setButtonName("Apply")
+      .setButtonDisplayName("Apply")
+      .setOnClick(function (this: SimpleButton, value?: string) {
+        console.log("Simple button clicked:", value ?? this._name);
+      })
+      .build();
+
     // Create toolbars
     const toolbar1 = new Toolbar('basicInputs', [myButton1, myButton2]);
     toolbar1.getElement().classList.add('toolbar-horizontal');
@@ -73,19 +133,23 @@ export class ViewSimEngine {
     const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
     toolbar2.getElement().classList.add('toolbar-vertical');
 
+    // small toolbar
+    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, colorDropdown, vertexDropdown, shaderDropdown, simpleBtn]);
+
     // Create workbench
-    this.workbench = new Workbench('mainWorkbench', [toolbar1, toolbar2]);
+    this.workbench = new Workbench('mainWorkbench', [toolbar1, toolbar2, smallToolbar]);
   }
 
   render(): void {
     document.body.appendChild(this.workbench.getElement());
   }
 
-  toggleWorkbench(state: VisibilityState): void {
-    this.workbench.setVisibility(state);
-  }
+  toggleWorkbench(isVisible: boolean): void {
+  this.workbench.setVisibility(isVisible);
+}
 
-  toggleToolbar(name: string, state: VisibilityState): void {
-    this.workbench.setToolbarVisibility(name, state);
-  }
+toggleToolbar(name: string, isVisible: boolean): void {
+  this.workbench.setToolbarVisibility(name, isVisible);
+}
+
 }

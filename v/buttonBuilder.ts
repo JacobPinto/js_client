@@ -3,7 +3,8 @@ import {
   Checkbox, 
   RadioButton, 
   FileEntry, 
-  Dropdown 
+  Dropdown,
+  SimpleButton 
 } from './button.js';
 import { FormElementParam, ButtonType } from './buttonParams.js';
 
@@ -57,6 +58,8 @@ export class ButtonBuilder {
         return new FileEntry(this.params);
       case Dropdown:
         return new Dropdown(this.params);
+      case SimpleButton:
+        return new SimpleButton(this.params);
       default:
         throw new Error('Unknown button type');
     }
