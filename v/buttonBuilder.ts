@@ -7,13 +7,16 @@ import {
   SimpleButton 
 } from './button.js';
 import { FormElementParam, ButtonType } from './buttonParams.js';
+import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ButtonBuilder {
   private params: FormElementParam;
+  private controller: ControllerSimEngine;
   
 
-  constructor() {
+  constructor(controller: ControllerSimEngine) {
     this.params = new FormElementParam();
+    this.controller = controller;
   }
 
   setButtonType(type: ButtonType) {
@@ -53,7 +56,7 @@ export class ButtonBuilder {
       case Checkbox:
         return new Checkbox(this.params);
       case RadioButton:
-        return new RadioButton(this.params);
+        return new RadioButton(this.params, this.controller);
       case FileEntry:
         return new FileEntry(this.params);
       case Dropdown:

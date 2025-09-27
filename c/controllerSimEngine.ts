@@ -62,8 +62,8 @@ export class ControllerSimEngine {
     this._model.iterationCount = iterationCount;
   }
 
-  public updateDimension(dimension: Dimensions): void {
-    this._model.dimension = dimension;
+  public onClickDimensions(dimension: Dimensions): void {
+    this._model.setDimension(dimension);
   }
 
   public updateColor(color: Color): void{

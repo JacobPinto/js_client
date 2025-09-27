@@ -9,18 +9,20 @@ export class InputElement {
   protected _questions: { [key: string]: string };
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
+  protected _controller: 
 
   protected _getId(): string {
     return this._type + '_' + this._name;
   }
 
-  constructor( params: FormElementParam) {
+  constructor( params: FormElementParam, controller) {
     this._name = params.name;
     this._id = this._getId();
     this._displayName = params.displayName;
     this._questions = params.questions;
     this._contextObj = params.contextObj ?? {};   // default empty object
     this._onClick = (params.onClick ?? (() => {})).bind(this);
+    this._controller = controller;
   }
 }
 
@@ -216,8 +218,8 @@ export class RadioButton extends InputElement {
   protected _type: string = 'RadioButton';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam) {
-    super( params);
+  constructor( params: FormElementParam, controller) {
+    super( params, controller);
 
     this._form = document.createElement('form');
   }

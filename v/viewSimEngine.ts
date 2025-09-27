@@ -34,7 +34,7 @@ export class ViewSimEngine {
       })
       .build();
 
-    const myButton3 = new ButtonBuilder()
+    const myButton3 = new ButtonBuilder(controller)
       .setButtonType(RadioButton)
       .setButtonName('Dimensionality')
       .setButtonDisplayName('Dimensionality')
@@ -42,6 +42,7 @@ export class ViewSimEngine {
       .setOnClick(function(this: RadioButton) {
         this._form.querySelectorAll('input').forEach(input => {
           if (input.type === 'radio') console.log(input.name, input.checked);
+          this._controller.onClickDimensions();// TBD: give dimendions
         });
       })
       .build();
@@ -117,6 +118,7 @@ export class ViewSimEngine {
       })
       .build();
 
+      // remove simple button
     const simpleBtn = new ButtonBuilder()
       .setButtonType(SimpleButton)
       .setButtonName("Apply")
@@ -126,18 +128,18 @@ export class ViewSimEngine {
       })
       .build();
 
-    // Create toolbars
+    /*// Create toolbars
     const toolbar1 = new Toolbar('basicInputs', [myButton1, myButton2]);
     toolbar1.getElement().classList.add('toolbar-horizontal');
 
     const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
     toolbar2.getElement().classList.add('toolbar-vertical');
-
+*/
     // small toolbar
     const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, colorDropdown, vertexDropdown, shaderDropdown, simpleBtn]);
 
     // Create workbench
-    this.workbench = new Workbench('mainWorkbench', [toolbar1, toolbar2, smallToolbar]);
+    this.workbench = new Workbench('mainWorkbench', [smallToolbar]);
   }
 
   render(): void {

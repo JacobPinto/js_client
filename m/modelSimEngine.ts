@@ -9,7 +9,9 @@ export class ModelSimEngine {
   public shaderType!: ShaderType;
   public vertexFormat!: VertexFormat;
 
-
+  public setDimension(Dimensions dim){
+   this.dimension =dim;
+  }
   // Software params.
   public softwareVersion!: number;
   public schemaVersion!: number;
