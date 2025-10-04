@@ -4,14 +4,21 @@ import { Density, DensityUnit } from './quantities'
 
 export class ModelSimEngine {
 
-  public dimension!: Dimensions;
+  public dimension: ModelDim;
+
+  constructor(){
+    this.dimension = new ModelDim();
+  }
+
+  public setDimension(dim: Dimensions): void {
+    this.dimension.setDimension(dim);
+  }
+
   public color!: Color;
   public shaderType!: ShaderType;
   public vertexFormat!: VertexFormat;
 
-  public setDimension(Dimensions dim){
-   this.dimension =dim;
-  }
+  
   // Software params.
   public softwareVersion!: number;
   public schemaVersion!: number;
@@ -51,6 +58,31 @@ export class ModelSimEngine {
   //}
 
 }
+// observer interfave
+export interface Observer {
+  update(dimension: Dimensions): void;
+}
+
+export class ModelDim{
+    public dimension!: Dimensions;
+    public observers: Observer[] = [];
+
+    public register(obs: Observer){
+      this.observers.push(obs);
+
+    }
+
+    public notify(){
+      for (const obs of this.observers){
+        obs.update(this.dimension);
+      }
+    }
+    public setDimension(dim: Dimensions){
+      this.dimension =dim;
+      this.notify();
+  }
+  
+  }
 
 // Enums
 

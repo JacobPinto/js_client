@@ -3,12 +3,14 @@ import { ButtonBuilder } from './buttonBuilder.js';
 import { Toolbar } from './toolbar.js';
 import { Workbench } from './workbench.js';
 import { Dimensions, ShaderType, VertexFormat, Color } from '../m/modelSimEngine.js';
+import { ModelSimEngine } from '../m/modelSimEngine.js';
+import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {
   private workbench: Workbench;
 
-  constructor() {
-    // Use builder for all buttons
+  constructor(controller: ControllerSimEngine, model: ModelSimEngine) {
+   /* // Use builder for all buttons
     const myButton1 = new ButtonBuilder()
       .setButtonType(TextEntryWithButton)
       .setButtonName('FluidProperties')
@@ -47,6 +49,9 @@ export class ViewSimEngine {
       })
       .build();
 
+    model.dimensions.register(myButton3);
+      
+
     const myButton4 = new ButtonBuilder()
       .setButtonType(FileEntry)
       .setButtonName('Geometry')
@@ -67,15 +72,28 @@ export class ViewSimEngine {
       })
       .build();
 
-     const dimensionsButton = new ButtonBuilder()
+      */
+
+     const dimensionsButton = new ButtonBuilder(controller)
       .setButtonType(RadioButton)
       .setButtonName("Dimensions")
       .setButtonDisplayName("Dimensions")
       .setQuestions({ d2: Dimensions.D2, d3: Dimensions.D3 })
       .setOnClick(function (this: RadioButton) {
-        console.log("Selected dimension:", this.getValue() as Dimensions);
-      })
+        const selected = this.getValue() as Dimensions;
+        this._controller.onClickDimensions(selected); // Notify controller of dimension change
+      }) 
       .build();
+
+      (dimensionsButton as any).update = function(dimension: Dimensions) {
+        console.log("Dimension updated:", dimension);
+      };
+
+      model.dimension.register(dimensionsButton as any);
+
+      /*
+
+
 
     const colorDropdown = new ButtonBuilder()
       .setButtonType(Dropdown)
@@ -128,7 +146,13 @@ export class ViewSimEngine {
       })
       .build();
 
-    /*// Create toolbars
+      */
+
+
+      /*
+
+    
+      // Create toolbars
     const toolbar1 = new Toolbar('basicInputs', [myButton1, myButton2]);
     toolbar1.getElement().classList.add('toolbar-horizontal');
 
@@ -136,7 +160,7 @@ export class ViewSimEngine {
     toolbar2.getElement().classList.add('toolbar-vertical');
 */
     // small toolbar
-    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, colorDropdown, vertexDropdown, shaderDropdown, simpleBtn]);
+    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton]);
 
     // Create workbench
     this.workbench = new Workbench('mainWorkbench', [smallToolbar]);

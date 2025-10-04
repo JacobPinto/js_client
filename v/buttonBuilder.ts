@@ -11,12 +11,12 @@ import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ButtonBuilder {
   private params: FormElementParam;
-  private controller: ControllerSimEngine;
+  private _controller: ControllerSimEngine;
   
 
   constructor(controller: ControllerSimEngine) {
     this.params = new FormElementParam();
-    this.controller = controller;
+    this._controller = controller;
   }
 
   setButtonType(type: ButtonType) {
@@ -52,17 +52,17 @@ export class ButtonBuilder {
   protected _factory(type: ButtonType) {
     switch (type) {
       case TextEntryWithButton:
-        return new TextEntryWithButton(this.params);
+        return new TextEntryWithButton(this.params, this._controller);
       case Checkbox:
-        return new Checkbox(this.params);
+        return new Checkbox(this.params, this._controller);
       case RadioButton:
-        return new RadioButton(this.params, this.controller);
+        return new RadioButton(this.params, this._controller);
       case FileEntry:
-        return new FileEntry(this.params);
+        return new FileEntry(this.params,  this._controller);
       case Dropdown:
-        return new Dropdown(this.params);
+        return new Dropdown(this.params,  this._controller);
       case SimpleButton:
-        return new SimpleButton(this.params);
+        return new SimpleButton(this.params,  this._controller);
       default:
         throw new Error('Unknown button type');
     }

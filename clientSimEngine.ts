@@ -4,10 +4,19 @@ import { ControllerSimEngine } from './c/controllerSimEngine.js';
 
 export function start() {
 
-  var view: ViewSimEngine = new ViewSimEngine();
+  
+
+
+ /* var view: ViewSimEngine = new ViewSimEngine();
   var model: ModelSimEngine = new ModelSimEngine();
   var controller: ControllerSimEngine = new ControllerSimEngine(model, view);
 
+  */ 
+  var model: ModelSimEngine = new ModelSimEngine();
+  var controller: ControllerSimEngine = new ControllerSimEngine(model, new ViewSimEngine(null as any, model));
+  var view: ViewSimEngine = new ViewSimEngine(controller, model);
+
+  controller.setView(view); // You need to implement this method in ControllerSimEngine
   controller.initialize();
 
   console.log("Hello World from app.ts!");

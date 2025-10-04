@@ -1,4 +1,6 @@
+import { ControllerSimEngine } from "../c/controllerSimEngine";
 import { FormElementParam } from "./buttonParams";
+import { Observer, Dimensions } from "../m/modelSimEngine";
 
 
 export class InputElement {
@@ -9,20 +11,20 @@ export class InputElement {
   protected _questions: { [key: string]: string };
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
-  protected _controller: 
+  protected _controller: ControllerSimEngine; 
 
   protected _getId(): string {
     return this._type + '_' + this._name;
   }
 
-  constructor( params: FormElementParam, controller) {
+  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
     this._name = params.name;
     this._id = this._getId();
     this._displayName = params.displayName;
     this._questions = params.questions;
     this._contextObj = params.contextObj ?? {};   // default empty object
     this._onClick = (params.onClick ?? (() => {})).bind(this);
-    this._controller = controller;
+    this._controller = _controller;
   }
 }
 
@@ -31,8 +33,8 @@ export class SimpleButton extends InputElement {
   protected _type: string = "SimpleButton";
   public _button: HTMLButtonElement;
 
-  constructor(params: FormElementParam) {
-    super(params);
+  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
+    super(params, _controller);
     this._button = document.createElement("button");
   }
 
@@ -58,8 +60,8 @@ export class TextEntryWithButton extends InputElement {
   public _form: HTMLFormElement;
   private _button: HTMLButtonElement;
 
-  constructor( params: FormElementParam) {
-    super( params);
+  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
+    super( params, _controller);
 
     this._form = document.createElement('form');
     this._button = document.createElement('button');
@@ -107,8 +109,8 @@ export class FileEntry extends InputElement {
   protected _type: string = 'FileEntryWithButton';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam) {
-    super( params );
+  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
+    super( params, _controller );
 
     this._form = document.createElement('form');
   }
@@ -167,8 +169,8 @@ export class Checkbox extends InputElement {
   protected _type: string = 'Checkbox';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam) {
-    super( params );
+  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
+    super( params, _controller );
 
     this._form = document.createElement('form');
   }
@@ -213,16 +215,18 @@ export class Checkbox extends InputElement {
 }
 
 /* Radio buttons allow for a unique selection among choices */
-export class RadioButton extends InputElement {
+export class RadioButton extends InputElement implements Observer {
 
   protected _type: string = 'RadioButton';
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam, controller) {
-    super( params, controller);
+  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
+    super( params, _controller);
 
     this._form = document.createElement('form');
   }
+
+  // update fun from model
 
   render(): HTMLFormElement {
     this._form.id = this._id;
@@ -248,10 +252,12 @@ export class RadioButton extends InputElement {
       input.name = this._name; // group name
       input.value = key;
 
-      // Add event listener to the radio button
       input.addEventListener('change', (event) => {
         const target = event.target as HTMLInputElement;
-        console.log(`${target.value} selected:`, target.checked);
+        if (target.checked) {
+          const selected = target.value as Dimensions;
+          this._controller.onClickDimensions(selected); // ✅ Update model
+        }
         this._onClick(target);
       });
 
@@ -266,6 +272,11 @@ export class RadioButton extends InputElement {
   const selected = this._form.querySelector("input:checked") as HTMLInputElement | null;
   return selected ? selected.value : null;
 }
+  public update(dimension: Dimensions): void {
+    console.log("RadioButton notified of dimension change:", dimension);
+    const radio = this._form.querySelector(`input[value="${dimension}"]`) as HTMLInputElement;
+    if (radio) radio.checked = true; // automatically update UI
+  }
 
 }
 // Dropdown list
@@ -277,8 +288,8 @@ export class Dropdown extends InputElement {
   private _select: HTMLSelectElement;
 
 
-  constructor(params: FormElementParam) {
-    super(params);
+  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
+    super(params, _controller);
     this._form = document.createElement("form");
     this._button = document.createElement('button');
     this._select = document.createElement("select");

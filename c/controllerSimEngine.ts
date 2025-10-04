@@ -10,6 +10,10 @@ export class ControllerSimEngine {
     this._view = view;
   }
 
+  public setView(view: ViewSimEngine): void {
+    this._view = view;
+  }
+
   public initialize(): void {
     this._view.render();
   }
