@@ -49,7 +49,7 @@ export class ButtonBuilder {
     return this;
   }
 
-  protected _factory(type: ButtonType) {
+  private _factory(type: ButtonType) {
     switch (type) {
       case TextEntryWithButton:
         return new TextEntryWithButton(this.params, this._controller);

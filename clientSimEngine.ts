@@ -16,7 +16,7 @@ export function start() {
   var controller: ControllerSimEngine = new ControllerSimEngine(model, new ViewSimEngine(null as any, model));
   var view: ViewSimEngine = new ViewSimEngine(controller, model);
 
-  controller.setView(view); // You need to implement this method in ControllerSimEngine
+  controller.setView(view);
   controller.initialize();
 
   console.log("Hello World from app.ts!");

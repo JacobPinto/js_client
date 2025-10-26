@@ -67,18 +67,32 @@ export class ControllerSimEngine {
   }
 
   public onClickDimensions(dimension: Dimensions): void {
-    this._model.setDimension(dimension);
+    this._model.setDimension(dimension as Dimensions);
+  }
+
+  public onClickShaderType(shaderType: ShaderType): void {
+  this._model.setShader(shaderType as ShaderType);
+  }
+
+  public onClickVertexFormat(vertexFormat: VertexFormat): void {
+    this._model.setVertexFormat(vertexFormat as VertexFormat);
   }
 
   public updateColor(color: Color): void{
     this._model.color = color;
   }
 
+
+/*
   public updateShaderType(shaderType: ShaderType): void{
     this._model.shaderType = shaderType;
   }
 
+
   public updateVertexFormat(vertexFormat: VertexFormat): void{
     this._model.vertexFormat = vertexFormat;
   }
+
+*/
+
 }

@@ -1,6 +1,6 @@
 import { ControllerSimEngine } from "../c/controllerSimEngine";
 import { FormElementParam } from "./buttonParams";
-import { Observer, Dimensions } from "../m/modelSimEngine";
+import { DimObserver, Dimensions } from "../m/modelSimEngine";
 
 
 export class InputElement {
@@ -215,7 +215,7 @@ export class Checkbox extends InputElement {
 }
 
 /* Radio buttons allow for a unique selection among choices */
-export class RadioButton extends InputElement implements Observer {
+export class RadioButton extends InputElement implements DimObserver {
 
   protected _type: string = 'RadioButton';
   public _form: HTMLFormElement;
@@ -250,7 +250,7 @@ export class RadioButton extends InputElement implements Observer {
       const input = document.createElement('input');
       input.type = 'radio';
       input.name = this._name; // group name
-      input.value = key;
+      input.value = String(value);
 
       input.addEventListener('change', (event) => {
         const target = event.target as HTMLInputElement;
@@ -268,14 +268,24 @@ export class RadioButton extends InputElement implements Observer {
 
     return this._form;
   }
+  
+  // Get current selected value
+
   public getValue(): string | null {
+
   const selected = this._form.querySelector("input:checked") as HTMLInputElement | null;
   return selected ? selected.value : null;
+
 }
+
+  // Update radio UI when model changes
+
   public update(dimension: Dimensions): void {
+
     console.log("RadioButton notified of dimension change:", dimension);
     const radio = this._form.querySelector(`input[value="${dimension}"]`) as HTMLInputElement;
     if (radio) radio.checked = true; // automatically update UI
+
   }
 
 }

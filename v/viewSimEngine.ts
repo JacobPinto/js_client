@@ -8,8 +8,12 @@ import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {
   private workbench: Workbench;
+  private _buttons: any[] = [];
 
   constructor(controller: ControllerSimEngine, model: ModelSimEngine) {
+
+    // store initial controller and assign to buttons after creation
+    const initialController = controller;
    /* // Use builder for all buttons
     const myButton1 = new ButtonBuilder()
       .setButtonType(TextEntryWithButton)
@@ -85,11 +89,53 @@ export class ViewSimEngine {
       }) 
       .build();
 
-      (dimensionsButton as any).update = function(dimension: Dimensions) {
-        console.log("Dimension updated:", dimension);
-      };
+     // ensure update exists for model observer
+    
 
-      model.dimension.register(dimensionsButton as any);
+    model.dimension.register(dimensionsButton as any);
+    this._buttons.push(dimensionsButton);
+    (dimensionsButton as any)._controller = initialController;  // assign controller after creation
+   
+
+
+      const shaderButton = new ButtonBuilder(controller)
+      .setButtonType(RadioButton)
+      .setButtonName("ShaderType")
+      .setButtonDisplayName("Shader")
+      .setQuestions({ flat: ShaderType.Flat,smooth: ShaderType.Smooth })
+      .setOnClick(function (this: RadioButton) {
+        const selected = this.getValue() as ShaderType;
+        this._controller?.onClickShaderType?.(selected);
+      })
+      .build();
+      
+      // This is the correct update method which should be attached to the button #TBD
+    
+
+    model.shader.register(shaderButton as any);
+    this._buttons.push(shaderButton);
+    (shaderButton as any)._controller = initialController;  // assign controller after creation
+
+
+      
+      const vertexButton = new ButtonBuilder(controller)
+      .setButtonType(RadioButton)
+      .setButtonName("Vertex Format")
+      .setButtonDisplayName("Vertex Format")
+      .setQuestions({ list: VertexFormat.List, strip: VertexFormat.Strip, index: VertexFormat.Index })
+      .setOnClick(function (this: RadioButton) {
+        const selected = this.getValue() as VertexFormat;
+        this._controller?.onClickVertexFormat?.(selected);
+      })
+      .build();
+      
+      (vertexButton as any).update = function (v: VertexFormat) {
+      (this as any).setValue?.(v) ?? ((this as any).applyValueToUI?.(v));
+    };
+      model.vertex.register(vertexButton as any);
+      this._buttons.push(vertexButton);
+      (vertexButton as any)._controller = initialController;  // assign controller after creation
+
 
       /*
 
@@ -158,12 +204,23 @@ export class ViewSimEngine {
 
     const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
     toolbar2.getElement().classList.add('toolbar-vertical');
+
 */
+
+
     // small toolbar
-    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton]);
+    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, shaderButton, vertexButton]);
 
     // Create workbench
     this.workbench = new Workbench('mainWorkbench', [smallToolbar]);
+
+  }
+
+  // allow injecting controller after construction
+  public setController(controller: ControllerSimEngine): void {
+    for (const b of this._buttons) {
+      (b as any)._controller = controller;
+    }
   }
 
   render(): void {
