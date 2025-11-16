@@ -1,6 +1,6 @@
 import { ControllerSimEngine } from "../c/controllerSimEngine";
 import { FormElementParam } from "./buttonParams";
-import { DimObserver, Dimensions } from "../m/modelSimEngine";
+import { Dimensions } from "../m/modelSimEngine";
 
 
 export class InputElement {
@@ -11,7 +11,7 @@ export class InputElement {
   protected _questions: { [key: string]: string };
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
-  protected _controller: ControllerSimEngine; 
+  public _controller: ControllerSimEngine; 
 
   protected _getId(): string {
     return this._type + '_' + this._name;
@@ -79,8 +79,8 @@ export class TextEntryWithButton extends InputElement {
     this._form.appendChild(heading);
 
     Object.entries(this._questions).forEach(([key, value]) => {
-      let label: HTMLLabelElement = document.createElement('label');
-      let span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement('label');
+      const span: HTMLSpanElement = document.createElement('span');
 
       span.textContent = value;
       label.appendChild(span);
@@ -127,8 +127,8 @@ export class FileEntry extends InputElement {
     this._form.appendChild(heading);
 
     Object.entries(this._questions).forEach(([key, value]) => {
-      let label: HTMLLabelElement = document.createElement('label');
-      let span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement('label');
+      const span: HTMLSpanElement = document.createElement('span');
 
       span.textContent = value;
       label.appendChild(span);
@@ -188,8 +188,8 @@ export class Checkbox extends InputElement {
     this._form.appendChild(heading);
 
     Object.entries(this._questions).forEach(([key, value]) => {
-      let label: HTMLLabelElement = document.createElement('label');
-      let span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement('label');
+      const span: HTMLSpanElement = document.createElement('span');
 
       span.textContent = value;
       label.appendChild(span);
@@ -215,7 +215,7 @@ export class Checkbox extends InputElement {
 }
 
 /* Radio buttons allow for a unique selection among choices */
-export class RadioButton extends InputElement implements DimObserver {
+export class RadioButton extends InputElement {
 
   protected _type: string = 'RadioButton';
   public _form: HTMLFormElement;
@@ -226,7 +226,7 @@ export class RadioButton extends InputElement implements DimObserver {
     this._form = document.createElement('form');
   }
 
-  // update fun from model
+  // update func from model
 
   render(): HTMLFormElement {
     this._form.id = this._id;
@@ -240,9 +240,9 @@ export class RadioButton extends InputElement implements DimObserver {
     this._form.appendChild(heading);
 
     // Use the same name for all radios in the group for unique selection
-    Object.entries(this._questions).forEach(([key, value]) => {
-      let label: HTMLLabelElement = document.createElement('label');
-      let span: HTMLSpanElement = document.createElement('span');
+    Object.entries(this._questions).forEach(([_key, value]) => {
+      const label: HTMLLabelElement = document.createElement('label');
+      const span: HTMLSpanElement = document.createElement('span');
 
       span.textContent = value;
       label.appendChild(span);
@@ -256,7 +256,7 @@ export class RadioButton extends InputElement implements DimObserver {
         const target = event.target as HTMLInputElement;
         if (target.checked) {
           const selected = target.value as Dimensions;
-          this._controller.onClickDimensions(selected); // ✅ Update model
+          this._controller.onClickDimensions(selected); // Update model
         }
         this._onClick(target);
       });
@@ -278,16 +278,7 @@ export class RadioButton extends InputElement implements DimObserver {
 
 }
 
-  // Update radio UI when model changes
-
-  public update(dimension: Dimensions): void {
-
-    console.log("RadioButton notified of dimension change:", dimension);
-    const radio = this._form.querySelector(`input[value="${dimension}"]`) as HTMLInputElement;
-    if (radio) radio.checked = true; // automatically update UI
-
-  }
-
+ 
 }
 // Dropdown list
 

@@ -12,9 +12,9 @@ export function start() {
   var controller: ControllerSimEngine = new ControllerSimEngine(model, view);
 
   */ 
-  var model: ModelSimEngine = new ModelSimEngine();
-  var controller: ControllerSimEngine = new ControllerSimEngine(model, new ViewSimEngine(null as any, model));
-  var view: ViewSimEngine = new ViewSimEngine(controller, model);
+  const model: ModelSimEngine = new ModelSimEngine();
+  const controller: ControllerSimEngine = new ControllerSimEngine(model, new ViewSimEngine(null as any, model));
+  const view: ViewSimEngine = new ViewSimEngine(controller, model);
 
   controller.setView(view);
   controller.initialize();

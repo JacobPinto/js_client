@@ -1,6 +1,6 @@
 
-import { Speed, SpeedUnit } from './quantities'
-import { Density, DensityUnit } from './quantities'
+// import { Speed, SpeedUnit } from './quantities'
+// import { Density, DensityUnit } from './quantities'
 
 export class ModelSimEngine {
 
@@ -10,34 +10,30 @@ export class ModelSimEngine {
   
 
   constructor(){
+
     this.dimension = new ModelDim();
     this.shader = new ModelShader();
     this.vertex = new ModelVertex();
+   
   }
 
   public setDimension(dim: Dimensions): void {
+
     this.dimension.setDimension(dim);
   }
 
   public setShader(shader: ShaderType): void {
 
     this.shader.setShader(shader);
-    
-    //shader affects Dimension
-    if (shader === ShaderType.Flat) {
-      this.setDimension(Dimensions.D2);
-    } else if (shader === ShaderType.Smooth) {
-      this.setDimension(Dimensions.D3);
-    }
 
   }
 
   public setVertexFormat(vertex: VertexFormat): void {
+
     this.vertex.setVertexFormat(vertex);
+
   }
 
-  public color!: Color;
-  
 
   
   // Software params.
@@ -59,12 +55,12 @@ export class ModelSimEngine {
   public simulationDomain!: string;
   public equationStructure!: string;
 
-  // Flow properties
-  public initialConditions!: {
-    speed: Speed,
-    density: Density,
-    viscosity: string
-  };
+  // // Flow properties
+  // public initialConditions!: {
+  //   speed: Speed,
+  //   density: Density,
+  //   viscosity: string
+  // };
 
   // Numerical properties.
   public solverType!: string;
@@ -82,27 +78,16 @@ export class ModelSimEngine {
 // dimension observer interfave
 // update method should be in the viewsimengine #TBD
 
-// Observer interfaces
-
-export interface DimObserver {
-
-  update(dimension: Dimensions): void;
-
+// Generic observer interface
+export interface Observer<T> {
+  update(value: T): void;
 }
 
-// shader observer interface
-export interface ShaderObserver {
-  
-  update(shader: ShaderType): void;
+export type DimObserver = Observer<Dimensions>;
+export type ShaderObserver = Observer<ShaderType>;
+export type VertexObserver = Observer<VertexFormat>;
 
-}
-
-// vertex format observer interface
-export interface VertexObserver {
-
-  update(vertex: VertexFormat): void;
-
-}
+// observer interface can be one with update methoad and other will derive.
 
 
 export class ModelDim {
@@ -118,6 +103,8 @@ export class ModelDim {
 
     public notify(){
 
+      console.log(`[ModelDim] notifying observers...`);
+
       for (const obs of this.observers){
 
         obs.update(this.dimension);
@@ -127,7 +114,6 @@ export class ModelDim {
     }
     public setDimension(dim: Dimensions){
       
-      if (this.dimension === dim) return; // prevent duplicate log
       this.dimension = dim;
       console.log(`ModelDim: Dimension set to" ${dim}`);
       this.notify();
@@ -166,6 +152,7 @@ export class ModelDim {
   }
 
 
+
 }
 
   
@@ -180,6 +167,7 @@ export class ModelDim {
       this.observers.push(obs);
 
     }
+
 
     public notify() {
 
@@ -200,7 +188,7 @@ export class ModelDim {
 
   }
 
-
+ 
 
 // Enums
 

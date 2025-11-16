@@ -31,7 +31,7 @@ export class FormElementParam {
   public name: string = '';
   public displayName: string = '';
   public questions: Record<string, string> = {};
-  public contextObj?: Record<string, any>;
+  public contextObj?: Record<string, string>;
   public onClick?: Function;
 
   constructor(init?: Partial<FormElementParam>) {

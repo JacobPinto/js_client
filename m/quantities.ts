@@ -37,7 +37,7 @@ export class Velocity implements VectorQuantity {
       this.value = valueOrInput;
       console.log('Constructing Velocity in normal constructor');
     } else {
-      let input = valueOrInput as Velocity;
+      const input = valueOrInput as Velocity;
       this.value = this._convertTo(input);
       console.log('Constructing Velocity in converting constructor');
     }
@@ -64,7 +64,7 @@ export class Speed implements ScalarQuantity {
       this.value = valueOrInput;
       console.log('Constructing Speed in normal constructor');
     } else {
-      let input = valueOrInput as Speed;
+      const input = valueOrInput as Speed;
       this.value = this._convertTo(input);
       console.log('Constructing Speed in converting constructor');
     }
@@ -92,7 +92,7 @@ export class Density implements ScalarQuantity {
       this.value = valueOrInput;
       console.log('Constructing Density in normal constructor');
     } else {
-      let input = valueOrInput as Density;
+      const input = valueOrInput as Density;
       this.value = this._convertTo(input);
       console.log('Constructing Density in converting constructor');
     }

@@ -1,11 +1,11 @@
-import { Color, Dimensions, ModelSimEngine, ShaderType, VertexFormat } from '../m/modelSimEngine.js';
+import { Dimensions, ModelSimEngine, ShaderType, VertexFormat } from '../m/modelSimEngine.js';
 import { ViewSimEngine } from '../v/viewSimEngine.js';
 export class ControllerSimEngine {
 
   private _model: ModelSimEngine;
-  private _view: ViewSimEngine;
+  private _view?: ViewSimEngine;
 
-  constructor(model: ModelSimEngine, view: ViewSimEngine) {
+  constructor(model: ModelSimEngine, view?: ViewSimEngine) {
     this._model = model;
     this._view = view;
   }
@@ -15,10 +15,10 @@ export class ControllerSimEngine {
   }
 
   public initialize(): void {
-    this._view.render();
+    this._view?.render();
   }
 
-  public updateSoftwareVersion(version: number): void {
+  /* public updateSoftwareVersion(version: number): void {
     this._model.softwareVersion = version;
   }
 
@@ -65,8 +65,12 @@ export class ControllerSimEngine {
   public updateIterationCount(iterationCount: number): void {
     this._model.iterationCount = iterationCount;
   }
+*/
+
+  // Called when user clicks Dimensions button
 
   public onClickDimensions(dimension: Dimensions): void {
+    console.log(`[Controller] onClickDimensions(${dimension})`);
     this._model.setDimension(dimension as Dimensions);
   }
 
@@ -78,9 +82,7 @@ export class ControllerSimEngine {
     this._model.setVertexFormat(vertexFormat as VertexFormat);
   }
 
-  public updateColor(color: Color): void{
-    this._model.color = color;
-  }
+ 
 
 
 /*
