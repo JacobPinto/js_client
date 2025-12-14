@@ -1,6 +1,6 @@
-import { ControllerSimEngine } from "../c/controllerSimEngine";
-import { FormElementParam } from "./buttonParams";
-import { Dimensions } from "../m/modelEnums";
+import { ControllerSimEngine } from "../c/controllerSimEngine.js";
+import { FormElementParam } from "./buttonParams.js";
+import { Dimensions } from "../m/modelEnums.js";
 
 
 export class InputElement {
