@@ -76,7 +76,7 @@ export class ControllerSimEngine {
   }
 
   public onClickShaderType(shaderType: ShaderType): void {
-  this._model.setShader(shaderType as ShaderType);
+    this._model.setShader(shaderType as ShaderType);
   }
 
   public onClickVertexFormat(vertexFormat: VertexFormat): void {

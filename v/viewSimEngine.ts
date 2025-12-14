@@ -4,7 +4,8 @@ import { ButtonBuilder } from './buttonBuilder.js';
 import { Toolbar } from './toolbar.js';
 import { Workbench } from './workbench.js';
 import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
-import { ModelSimEngine, Observer} from '../m/modelSimEngine.js';
+import { ModelSimEngine} from '../m/modelSimEngine.js';
+import { Observer } from '../m/modelObserver.js';
 import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {

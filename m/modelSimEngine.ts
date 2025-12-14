@@ -3,6 +3,7 @@
 // import { Density, DensityUnit } from './quantities'
 
 import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
+import { DimObserver, ShaderObserver, VertexObserver } from '../m/modelObserver.js';
 
 export class ModelSimEngine {
 
@@ -10,36 +11,27 @@ export class ModelSimEngine {
   public shader: ModelShader;
   public vertex: ModelVertex;
   
-
-  constructor(){
-
+  constructor() {
     this.dimension = new ModelDim();
     this.shader = new ModelShader();
     this.vertex = new ModelVertex();
-   
   }
 
   public setDimension(dim: Dimensions): void {
-
     this.dimension.setDimension(dim);
   }
 
   public setShader(shader: ShaderType): void {
-
     this.shader.setShader(shader);
-
   }
 
   public setVertexFormat(vertex: VertexFormat): void {
-
     this.vertex.setVertexFormat(vertex);
-
   }
-
 
   
   // Software params.
-  public softwareVersion!: number;
+  /*public softwareVersion!: number;
   public schemaVersion!: number;
 
   // Physical params.
@@ -55,7 +47,7 @@ export class ModelSimEngine {
   // Simulation properties.
   public simulationType!: string;
   public simulationDomain!: string;
-  public equationStructure!: string;
+  public equationStructure!: string;*/
 
   // // Flow properties
   // public initialConditions!: {
@@ -65,8 +57,8 @@ export class ModelSimEngine {
   // };
 
   // Numerical properties.
-  public solverType!: string;
-  public iterationCount!: number;
+  /*public solverType!: string;
+  public iterationCount!: number;*/
 
   // Boundary conds.
   //SlipWall
@@ -77,19 +69,6 @@ export class ModelSimEngine {
   //}
 
 }
-// dimension observer interfave
-// update method should be in the viewsimengine #TBD
-
-// Generic observer interface
-export interface Observer<T> {
-  update(value: T): void;
-}
-
-export type DimObserver = Observer<Dimensions>;
-export type ShaderObserver = Observer<ShaderType>;
-export type VertexObserver = Observer<VertexFormat>;
-
-// observer interface can be one with update methoad and other will derive.
 
 
 export class ModelDim {
@@ -131,30 +110,20 @@ export class ModelDim {
   private observers: ShaderObserver[] = [];
 
   register(obs: ShaderObserver) {
-
     this.observers.push(obs);
-
   }
 
   notify() {
-
     for (const obs of this.observers){
-
       obs.update(this.shaderType);
-
     }
   }
 
   setShader(shader: ShaderType) {
-
     this.shaderType = shader;
     console.log(`ModelShader: Shader set to ${shader}`);
     this.notify();
-
   }
-
-
-
 }
 
   
