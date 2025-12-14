@@ -1,4 +1,5 @@
-import { Dimensions, ModelSimEngine, ShaderType, VertexFormat } from '../m/modelSimEngine.js';
+import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
+import { ModelSimEngine } from '../m/modelSimEngine.js';
 import { ViewSimEngine } from '../v/viewSimEngine.js';
 export class ControllerSimEngine {
 

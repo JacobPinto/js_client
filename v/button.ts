@@ -1,6 +1,6 @@
 import { ControllerSimEngine } from "../c/controllerSimEngine";
 import { FormElementParam } from "./buttonParams";
-import { Dimensions } from "../m/modelSimEngine";
+import { Dimensions } from "../m/modelEnums";
 
 
 export class InputElement {
@@ -11,7 +11,7 @@ export class InputElement {
   protected _questions: { [key: string]: string };
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
-  public _controller: ControllerSimEngine; 
+  public    _controller: ControllerSimEngine; 
 
   protected _getId(): string {
     return this._type + '_' + this._name;

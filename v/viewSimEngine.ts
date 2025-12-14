@@ -3,7 +3,7 @@ import { RadioButton } from './button.js';
 import { ButtonBuilder } from './buttonBuilder.js';
 import { Toolbar } from './toolbar.js';
 import { Workbench } from './workbench.js';
-import { Dimensions, ShaderType, VertexFormat } from '../m/modelSimEngine.js';
+import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
 import { ModelSimEngine, Observer} from '../m/modelSimEngine.js';
 import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 

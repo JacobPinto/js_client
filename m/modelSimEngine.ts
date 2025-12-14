@@ -2,6 +2,8 @@
 // import { Speed, SpeedUnit } from './quantities'
 // import { Density, DensityUnit } from './quantities'
 
+import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
+
 export class ModelSimEngine {
 
   public dimension: ModelDim;
@@ -187,37 +189,3 @@ export class ModelDim {
 
 
   }
-
- 
-
-// Enums
-
-export enum Dimensions {
-
-  D2 = "2D",
-  D3 = "3D"
-
-}
-
-export enum Color {
-
-  Red = "Red",
-  Blue = "Blue",
-  Green = "Green"
-
-}
-
-export enum ShaderType {
-
-  Flat = "Flat",
-  Smooth = "Smooth"
-
-}
-
-export enum VertexFormat {
-
-  List = "List",
-  Strip = "Strip",
-  Index = "Index"
-
-}
