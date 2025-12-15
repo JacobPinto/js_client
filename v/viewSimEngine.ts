@@ -12,8 +12,6 @@ export class ViewSimEngine {
   private workbench: Workbench;
   private _buttons: (RadioButton | Observer<Dimensions>)[] = [];
 
-
-
   constructor(controller: ControllerSimEngine, model: ModelSimEngine) {
 
       //  Dimensions Button 

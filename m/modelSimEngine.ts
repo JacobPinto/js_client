@@ -2,31 +2,31 @@
 // import { Speed, SpeedUnit } from './quantities'
 // import { Density, DensityUnit } from './quantities'
 
+import {ModelGeneric} from '../m/modelGeneric.js';
 import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
-import { DimObserver, ShaderObserver, VertexObserver } from '../m/modelObserver.js';
 
 export class ModelSimEngine {
 
-  public dimension: ModelDim;
-  public shader: ModelShader;
-  public vertex: ModelVertex;
+  public dimension: ModelGeneric<Dimensions>;
+  public shader: ModelGeneric<ShaderType>;
+  public vertex: ModelGeneric<VertexFormat>;
   
   constructor() {
-    this.dimension = new ModelDim();
-    this.shader = new ModelShader();
-    this.vertex = new ModelVertex();
+    this.dimension = new ModelGeneric<Dimensions>();
+    this.shader = new ModelGeneric<ShaderType>();
+    this.vertex = new ModelGeneric<VertexFormat>();
   }
 
   public setDimension(dim: Dimensions): void {
-    this.dimension.setDimension(dim);
+    this.dimension.setData(dim);
   }
 
   public setShader(shader: ShaderType): void {
-    this.shader.setShader(shader);
+    this.shader.setData(shader);
   }
 
   public setVertexFormat(vertex: VertexFormat): void {
-    this.vertex.setVertexFormat(vertex);
+    this.vertex.setData(vertex);
   }
 
   
@@ -68,93 +68,4 @@ export class ModelSimEngine {
   //  public a: number;
   //}
 
-}
-
-
-export class ModelDim {
-
-    public dimension!: Dimensions;
-    public observers: DimObserver[] = [];
-
-    public register(obs: DimObserver){
-
-      this.observers.push(obs);
-
-    }
-
-    public notify(){
-
-      console.log(`[ModelDim] notifying observers...`);
-
-      for (const obs of this.observers){
-
-        obs.update(this.dimension);
-
-      }
-
-    }
-    public setDimension(dim: Dimensions){
-      
-      this.dimension = dim;
-      console.log(`ModelDim: Dimension set to" ${dim}`);
-      this.notify();
-
-    }
-  
-
-  }
-
-  export class ModelShader {
-
-  public shaderType!: ShaderType;
-  private observers: ShaderObserver[] = [];
-
-  register(obs: ShaderObserver) {
-    this.observers.push(obs);
-  }
-
-  notify() {
-    for (const obs of this.observers){
-      obs.update(this.shaderType);
-    }
-  }
-
-  setShader(shader: ShaderType) {
-    this.shaderType = shader;
-    console.log(`ModelShader: Shader set to ${shader}`);
-    this.notify();
-  }
-}
-
-  
-
-  export class ModelVertex{
-
-    public vertexFormat!: VertexFormat;
-    public observers: VertexObserver[] = [];
-
-    public register(obs: VertexObserver) {
-
-      this.observers.push(obs);
-
-    }
-
-
-    public notify() {
-
-      for (const obs of this.observers) {   
-
-        obs.update(this.vertexFormat);
-
-      }   
-    }
-    public setVertexFormat(vertex: VertexFormat) {
-
-      this.vertexFormat = vertex;
-      console.log(`ModelVertex: Vertex set to ${vertex}`);
-      this.notify();  
-
-    }
-
-
-  }
+} // end ModelSimEngine
