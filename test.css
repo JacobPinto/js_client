@@ -50,3 +50,42 @@ form.FormWithButton {
     align-self: flex-start;
     margin-top: auto; /* Push button to the bottom */
   }
+
+  /*  toolbar look */
+.toolbar-horizontal,
+.toolbar-vertical {
+  display: flex;
+  gap: 8px;             /* spacing between buttons */
+  padding: 8px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+/* Horizontal layout */
+.toolbar-horizontal {
+  flex-direction: row;  /* items in a row */
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Vertical layout */
+.toolbar-vertical {
+  flex-direction: column;  /* items stacked top-to-bottom */
+  align-items: flex-start;
+}
+
+.output-bar {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  background-color: #f9f9f9;
+  border-top: 2px solid #1976d2;
+  padding: 8px 20px;
+  text-align: right;
+  font-size: 18px;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  z-index: 1000;
+
+}

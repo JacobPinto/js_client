@@ -1,20 +1,20 @@
+import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
 import { ModelSimEngine } from '../m/modelSimEngine.js';
 import { ViewSimEngine } from '../v/viewSimEngine.js';
 export class ControllerSimEngine {
 
   private _model: ModelSimEngine;
-  private _view: ViewSimEngine;
 
-  constructor(model: ModelSimEngine, view: ViewSimEngine) {
+  constructor(model: ModelSimEngine) {
     this._model = model;
-    this._view = view;
   }
 
-  public initialize(): void {
-    this._view.render();
+  // Getters
+  public get model(): ModelSimEngine {
+    return this._model;
   }
 
-  public updateSoftwareVersion(version: number): void {
+  /* public updateSoftwareVersion(version: number): void {
     this._model.softwareVersion = version;
   }
 
@@ -61,4 +61,35 @@ export class ControllerSimEngine {
   public updateIterationCount(iterationCount: number): void {
     this._model.iterationCount = iterationCount;
   }
+*/
+
+  // Called when user clicks Dimensions button
+
+  public onClickDimensions(dimension: Dimensions): void {
+    this._model.dimension = dimension;
+  }
+
+  public onClickShaderType(shaderType: ShaderType): void {
+    this._model.shader = shaderType;
+  }
+
+  public onClickVertexFormat(vertexFormat: VertexFormat): void {
+    this._model.vertex = vertexFormat;
+  }
+
+ 
+
+
+/*
+  public updateShaderType(shaderType: ShaderType): void{
+    this._model.shaderType = shaderType;
+  }
+
+
+  public updateVertexFormat(vertexFormat: VertexFormat): void{
+    this._model.vertexFormat = vertexFormat;
+  }
+
+*/
+
 }

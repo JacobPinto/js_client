@@ -1,110 +1,192 @@
-
-import { Checkbox, TextEntryWithButton, FileEntry, RadioButton } from './button.js'
+//import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown, SimpleButton } from './button.js';
+import { RadioButton } from './button.js';
+import { ButtonBuilder } from './buttonBuilder.js';
+import { Toolbar } from './toolbar.js';
+import { Workbench } from './workbench.js';
+import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
+import { ModelSimEngine} from '../m/modelSimEngine.js';
+import { Observer } from '../m/modelObserver.js';
+import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {
-  private listOfFormWithButtons: TextEntryWithButton[] = [];
-  private listOfCheckboxes: Checkbox[] = [];
-  private listOfRadioButtons: RadioButton[] = [];
-  private listofFileEntries: FileEntry[] = [];
+  private workbench: Workbench;
+  private _buttons: (RadioButton | Observer<Dimensions>)[] = [];
 
-  constructor() {
-    let myButton1: TextEntryWithButton = new TextEntryWithButton(
-      'Fluid Properties',
-      'FluidProperties',
-      { density: 'Density', viscosity: 'Viscosity' },
-      { '': null },
-      function (this: TextEntryWithButton) {
-        const densityInput = this._form.querySelector('input[name="density"]') as HTMLInputElement;
-        const viscosityInput = this._form.querySelector('input[name="viscosity"]') as HTMLInputElement;
-        /*this._contextObj.instance['fluidProperties'] = {
-          density: Number(densityInput.value),
-          viscosity: Number(viscosityInput.value)
-        };*/
-        console.log("Denssity", densityInput.value);
-      }
-    );
+  constructor(controller: ControllerSimEngine) {
 
-    let myButton2: Checkbox = new Checkbox(
-      'Dimensionality',
-      'Dimensionality',
-      { $2d: '2D', $3d: '3D' },
-      { '': null },
-      function (this: Checkbox) {
-        const inputs = this._form.querySelectorAll('input');
-        inputs.forEach(input => {
-          // For checkboxes:
-          if (input.type === 'checkbox') {
-            console.log(input.name, input.checked);
-          }
-        });
-        console.log('clicked a checkbox');
-      }
-    );
+      //  Dimensions Button 
+    const dimensionsButton = new ButtonBuilder(controller)
+      .setButtonType(RadioButton)
+      .setButtonName('Dimensions')
+      .setButtonDisplayName('Dimensions')
+      .setQuestions({ d2: Dimensions.D2, d3: Dimensions.D3 })
+      .setOnClick(function (this: RadioButton) {
+        const selected = this.getValue() as Dimensions;
+        this._controller?.onClickDimensions(selected);
+      })
+      .build() as RadioButton;
 
-    let myButton3: RadioButton = new RadioButton(
-      'Dimensionality',
-      'Dimensionality',
-      { d2: '2D', d3: '3D' },
-      { '': null },
-      function (this: RadioButton) {
-        const inputs = this._form.querySelectorAll('input');
-        inputs.forEach(input => {
-          // For checkboxes:
-          if (input.type === 'radio' && Object.keys(this._questions).includes(input.value)) {
-            console.log(input.name, input.checked);
-          }
-        });
-        console.log('clicked a checkbox');
-      }
-    );
+    //  Shader Button 
+    const shaderButton = new ButtonBuilder(controller)
+      .setButtonType(RadioButton)
+      .setButtonName('ShaderType')
+      .setButtonDisplayName('Shader')
+      .setQuestions({ flat: ShaderType.Flat, smooth: ShaderType.Smooth })
+      .setOnClick(function (this: RadioButton) {
+        const selected = this.getValue() as ShaderType;
+        this._controller?.onClickShaderType?.(selected);
+      })
+      .build() as RadioButton;
 
-    let myButton4: FileEntry = new FileEntry(
-      'Geometry',
-      'Geometry',
-      { geometry: 'Target geometry' },
-      { '': null },
-      function (this: FileEntry) {
-        //const densityInput = this._form.querySelector('input[name="density"]') as HTMLInputElement;
-        //const viscosityInput = this._form.querySelector('input[name="viscosity"]') as HTMLInputElement;
-        /*this._contextObj.instance['fluidProperties'] = {
-          density: Number(densityInput.value),
-          viscosity: Number(viscosityInput.value)
-        };*/
-        //console.log("Denssity", densityInput.value);
-      }
-    );
+    // Shader update method (observer)
+    (shaderButton as any).update = function (dim: Dimensions) {
+      if (!this._controller) return;
+      if (!this._form) return;
+
+      console.log(`[ShaderButton] Reacting to dimension: ${dim}`);
+      const radios = this._form.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+      const targetShader = dim === Dimensions.D2 ? ShaderType.Flat : ShaderType.Smooth;
+
+      radios.forEach(r => {
+        r.disabled = false;
+        if (r.value === targetShader) {
+          r.checked = true;
+          this._controller.onClickShaderType(targetShader);
+          console.log(`Shader auto-selected: ${targetShader}`);
+        } else if (dim === Dimensions.D2 && r.value === ShaderType.Smooth) {
+          r.disabled = true;
+        }
+      });
+    };
+
+    //  Vertex Button 
+    const vertexButton = new ButtonBuilder(controller)
+      .setButtonType(RadioButton)
+      .setButtonName('VertexFormat')
+      .setButtonDisplayName('Vertex Format')
+      .setQuestions({ list: VertexFormat.List, strip: VertexFormat.Strip, index: VertexFormat.Index })
+      .setOnClick(function (this: RadioButton) {
+        const selected = this.getValue() as VertexFormat;
+        this._controller?.onClickVertexFormat?.(selected);
+      })
+      .build() as RadioButton;
+
+    // vertex update method (observer)
+    (vertexButton as any).update = function (dim: Dimensions) {
+      if (!this._form) return;
+      const radios = this._form.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+      radios.forEach(r => {
+        r.disabled = dim === Dimensions.D2 && r.value === VertexFormat.Index;
+      });
+      console.log(`[VertexButton] Reacting to dimension: ${dim}`);
+    };
+
+      
+    //  Register observers 
+    controller.model.dimension.register(shaderButton as RadioButton & Observer<Dimensions>);
+    controller.model.dimension.register(vertexButton as RadioButton & Observer<Dimensions> );
+     
+  
+
+    this._buttons.push(dimensionsButton, shaderButton, vertexButton);
 
 
-    this.listOfFormWithButtons.push(myButton1);
-    this.listOfCheckboxes.push(myButton2);
-    this.listOfRadioButtons.push(myButton3);
-    this.listofFileEntries.push(myButton4);
+      /*
+
+
+
+    const colorDropdown = new ButtonBuilder()
+      .setButtonType(Dropdown)
+      .setButtonName("Color")
+      .setButtonDisplayName("Color")
+      .setQuestions({
+        red: Color.Red,
+        blue: Color.Blue,
+        green: Color.Green
+      })
+      .setOnClick(function (this: Dropdown, selected?: string) {
+        console.log("Selected color:", selected ?? this.getValue());
+      })
+      .build();
+
+    const shaderDropdown = new ButtonBuilder()
+      .setButtonType(Dropdown)
+      .setButtonName("ShaderType")
+      .setButtonDisplayName("Shader Type")
+      .setQuestions({
+        flat: ShaderType.Flat,
+        smooth: ShaderType.Smooth
+      })
+      .setOnClick(function (this: Dropdown, selected?: string) {
+        console.log("Shader type:", selected ?? this.getValue());
+      })
+      .build();
+
+    const vertexDropdown = new ButtonBuilder()
+      .setButtonType(Dropdown)
+      .setButtonName("VertexFormat")
+      .setButtonDisplayName("Vertex Format")
+      .setQuestions({
+        list: VertexFormat.List,
+        strip: VertexFormat.Strip,
+        index: VertexFormat.Index
+      })
+      .setOnClick(function (this: Dropdown, selected?: string) {
+        console.log("Vertex format:", selected ?? this.getValue());
+      })
+      .build();
+
+      // remove simple button
+    const simpleBtn = new ButtonBuilder()
+      .setButtonType(SimpleButton)
+      .setButtonName("Apply")
+      .setButtonDisplayName("Apply")
+      .setOnClick(function (this: SimpleButton, value?: string) {
+        console.log("Simple button clicked:", value ?? this._name);
+      })
+      .build();
+
+      */
+
+
+      /*
+
+    
+      // Create toolbars
+    const toolbar1 = new Toolbar('basicInputs', [myButton1, myButton2]);
+    toolbar1.getElement().classList.add('toolbar-horizontal');
+
+    const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
+    toolbar2.getElement().classList.add('toolbar-vertical');
+
+*/
+
+
+    // small toolbar
+    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, shaderButton, vertexButton]);
+
+    // Create workbench
+    this.workbench = new Workbench('mainWorkbench', [smallToolbar]);
+
   }
 
-  getThis(): HTMLFormElement {
-    return this.listOfRadioButtons[0].render();
+  // allow injecting controller after construction
+  public setController(controller: ControllerSimEngine): void {
+    for (const b of this._buttons) {
+      (b as any)._controller = controller;
+    }
   }
 
   render(): void {
-
-    let el1: HTMLFormElement = this.listOfRadioButtons[0].render();
-    document.body.appendChild(el1);
+    document.body.appendChild(this.workbench.getElement());
   }
 
-  //static instance: { [key: string]: ViewLatticeBoltzmannSolver } = {};
-  //instance: ViewLatticeBoltzmannSolver = new ViewLatticeBoltzmannSolver();
+  toggleWorkbench(isVisible: boolean): void {
+  this.workbench.setVisibility(isVisible);
 }
 
-/*
-var myButton: FormWithButton = new FormWithButton(
-  'button1',
-  'button2',
-  { age: '25', name: 'john' },
-  Man,
-  function (this: FormWithButton) {
-    const ageInput = this._form.querySelector('input[name="age"]') as HTMLInputElement;
-    this._contextObj.instance['hi'] = new Man(Number(ageInput.value));
-  }
-);*/
+toggleToolbar(name: string, isVisible: boolean): void {
+  this.workbench.setToolbarVisibility(name, isVisible);
+}
 
-console.log("Hello World!")
+}
