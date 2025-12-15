@@ -7,26 +7,41 @@ import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
 
 export class ModelSimEngine {
 
-  public dimension: ModelGeneric<Dimensions>;
-  public shader: ModelGeneric<ShaderType>;
-  public vertex: ModelGeneric<VertexFormat>;
+  // The smaller models help to build the larger simulation model.
+  private _dimension: ModelGeneric<Dimensions>;
+  private _shader: ModelGeneric<ShaderType>;
+  private _vertex: ModelGeneric<VertexFormat>;
   
   constructor() {
-    this.dimension = new ModelGeneric<Dimensions>();
-    this.shader = new ModelGeneric<ShaderType>();
-    this.vertex = new ModelGeneric<VertexFormat>();
+    this._dimension = new ModelGeneric<Dimensions>();
+    this._shader = new ModelGeneric<ShaderType>();
+    this._vertex = new ModelGeneric<VertexFormat>();
   }
 
-  public setDimension(dim: Dimensions): void {
-    this.dimension.setData(dim);
+  // Getters
+  public get dimension(): ModelGeneric<Dimensions> {
+    return this._dimension;
   }
 
-  public setShader(shader: ShaderType): void {
-    this.shader.setData(shader);
+  public get shader(): ModelGeneric<ShaderType> {
+    return this._shader;
   }
 
-  public setVertexFormat(vertex: VertexFormat): void {
-    this.vertex.setData(vertex);
+  public get vertex(): ModelGeneric<VertexFormat> {
+    return this._vertex;
+  }
+
+  // Setters
+  public set dimension(dim: Dimensions) {
+    this._dimension.setData(dim);
+  }
+
+  public set shader(shader: ShaderType) {
+    this._shader.setData(shader);
+  }
+
+  public set vertex(vertex: VertexFormat) {
+    this._vertex.setData(vertex);
   }
 
   

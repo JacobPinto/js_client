@@ -71,16 +71,15 @@ export class ControllerSimEngine {
   // Called when user clicks Dimensions button
 
   public onClickDimensions(dimension: Dimensions): void {
-    console.log(`[Controller] onClickDimensions(${dimension})`);
-    this._model.setDimension(dimension as Dimensions);
+    this._model.dimension = dimension;
   }
 
   public onClickShaderType(shaderType: ShaderType): void {
-    this._model.setShader(shaderType as ShaderType);
+    this._model.shader = shaderType;
   }
 
   public onClickVertexFormat(vertexFormat: VertexFormat): void {
-    this._model.setVertexFormat(vertexFormat as VertexFormat);
+    this._model.vertex = vertexFormat;
   }
 
  
