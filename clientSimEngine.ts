@@ -10,11 +10,10 @@ export function start() {
 
   */ 
   const model: ModelSimEngine = new ModelSimEngine();
-  const controller: ControllerSimEngine = new ControllerSimEngine(model, new ViewSimEngine(null as any, model));
-  const view: ViewSimEngine = new ViewSimEngine(controller, model);
+  const controller: ControllerSimEngine = new ControllerSimEngine(model);
+  const view: ViewSimEngine = new ViewSimEngine(controller);
 
-  controller.setView(view);
-  controller.initialize();
+  view.render();
 
   console.log("Hello World from app.ts!");
 }

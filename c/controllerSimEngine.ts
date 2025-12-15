@@ -4,19 +4,14 @@ import { ViewSimEngine } from '../v/viewSimEngine.js';
 export class ControllerSimEngine {
 
   private _model: ModelSimEngine;
-  private _view?: ViewSimEngine;
 
-  constructor(model: ModelSimEngine, view?: ViewSimEngine) {
+  constructor(model: ModelSimEngine) {
     this._model = model;
-    this._view = view;
   }
 
-  public setView(view: ViewSimEngine): void {
-    this._view = view;
-  }
-
-  public initialize(): void {
-    this._view?.render();
+  // Getters
+  public get model(): ModelSimEngine {
+    return this._model;
   }
 
   /* public updateSoftwareVersion(version: number): void {

@@ -12,7 +12,7 @@ export class ViewSimEngine {
   private workbench: Workbench;
   private _buttons: (RadioButton | Observer<Dimensions>)[] = [];
 
-  constructor(controller: ControllerSimEngine, model: ModelSimEngine) {
+  constructor(controller: ControllerSimEngine) {
 
       //  Dimensions Button 
     const dimensionsButton = new ButtonBuilder(controller)
@@ -83,8 +83,8 @@ export class ViewSimEngine {
 
       
     //  Register observers 
-    model.dimension.register(shaderButton as RadioButton & Observer<Dimensions>);
-    model.dimension.register(vertexButton as RadioButton & Observer<Dimensions> );
+    controller.model.dimension.register(shaderButton as RadioButton & Observer<Dimensions>);
+    controller.model.dimension.register(vertexButton as RadioButton & Observer<Dimensions> );
      
   
 
