@@ -17,14 +17,14 @@ export class InputElement {
     return this._type + '_' + this._name;
   }
 
-  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
+  constructor( params: FormElementParam, controller: ControllerSimEngine) {
     this._name = params.name;
     this._id = this._getId();
     this._displayName = params.displayName;
     this._questions = params.questions;
     this._contextObj = params.contextObj ?? {};   // default empty object
     this._onClick = (params.onClick ?? (() => {})).bind(this);
-    this._controller = _controller;
+    this._controller = controller;
   }
 }
 
@@ -201,7 +201,7 @@ export class Checkbox extends InputElement {
       // Add event listener to the checkbox
       input.addEventListener('change', (event) => {
         const target = event.target as HTMLInputElement;
-        console.log(`${target.name} checked:`, target.checked);
+        console.log(`${target.name} checked:`, target.checked);      
         this._onClick(target);
       });
 
@@ -255,10 +255,8 @@ export class RadioButton extends InputElement {
       input.addEventListener('change', (event) => {
         const target = event.target as HTMLInputElement;
         if (target.checked) {
-          const selected = target.value as Dimensions;
-          this._controller.onClickDimensions(selected); // Update model
+          this._onClick(target);
         }
-        this._onClick(target);
       });
 
       label.appendChild(input);

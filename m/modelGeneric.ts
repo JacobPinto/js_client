@@ -13,6 +13,7 @@ export class ModelGeneric<T> {
   }
 
   public setData(data: T) {
+    console.log(`[ModelGeneric] Setting data: ${data}`);
     this._data = data;
     this.notify();
   }

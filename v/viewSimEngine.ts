@@ -38,9 +38,6 @@ export class ViewSimEngine {
       })
       .build() as RadioButton;
 
-    // Assign controller 
-    (shaderButton as RadioButton)._controller = controller;
-
     // Shader update method (observer)
     (shaderButton as any).update = function (dim: Dimensions) {
       if (!this._controller) return;
@@ -73,8 +70,6 @@ export class ViewSimEngine {
         this._controller?.onClickVertexFormat?.(selected);
       })
       .build() as RadioButton;
-
-    (vertexButton as RadioButton)._controller = controller;
 
     // vertex update method (observer)
     (vertexButton as any).update = function (dim: Dimensions) {
