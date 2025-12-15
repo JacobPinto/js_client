@@ -4,16 +4,11 @@ import { ControllerSimEngine } from './c/controllerSimEngine.js';
 
 export function start() {
 
- /* var view: ViewSimEngine = new ViewSimEngine();
-  var model: ModelSimEngine = new ModelSimEngine();
-  var controller: ControllerSimEngine = new ControllerSimEngine(model, view);
-
-  */ 
   const model: ModelSimEngine = new ModelSimEngine();
   const controller: ControllerSimEngine = new ControllerSimEngine(model);
   const view: ViewSimEngine = new ViewSimEngine(controller);
 
+  // Render the view
+  console.log("Program start!");
   view.render();
-
-  console.log("Hello World from app.ts!");
 }
