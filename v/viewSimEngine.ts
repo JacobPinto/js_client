@@ -5,12 +5,11 @@ import { Toolbar } from './toolbar.js';
 import { Workbench } from './workbench.js';
 import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
 import { ModelSimEngine} from '../m/modelSimEngine.js';
-import { Observer } from '../m/modelObserver.js';
 import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {
   private _workbench: Workbench;
-  private _buttons: (RadioButton | Observer<Dimensions>)[] = [];
+  private _buttons: (RadioButton)[] = [];
 
   constructor(controller: ControllerSimEngine) {
     // Create ButtonBuilder
@@ -38,30 +37,28 @@ export class ViewSimEngine {
         const selected = this.getValue() as ShaderType;
         this._controller?.onClickShaderType?.(selected);
       })
+      .setUpdate(function (this: RadioButton, dim: Dimensions) {
+        if (!this._controller) return;
+        if (!this._form) return;
+  
+        console.log(`[ShaderButton] Reacting to dimension: ${dim}`);
+        const radios = this._form.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+        const targetShader = dim === Dimensions.D2 ? ShaderType.Flat : ShaderType.Smooth;
+  
+        radios.forEach(r => {
+          r.disabled = false;
+          if (r.value === targetShader) {
+            r.checked = true;
+            this._controller.onClickShaderType(targetShader);
+            console.log(`Shader auto-selected: ${targetShader}`);
+          } else if (dim === Dimensions.D2 && r.value === ShaderType.Smooth) {
+            r.disabled = true;
+          }
+        })
+      })
       .build() as RadioButton;
 
-    // Shader update method (observer)
-    (shaderButton as any).update = function (dim: Dimensions) {
-      if (!this._controller) return;
-      if (!this._form) return;
-
-      console.log(`[ShaderButton] Reacting to dimension: ${dim}`);
-      const radios = this._form.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
-      const targetShader = dim === Dimensions.D2 ? ShaderType.Flat : ShaderType.Smooth;
-
-      radios.forEach(r => {
-        r.disabled = false;
-        if (r.value === targetShader) {
-          r.checked = true;
-          this._controller.onClickShaderType(targetShader);
-          console.log(`Shader auto-selected: ${targetShader}`);
-        } else if (dim === Dimensions.D2 && r.value === ShaderType.Smooth) {
-          r.disabled = true;
-        }
-      });
-    };
-
-    //  Vertex Button 
+    // Vertex Button 
     const vertexButton = buttonBuilder
       .setButtonType(RadioButton)
       .setButtonName('VertexFormat')
@@ -72,14 +69,14 @@ export class ViewSimEngine {
         this._controller?.onClickVertexFormat?.(selected);
       })
       .build() as RadioButton;
-      
-    //  Register observers 
-    controller.model.dimension.register(shaderButton as RadioButton & Observer<Dimensions>);
-     
+
+    // Register observers 
+    controller.model.dimension.register(shaderButton);
+
+    // Store buttons
     this._buttons.push(dimensionsButton, shaderButton, vertexButton);
 
-
-      /*
+    /*
     const colorDropdown = new ButtonBuilder()
       .setButtonType(Dropdown)
       .setButtonName("Color")

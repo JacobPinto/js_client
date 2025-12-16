@@ -10,19 +10,12 @@ import {
 
 // All valid button classes
 export type ButtonType =
-
   | typeof TextEntryWithButton
-
   | typeof Checkbox
-
   | typeof RadioButton
-
   | typeof FileEntry
-
   | typeof Dropdown
-
   | typeof SimpleButton;
-
 
 
 export class FormElementParam {
@@ -33,6 +26,7 @@ export class FormElementParam {
   public questions: Record<string, string> = {};
   public contextObj?: Record<string, string>;
   public onClick?: Function;
+  public update?: Function;
 
   constructor(init?: Partial<FormElementParam>) {
     

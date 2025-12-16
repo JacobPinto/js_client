@@ -11,6 +11,7 @@ export class InputElement {
   protected _questions: { [key: string]: string };
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
+  protected _update?: Function; // optional update if this view element is an observer
   public    _controller: ControllerSimEngine; 
 
   protected _getId(): string {
@@ -24,7 +25,12 @@ export class InputElement {
     this._questions = params.questions;
     this._contextObj = params.contextObj ?? {};   // default empty object
     this._onClick = (params.onClick ?? (() => {})).bind(this);
+    this._update = params.update?.bind(this);
     this._controller = controller;
+  }
+
+  update(value: any): void {
+    this._update?.(value);
   }
 }
 

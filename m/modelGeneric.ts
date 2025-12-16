@@ -6,7 +6,7 @@ export class ModelGeneric<T> {
    * need the user to know that.
    */    
   private _data?:T;
-  private _observers: Observer<T>[];
+  private _observers: Observer[];
 
   constructor() {
     this._observers = [];
@@ -18,7 +18,7 @@ export class ModelGeneric<T> {
     this.notify();
   }
 
-  public register(obs: Observer<T>) {
+  public register(obs: Observer) {
     this._observers.push(obs);
   }
 
