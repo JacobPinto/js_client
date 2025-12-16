@@ -9,13 +9,15 @@ import { Observer } from '../m/modelObserver.js';
 import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {
-  private workbench: Workbench;
+  private _workbench: Workbench;
   private _buttons: (RadioButton | Observer<Dimensions>)[] = [];
 
   constructor(controller: ControllerSimEngine) {
+    // Create ButtonBuilder
+    let buttonBuilder = new ButtonBuilder(controller);
 
-      //  Dimensions Button 
-    const dimensionsButton = new ButtonBuilder(controller)
+    //  Dimensions Button 
+    const dimensionsButton = buttonBuilder
       .setButtonType(RadioButton)
       .setButtonName('Dimensions')
       .setButtonDisplayName('Dimensions')
@@ -27,7 +29,7 @@ export class ViewSimEngine {
       .build() as RadioButton;
 
     //  Shader Button 
-    const shaderButton = new ButtonBuilder(controller)
+    const shaderButton = buttonBuilder
       .setButtonType(RadioButton)
       .setButtonName('ShaderType')
       .setButtonDisplayName('Shader')
@@ -60,7 +62,7 @@ export class ViewSimEngine {
     };
 
     //  Vertex Button 
-    const vertexButton = new ButtonBuilder(controller)
+    const vertexButton = buttonBuilder
       .setButtonType(RadioButton)
       .setButtonName('VertexFormat')
       .setButtonDisplayName('Vertex Format')
@@ -70,31 +72,14 @@ export class ViewSimEngine {
         this._controller?.onClickVertexFormat?.(selected);
       })
       .build() as RadioButton;
-
-    // vertex update method (observer)
-    (vertexButton as any).update = function (dim: Dimensions) {
-      if (!this._form) return;
-      const radios = this._form.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
-      radios.forEach(r => {
-        r.disabled = dim === Dimensions.D2 && r.value === VertexFormat.Index;
-      });
-      console.log(`[VertexButton] Reacting to dimension: ${dim}`);
-    };
-
       
     //  Register observers 
     controller.model.dimension.register(shaderButton as RadioButton & Observer<Dimensions>);
-    controller.model.dimension.register(vertexButton as RadioButton & Observer<Dimensions> );
      
-  
-
     this._buttons.push(dimensionsButton, shaderButton, vertexButton);
 
 
       /*
-
-
-
     const colorDropdown = new ButtonBuilder()
       .setButtonType(Dropdown)
       .setButtonName("Color")
@@ -158,35 +143,26 @@ export class ViewSimEngine {
 
     const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
     toolbar2.getElement().classList.add('toolbar-vertical');
-
-*/
+    */
 
 
     // small toolbar
     const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, shaderButton, vertexButton]);
 
     // Create workbench
-    this.workbench = new Workbench('mainWorkbench', [smallToolbar]);
-
-  }
-
-  // allow injecting controller after construction
-  public setController(controller: ControllerSimEngine): void {
-    for (const b of this._buttons) {
-      (b as any)._controller = controller;
-    }
-  }
+    this._workbench = new Workbench('mainWorkbench', [smallToolbar]);
+  } // end constructor
 
   render(): void {
-    document.body.appendChild(this.workbench.getElement());
+    document.body.appendChild(this._workbench.getElement());
+  }
+  
+  toggleWorkbench(isVisible: boolean): void {
+    this._workbench.setVisibility(isVisible);
   }
 
-  toggleWorkbench(isVisible: boolean): void {
-  this.workbench.setVisibility(isVisible);
-}
-
-toggleToolbar(name: string, isVisible: boolean): void {
-  this.workbench.setToolbarVisibility(name, isVisible);
-}
+  toggleToolbar(name: string, isVisible: boolean): void {
+    this._workbench.setToolbarVisibility(name, isVisible);
+  }
 
 }
