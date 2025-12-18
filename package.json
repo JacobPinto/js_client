@@ -4,9 +4,14 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build",
-    "clean": "tsc --build --clean",
-    "lint": "eslint . --ext .ts"
+    "build": "tsc --build && vite build",
+    "build:ts": "tsc --build",
+    "build:vite": "vite build",
+    "clean": "tsc --build --clean && rm -rf dist",
+    "clean:vite": "rm -rf dist",
+    "lint": "eslint . --ext .ts",
+    "dev": "vite --host",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
@@ -22,10 +27,12 @@
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.2"
+    "typescript-eslint": "^8.46.2",
+    "vite": "^5.4.10"
   },
   "type": "module",
   "dependencies": {
+    "@kitware/vtk.js": "^34.16.2",
     "express": "^5.1.0"
   }
 }
