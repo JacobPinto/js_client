@@ -6,12 +6,18 @@ import { Workbench } from './workbench.js';
 import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
 import { ModelSimEngine} from '../m/modelSimEngine.js';
 import { ControllerSimEngine } from '../c/controllerSimEngine.js';
+import { VtkDisplay } from '../v/vtk/vtkDisplay.js';
 
 export class ViewSimEngine {
   private _workbench: Workbench;
   private _buttons: (RadioButton)[] = [];
+  private _vtkRenderer: VtkDisplay;
+
 
   constructor(controller: ControllerSimEngine) {
+    // vtk Renderer
+    this._vtkRenderer = new VtkDisplay('vtk-container');
+
     // Create ButtonBuilder
     let buttonBuilder = new ButtonBuilder(controller);
 
