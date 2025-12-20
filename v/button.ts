@@ -88,7 +88,7 @@ export class TextEntryWithButton extends InputElement {
       const label: HTMLLabelElement = document.createElement('label');
       const span: HTMLSpanElement = document.createElement('span');
 
-      span.textContent = value;
+      span.textContent = String(value);
       label.appendChild(span);
 
       const input = document.createElement('input');
@@ -136,7 +136,7 @@ export class FileEntry extends InputElement {
       const label: HTMLLabelElement = document.createElement('label');
       const span: HTMLSpanElement = document.createElement('span');
 
-      span.textContent = value;
+      span.textContent = String(value);
       label.appendChild(span);
 
       const input = document.createElement('input');
@@ -197,7 +197,7 @@ export class Checkbox extends InputElement {
       const label: HTMLLabelElement = document.createElement('label');
       const span: HTMLSpanElement = document.createElement('span');
 
-      span.textContent = value;
+      span.textContent = String(value);
       label.appendChild(span);
 
       const input = document.createElement('input');
@@ -250,7 +250,7 @@ export class RadioButton extends InputElement {
       const label: HTMLLabelElement = document.createElement('label');
       const span: HTMLSpanElement = document.createElement('span');
 
-      span.textContent = value;
+      span.textContent = String(value);
       label.appendChild(span);
 
       const input = document.createElement('input');
@@ -317,8 +317,8 @@ export class Dropdown extends InputElement {
 
     Object.entries(this._questions).forEach(([value, labelText]) => {
       const option = document.createElement("option");
-      option.value = value;
-      option.textContent = labelText;
+      option.value = String(value);
+      option.textContent = String(labelText);
       this._select.appendChild(option);
     });
 

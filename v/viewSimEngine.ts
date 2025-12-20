@@ -1,5 +1,5 @@
 //import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown, SimpleButton } from './button.js';
-import { RadioButton } from './button.js';
+import { InputElement, RadioButton } from './button.js';
 import { ButtonBuilder } from './buttonBuilder.js';
 import { Toolbar } from './toolbar.js';
 import { Workbench } from './workbench.js';
@@ -9,7 +9,7 @@ import { ControllerSimEngine } from '../c/controllerSimEngine.js';
 
 export class ViewSimEngine {
   private _workbench: Workbench;
-  private _buttons: (RadioButton)[] = [];
+  private _buttons: InputElement[] = [];
 
   constructor(controller: ControllerSimEngine) {
     // Create ButtonBuilder
