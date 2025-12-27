@@ -1,7 +1,5 @@
 import fs from "fs";
 
-import { UserInfo } from "./user";
-
 // Utility to create a unique identifier.
 export function createUID(): string {
   return 'usr12345';

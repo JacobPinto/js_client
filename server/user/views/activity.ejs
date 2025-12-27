@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Activity Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .stats { background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        .stat-item { margin: 10px 0; }
+        .number { font-size: 24px; font-weight: bold; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>User Activity Dashboard</h1>
+    
+    <div class="stats">
+        <div class="stat-item">
+            <h3>Currently Active Users</h3>
+            <div class="number"><%= activeUsers %></div>
+        </div>
+        
+        <div class="stat-item">
+            <h3>Total Registered Users</h3>
+            <div class="number"><%= totalUsers %></div>
+        </div>
+        
+        <div class="stat-item">
+            <h3>Status</h3>
+            <p>Last updated: <%= new Date().toLocaleString() %></p>
+        </div>
+    </div>
+    
+    <a href="/user/activity/?active=true">View Active Only</a> | 
+    <a href="/user/activity/?total=true">View Total Only</a> | 
+    <a href="/user/activity/?all=true">View All (HTML)</a>
+</body>
+</html>

@@ -1,16 +1,10 @@
 import express from 'express';
 
 import { ServerConfig } from './serverConfig.js';
-import { UserInfo } from './user.js';
-
-const allUserInfo: UserInfo[] = [];
-const currentUserInfo: UserInfo[] = [];
+import userRouter from './user/user.js'; // use the default export
 
 // not a constrcutor but rather a function (may be singleton pattern)
 const app = express();
-
-// TBD: read existing user info from disk at server start
-allUserInfo.push(new UserInfo('Alice', 'alice@example.com'));
 
 // Boilerplate
 // set html view engine
@@ -26,22 +20,8 @@ app.use(express.urlencoded({extended:true})); // for parsing application/x-www-f
 app.use(express.json()); // for parsing application/json
 //================================
 
-function isExistingCredentials(userInfo: UserInfo): boolean {
-  return allUserInfo.includes(userInfo);
-}
-
-// Create a new user
-app.post('/user/createnew/', (req, res) => {
-  const { name, email } = req.body;
-  const newUser = new UserInfo(name, email);
-  if (isExistingCredentials(newUser)) {
-    var initStatus = "these creds are already registered";
-  } else {
-    currentUserInfo.push(newUser);
-    initStatus = newUser.initUser();
-  }
-  res.json({ success: true, userId: newUser.userId, message: initStatus });
-});
+// Routers
+app.use("/user", userRouter);
 
 
 // GET endpoint (req,res, next) is also possible
