@@ -45,9 +45,8 @@ export class ModelSimEngine {
   }
 
   
-  // Software params.
-  /*public softwareVersion!: number;
-  public schemaVersion!: number;
+
+  /*
 
   // Physical params.
   public dimensions!: number;

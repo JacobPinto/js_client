@@ -1,12 +1,20 @@
 import express from 'express';
 
+import { ServerConfig } from './serverConfig.js';
+import { UserInfo } from './user.js';
+
+const allUserInfo: UserInfo[] = [];
+const currentUserInfo: UserInfo[] = [];
 
 // not a constrcutor but rather a function (may be singleton pattern)
 const app = express();
 
-// set html view engine
-app.set("view engine","ejs");
+// TBD: read existing user info from disk at server start
+allUserInfo.push(new UserInfo('Alice', 'alice@example.com'));
 
+// Boilerplate
+// set html view engine
+app.set("view engine", "ejs");
 // By involking app.use() we reuse this stuff across multiple endpoints
 // Middleware can also be with router.use(...)
 function loggerMiddleware(req:any,res:any,next:any){
@@ -14,12 +22,27 @@ function loggerMiddleware(req:any,res:any,next:any){
   next();
 }
 app.use(loggerMiddleware);
-
-// Boilerplace middleware
 app.use(express.urlencoded({extended:true})); // for parsing application/x-www-form-urlencoded
 app.use(express.json()); // for parsing application/json
+//================================
 
-const port:number = 3000;
+function isExistingCredentials(userInfo: UserInfo): boolean {
+  return allUserInfo.includes(userInfo);
+}
+
+// Create a new user
+app.post('/user/createnew/', (req, res) => {
+  const { name, email } = req.body;
+  const newUser = new UserInfo(name, email);
+  if (isExistingCredentials(newUser)) {
+    var initStatus = "these creds are already registered";
+  } else {
+    currentUserInfo.push(newUser);
+    initStatus = newUser.initUser();
+  }
+  res.json({ success: true, userId: newUser.userId, message: initStatus });
+});
+
 
 // GET endpoint (req,res, next) is also possible
 app.get('/',(req,res)=>{ 
@@ -29,7 +52,7 @@ app.get('/',(req,res)=>{
   //res.send('Hello World!');
 
   // query parameters
-  console.log(req.query.name);
+  //console.log(req.query.name);
 
   // more common
   //res.sendStatus(500);
@@ -66,4 +89,4 @@ app.get('/users/:userId',(req,res)=>{
 // Redirect a respose through another endpoint
 
 // Listen on port
-app.listen(port);
+app.listen(ServerConfig.port);
