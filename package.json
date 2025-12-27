@@ -5,8 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --build",
+    "build:server": "tsc --project server",
     "clean": "tsc --build --clean",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "dev:start": "nodemon dist/server/server.js"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +28,7 @@
   },
   "type": "module",
   "dependencies": {
-    "express": "^5.1.0"
+    "ejs": "^3.1.10",
+    "express": "^5.2.1"
   }
 }
