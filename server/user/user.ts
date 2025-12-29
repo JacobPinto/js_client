@@ -6,7 +6,7 @@ export class ServiceInfo
   // Software params.
   private _softwareName: string;
   private _softwareVersion: string;
-  private _schemaVersion: number;  
+  private _schemaVersion: number;
 
   constructor(name: string, version: string, schemaVer: number) {
     this._softwareName = name;
@@ -32,6 +32,7 @@ export class UserInfo
   private _userId!: string;
   private _userName!: string;
   private _userEmail!: string;
+  private _pathToUserFolder!: string;
   private _servicesOpen?: ServiceInfo[];
 
   public get userId(): string {
@@ -46,11 +47,16 @@ export class UserInfo
     return this._userEmail;
   }
 
+  public get pathToUserFolder(): string {
+    return this._pathToUserFolder;
+  }
+
   constructor(name:string, email:string)
   {
     this._userId = createUID();
     this._userName = name;
     this._userEmail = email;
+    this._pathToUserFolder = `./data/${this._userId}`;
   }
 
   // Create a folder for the user if it does not exist

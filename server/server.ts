@@ -4,6 +4,9 @@ import {fileURLToPath} from 'url';
 
 import { ServerConfig } from './serverConfig.js';
 import userRouter from './user/user.js'; // use the default export
+import { UserList } from './user/user.js';
+import geometryRouter from './geometry/geometry.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +30,33 @@ app.use(express.json()); // for parsing application/json
 //================================
 
 // Routers
-app.use("/user", userRouter);
+app.use("/user", userRouter); // For all user related endpoints
+
+/* 
+ * Once the user gets logged in, all endpoints must start with userID so
+ * we need a piece of middleware to redirect and alter these requests
+ */
+app.use('/:userId', (req, res, next) => {
+  const userId = req.params.userId;
+  
+  // Optional: Validate user exists
+  const userExists = UserList.currentActiveUsers.some(user => user.userId === userId);
+  if (!userExists) {
+    return res.status(404).json({ 
+      success: false, 
+      error: `User ${userId} not found or not active` 
+    });
+  }
+  
+  // Add userId to request for sub-routers to use
+  req.userId = userId;
+  next();
+});
+
+// Service specific routers
+app.use("/:userId/geometry", geometryRouter);
+
+//================================
 
 
 // GET endpoint (req,res, next) is also possible
