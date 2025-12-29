@@ -1,7 +1,12 @@
 import express from 'express';
+import path from 'path';
+import {fileURLToPath} from 'url';
 
 import { ServerConfig } from './serverConfig.js';
 import userRouter from './user/user.js'; // use the default export
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // not a constrcutor but rather a function (may be singleton pattern)
 const app = express();
@@ -9,6 +14,7 @@ const app = express();
 // Boilerplate
 // set html view engine
 app.set("view engine", "ejs");
+app.set('views', path.join(__dirname, 'views'));
 // By involking app.use() we reuse this stuff across multiple endpoints
 // Middleware can also be with router.use(...)
 function loggerMiddleware(req:any,res:any,next:any){

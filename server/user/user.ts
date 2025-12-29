@@ -1,10 +1,5 @@
 import express from 'express';
-import path from 'path';
-import {fileURLToPath} from 'url';
 import { createUID, createFolder, deleteFolder } from "../utils.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export class ServiceInfo 
 {
@@ -96,11 +91,11 @@ const router = express.Router();
 // Setup middleware
 
 // middleware to set views directory for this router
-router.use((req, res, next) => {
+/*router.use((req, res, next) => {
   // Set the views directory to this router's views folder
   req.app.set('views', path.join(__dirname, 'views'));
   next();
-});
+});*/
 
 // Create a new user
 router.post('/createnew/', (req, res) => {
