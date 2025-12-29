@@ -50,7 +50,7 @@ app.get('/',(req,res)=>{
   //res.download("server/server.ts");
 
   // render html/ejs page. Requires views folder in root directory
-  res.render("test");
+  // res.render("server");
 });
 
 // Routes to split up the main server file

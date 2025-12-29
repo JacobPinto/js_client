@@ -55,13 +55,13 @@ export class UserInfo
 
   // Create a folder for the user if it does not exist
   createUserFolder(): string {
-    const path = `./data/run/${this._userId}`;
+    const path = `./data/${this._userId}`;
     return createFolder(path);
   }
 
   // Delete the folder for the user if it exists
   deleteUserFolder(): string {
-    const path = `./data/run/${this._userId}`;
+    const path = `./data/${this._userId}`;
     return deleteFolder(path);
   }
 
@@ -102,14 +102,28 @@ router.post('/createnew/', (req, res) => {
   const { name, email } = req.body;
   const newUser = new UserInfo(name, email);
   if (isExistingCredentials(newUser)) {
-    var initStatus = "these creds are already registered";
+    var initStatus = "these user credentials are already registered";
   } else {
     UserList.currentActiveUsers.push(newUser);
     initStatus = newUser.initUser();
   }
-  res.json({ success: true, userId: newUser.userId, message: initStatus });
+  res.status(400).json({ success: false, userID: newUser.userId, message: initStatus });
 });
 
+
+// Delete a user
+router.post('/delete/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const userIndex = UserList.currentActiveUsers.findIndex(user => user.userId === userId);
+  if (userIndex !== -1) {
+    const userToDelete = UserList.currentActiveUsers[userIndex];
+    const deleteStatus = userToDelete.deleteUser();
+    UserList.currentActiveUsers.splice(userIndex, 1);
+    res.status(200).json({ success: true, message: deleteStatus });
+  } else {
+    res.status(404).json({ success: false, message: 'User not found' });
+  }
+});
 
 router.get('/activity/', (req, res) => {
   const showActive = req.query.active === 'true';
