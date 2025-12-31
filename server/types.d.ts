@@ -2,7 +2,7 @@
 declare global {
   namespace Express {
     interface Request {
-      userId?: string;  // Now TypeScript knows about this property
+      userId: string;  // Now TypeScript knows about this property
     }
   }
 }

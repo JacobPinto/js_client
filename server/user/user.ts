@@ -80,7 +80,7 @@ export class UserInfo
   }
 }
 
-export const UserList = {
+export const userArray = {
   // Reads from disk all the existing users
   totalValidUsers: [] as UserInfo[],
   // Users currently active in the server session
@@ -88,9 +88,34 @@ export const UserList = {
 };
 
 function isExistingCredentials(userInfo: UserInfo): boolean {
-  return UserList.totalValidUsers.includes(userInfo);
+  return userArray.totalValidUsers.findIndex(user => user.userName === userInfo.userName &&
+                                                     user.userEmail === userInfo.userEmail) !== -1;
 }
 
+export function isCurrentUser(userId: string): boolean {
+  return userArray.currentActiveUsers.findIndex(user => user.userId === userId) !== -1;
+}
+
+export function findUserInfoByUserId(userId: string): UserInfo | undefined {
+  return userArray.currentActiveUsers.find(user => user.userId === userId);
+}
+
+interface HasOwner {
+  owner: UserInfo;
+}
+
+/* 
+ * Generic function to find an element in an array by matching userId
+ * Return type:
+ * - element reference if found
+ */
+export function findByUserInfo<T extends HasOwner>(userInfo: UserInfo, array: T[]): T | undefined {
+  return array.find(elem => elem.owner === userInfo);
+}
+
+export function findByUserId<T extends HasOwner>(userId: string, array: T[]): T | undefined {
+  return array.find(elem => elem.owner.userId === userId);
+}
 
 const router = express.Router();
 
@@ -110,21 +135,22 @@ router.post('/createnew/', (req, res) => {
   if (isExistingCredentials(newUser)) {
     var initStatus = "these user credentials are already registered";
   } else {
-    UserList.currentActiveUsers.push(newUser);
+    userArray.currentActiveUsers.push(newUser);
+    userArray.totalValidUsers.push(newUser);
     initStatus = newUser.initUser();
   }
-  res.status(400).json({ success: false, userID: newUser.userId, message: initStatus });
+  res.status(200).json({ success: true, userID: newUser.userId, message: initStatus });
 });
 
 
 // Delete a user
 router.post('/delete/:userId', (req, res) => {
   const userId = req.params.userId;
-  const userIndex = UserList.currentActiveUsers.findIndex(user => user.userId === userId);
+  const userIndex = userArray.currentActiveUsers.findIndex(user => user.userId === userId);
   if (userIndex !== -1) {
-    const userToDelete = UserList.currentActiveUsers[userIndex];
+    const userToDelete = userArray.currentActiveUsers[userIndex];
     const deleteStatus = userToDelete.deleteUser();
-    UserList.currentActiveUsers.splice(userIndex, 1);
+    userArray.currentActiveUsers.splice(userIndex, 1);
     res.status(200).json({ success: true, message: deleteStatus });
   } else {
     res.status(404).json({ success: false, message: 'User not found' });
@@ -136,13 +162,13 @@ router.get('/activity/', (req, res) => {
   const showTotal = req.query.total === 'true';
 
   if (showActive) {
-    res.send(UserList.currentActiveUsers.length.toString());
+    res.send(userArray.currentActiveUsers.length.toString());
   } else if (showTotal) {
-    res.send(UserList.totalValidUsers.length.toString());
+    res.send(userArray.totalValidUsers.length.toString());
   } else {
     res.render('activity', {
-      activeUsers: UserList.currentActiveUsers.length,
-      totalUsers: UserList.totalValidUsers.length
+      activeUsers: userArray.currentActiveUsers.length,
+      totalUsers: userArray.totalValidUsers.length
     });
   }
 });

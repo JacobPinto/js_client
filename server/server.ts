@@ -4,14 +4,14 @@ import {fileURLToPath} from 'url';
 
 import { ServerConfig } from './serverConfig.js';
 import userRouter from './user/user.js'; // use the default export
-import { UserList } from './user/user.js';
+import { isCurrentUser } from './user/user.js';
 import geometryRouter from './geometry/geometry.js';
-
+import projectRouter from './project.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// not a constrcutor but rather a function (may be singleton pattern)
+// not a constructor but rather a function (may be singleton pattern)
 const app = express();
 
 // Boilerplate
@@ -39,8 +39,8 @@ app.use("/user", userRouter); // For all user related endpoints
 app.use('/:userId', (req, res, next) => {
   const userId = req.params.userId;
   
-  // Optional: Validate user exists
-  const userExists = UserList.currentActiveUsers.some(user => user.userId === userId);
+  // Validate if user exists
+  const userExists = isCurrentUser(userId);
   if (!userExists) {
     return res.status(404).json({ 
       success: false, 
@@ -55,7 +55,7 @@ app.use('/:userId', (req, res, next) => {
 
 // Service specific routers
 app.use("/:userId/geometry", geometryRouter);
-
+app.use("/:userId/project", projectRouter);
 //================================
 
 

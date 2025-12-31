@@ -23,12 +23,16 @@ class GeometryInfo {
   }
 }
 
-class GeometryPerUser {
+class GeometryByUser {
   private _owner: UserInfo;
   private _geometries: GeometryInfo[] = [];
 
   get owner(): UserInfo {
     return this._owner;
+  }
+
+  get geometries(): GeometryInfo[] {
+    return this._geometries;
   }
 
   constructor(owner: UserInfo) {
@@ -42,16 +46,16 @@ class GeometryPerUser {
   }
 };
 
-export const GeometryList = {
-  geometryPerUser: [] as GeometryPerUser[]
+export const geometryArray = {
+  geometryByUser: [] as GeometryByUser[]
 }
 
 const router = express.Router();
 
 router.post('/upload', (req, res) => {
   const userId = req.userId;
+
   // Handle file upload logic here
-  // Check if such a user exists
 
   res.status(200).json({ success: true, message: `File uploaded for user ${userId}` });
 });
