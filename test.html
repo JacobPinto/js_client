@@ -1,43 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>WebGL Render Example</title>
-  <link rel="stylesheet" href="test.css">
-  <style>
-    body {
-      margin: 0;
-    }
 
-    canvas {
-      display: block;
-      background: #222;
-    }
-  </style>
-  <!--canvas id="webgl-canvas" width="800" height="600"></canvas-->
-  <!--script type="module">
-      import { start } from './render.js';
-      window.onload = () => {
-          start();
-      };</script-->
-  <!--script src="model.js"></script-->
-  <!--script>
-    window.onload = () => pl.v.createWorldModel.setupWorldModel();
-  </script-->
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="./src/output.css" />
+
   <script type="module">
-    import { start } from './clientSimEngine.js';
+    import { start } from "./clientSimEngine.js";
     window.onload = () => {
       start();
     };
   </script>
 </head>
-<body>
-  <main>
-    
-  </main>
-  <div class="output-bar">
-    <!-- Create an output field -->
-      <label> Output: <output id="output0" name="output"/></label>
-    </div>
+
+<body class="m-0 bg-gray-100 overflow-hidden">
+
+  <main id="app" class="min-h-screen w-full"></main>
+
+  <!-- Output bar -->
+  <div
+    class="fixed bottom-0 right-0 w-full
+           border-t-2 border-primary
+           bg-gray-50 px-5 py-2
+           text-right text-lg
+           shadow-md z-50"
+  >
+    <label class="font-medium text-gray-700">
+      Output:
+      <output
+        id="output0"
+        name="output"
+        class="ml-2 font-semibold text-primary"
+      ></output>
+    </label>
+  </div>
+
 </body>
 </html>
