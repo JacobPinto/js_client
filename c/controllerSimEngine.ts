@@ -1,8 +1,26 @@
-import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
-import { ModelSimEngine } from '../m/modelSimEngine.js';
-import { ViewSimEngine } from '../v/viewSimEngine.js';
-export class ControllerSimEngine {
+import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
+import { SpeedUnit } from "../m/quantities.js";
 
+import { ModelSimEngine } from "../m/modelSimEngine.js";
+import { ViewSimEngine } from "../v/viewSimEngine.js";
+
+// Local function to create client via HTTP
+async function createClient(
+  baseUrl: string,
+  data: { name: string; email: string },
+) {
+  const response = await fetch(`${baseUrl}/client`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+}
+
+export class ControllerSimEngine {
   private _model: ModelSimEngine;
 
   constructor(model: ModelSimEngine) {
@@ -77,10 +95,23 @@ export class ControllerSimEngine {
     this._model.vertex = vertexFormat;
   }
 
- 
+  public onClientNameChange(v: string) {
+    this.model.setClientName(v);
+  }
 
+  public onClientEmailChange(v: string) {
+    this.model.setClientEmail(v);
+  }
 
-/*
+  public onSpeedValueChange(v: number) {
+    this.model.setSpeedValue(v);
+  }
+
+  public onSpeedUnitChange(u: SpeedUnit) {
+    this.model.setSpeedUnit(u);
+  }
+
+  /*
   public updateShaderType(shaderType: ShaderType): void{
     this._model.shaderType = shaderType;
   }
@@ -92,4 +123,42 @@ export class ControllerSimEngine {
 
 */
 
+  public async submitClient() {
+    try {
+      const name = this._model.clientName.getData();
+      const email = this._model.clientEmail.getData();
+
+      if (!name || !email) {
+        throw new Error("Client name and email are required");
+      }
+
+      console.log("[Controller] Submitting client:", { name, email });
+
+      const created = await createClient("http://localhost:3001", {
+        name,
+        email,
+      });
+
+      console.log("[Controller] Client created:", created);
+    } catch (err) {
+      console.error("[Controller] Submit failed:", (err as Error).message);
+    }
+  }
+
+  submitSpeed() {
+    const speed = this._model.speedValue.getData();
+    const unit = this._model.speedUnit.getData();
+
+    if (speed == null || Number.isNaN(speed)) {
+      console.error("[Controller] Speed value is required");
+      return;
+    }
+
+    if (!unit) {
+      console.error("[Controller] Speed unit is required");
+      return;
+    }
+
+    console.log("[Controller] Speed submitted:", { speed, unit });
+  }
 }

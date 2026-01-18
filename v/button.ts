@@ -2,9 +2,8 @@ import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 import { FormElementParam } from "./buttonParams.js";
 import { Dimensions } from "../m/modelEnums.js";
 
-
 export class InputElement {
-  protected _type: string = 'InputElement';
+  protected _type: string = "InputElement";
   protected _name: string;
   protected _id: string;
   protected _displayName: string;
@@ -12,18 +11,18 @@ export class InputElement {
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
   protected _update?: Function; // optional update if this view element is an observer
-  public    _controller: ControllerSimEngine; 
+  public _controller: ControllerSimEngine;
 
   protected _getId(): string {
-    return this._type + '_' + this._name;
+    return this._type + "_" + this._name;
   }
 
-  constructor( params: FormElementParam, controller: ControllerSimEngine) {
+  constructor(params: FormElementParam, controller: ControllerSimEngine) {
     this._name = params.name;
     this._id = this._getId();
     this._displayName = params.displayName;
     this._questions = params.questions;
-    this._contextObj = params.contextObj ?? {};   // default empty object
+    this._contextObj = params.contextObj ?? {}; // default empty object
     this._onClick = (params.onClick ?? (() => {})).bind(this);
     this._update = params.update?.bind(this);
     this._controller = controller;
@@ -33,7 +32,6 @@ export class InputElement {
     this._update?.(value);
   }
 }
-
 
 export class SimpleButton extends InputElement {
   protected _type: string = "SimpleButton";
@@ -47,30 +45,29 @@ export class SimpleButton extends InputElement {
   render(): HTMLButtonElement {
     this._button.id = this._id;
     this._button.name = this._id;
-    this._button.classList.add(this._type); 
+    this._button.type = "button";
+    this._button.classList.add(this._type);
     this._button.textContent = this._displayName;
 
     this._button.addEventListener("click", (e) => {
       e.preventDefault();
-      this._onClick(this._name); 
+      this._onClick(this._name);
     });
 
     return this._button;
   }
 }
 
-
 export class TextEntryWithButton extends InputElement {
-
-  protected _type: string = 'TextEntryWithButton';
+  protected _type: string = "TextEntryWithButton";
   public _form: HTMLFormElement;
   private _button: HTMLButtonElement;
 
-  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
-    super( params, _controller);
+  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
+    super(params, _controller);
 
-    this._form = document.createElement('form');
-    this._button = document.createElement('button');
+    this._form = document.createElement("form");
+    this._button = document.createElement("button");
   }
 
   render(): HTMLFormElement {
@@ -79,46 +76,59 @@ export class TextEntryWithButton extends InputElement {
     this._form.classList.add(this._type); // css
 
     // Add form name/title at the top
-    const heading = document.createElement('h2');
+    const heading = document.createElement("h2");
     heading.textContent = this._displayName;
-    heading.className = 'form-title';
+    heading.className = "form-title";
     this._form.appendChild(heading);
 
     Object.entries(this._questions).forEach(([key, value]) => {
-      const label: HTMLLabelElement = document.createElement('label');
-      const span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement("label");
+      const span: HTMLSpanElement = document.createElement("span");
 
       span.textContent = String(value);
       label.appendChild(span);
 
-      const input = document.createElement('input');
-      input.type = 'text';
+      const input = document.createElement("input");
+      input.type = "text";
       input.name = key;
+
+      input.addEventListener("input", () => {
+        this._update?.();
+      });
 
       label.appendChild(input);
       this._form.appendChild(label);
-      this._form.appendChild(document.createElement('br'));
+      this._form.appendChild(document.createElement("br"));
     });
 
-    this._button.name = 'submit';
+    this._button.name = "submit";
     this._button.textContent = this._displayName;
     this._button.onclick = this._onClick as EventListener;
     this._form.appendChild(this._button);
 
     return this._form;
   }
+
+  public getFieldValue(fieldName: string): string | undefined {
+    const input = this._form.querySelector(
+      `input[name="${fieldName}"]`,
+    ) as HTMLInputElement;
+    return input ? input.value : undefined;
+  }
+
+  public getMetaValue(key: string): any {
+    return this._contextObj[key];
+  }
 }
 
-
 export class FileEntry extends InputElement {
-
-  protected _type: string = 'FileEntryWithButton';
+  protected _type: string = "FileEntryWithButton";
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
-    super( params, _controller );
+  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
+    super(params, _controller);
 
-    this._form = document.createElement('form');
+    this._form = document.createElement("form");
   }
 
   render(): HTMLFormElement {
@@ -127,60 +137,51 @@ export class FileEntry extends InputElement {
     this._form.classList.add(this._type); // css
 
     // Add form name/title at the top
-    const heading = document.createElement('h2');
+    const heading = document.createElement("h2");
     heading.textContent = this._displayName;
-    heading.className = 'form-title';
+    heading.className = "form-title";
     this._form.appendChild(heading);
 
     Object.entries(this._questions).forEach(([key, value]) => {
-      const label: HTMLLabelElement = document.createElement('label');
-      const span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement("label");
+      const span: HTMLSpanElement = document.createElement("span");
 
       span.textContent = String(value);
       label.appendChild(span);
 
-      const input = document.createElement('input');
-      input.type = 'file';
+      const input = document.createElement("input");
+      input.type = "file";
       input.name = key;
 
       // Add event listener for file selection
-      input.addEventListener('change', (event) => {
+      input.addEventListener("change", (event) => {
         const target = event.target as HTMLInputElement;
         // Files selected by the user
         const files = target.files;
-        console.log('File input changed:', files);
+        console.log("File input changed:", files);
         this._onClick(target); // Call your handler if needed
       });
 
       label.appendChild(input);
       this._form.appendChild(label);
-      this._form.appendChild(document.createElement('br'));
+      this._form.appendChild(document.createElement("br"));
     });
 
     return this._form;
   }
 }
 
-
-
-
-
-
-
-
 /* Checkbox allows multiple options to be selected simultaneously.
  * For unique selection, use a RadioButton */
 export class Checkbox extends InputElement {
-
-  protected _type: string = 'Checkbox';
+  protected _type: string = "Checkbox";
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
-    super( params, _controller );
+  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
+    super(params, _controller);
 
-    this._form = document.createElement('form');
+    this._form = document.createElement("form");
   }
-
 
   render(): HTMLFormElement {
     this._form.id = this._id;
@@ -188,32 +189,32 @@ export class Checkbox extends InputElement {
     this._form.classList.add(this._type); // css
 
     // Add form name/title at the top
-    const heading = document.createElement('h2');
+    const heading = document.createElement("h2");
     heading.textContent = this._displayName;
-    heading.className = 'form-title';
+    heading.className = "form-title";
     this._form.appendChild(heading);
 
     Object.entries(this._questions).forEach(([key, value]) => {
-      const label: HTMLLabelElement = document.createElement('label');
-      const span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement("label");
+      const span: HTMLSpanElement = document.createElement("span");
 
       span.textContent = String(value);
       label.appendChild(span);
 
-      const input = document.createElement('input');
-      input.type = 'checkbox';
+      const input = document.createElement("input");
+      input.type = "checkbox";
       input.name = key;
 
       // Add event listener to the checkbox
-      input.addEventListener('change', (event) => {
+      input.addEventListener("change", (event) => {
         const target = event.target as HTMLInputElement;
-        console.log(`${target.name} checked:`, target.checked);      
+        console.log(`${target.name} checked:`, target.checked);
         this._onClick(target);
       });
 
       label.appendChild(input);
       this._form.appendChild(label);
-      this._form.appendChild(document.createElement('br'));
+      this._form.appendChild(document.createElement("br"));
     });
 
     return this._form;
@@ -222,14 +223,13 @@ export class Checkbox extends InputElement {
 
 /* Radio buttons allow for a unique selection among choices */
 export class RadioButton extends InputElement {
-
-  protected _type: string = 'RadioButton';
+  protected _type: string = "RadioButton";
   public _form: HTMLFormElement;
 
-  constructor( params: FormElementParam, _controller: ControllerSimEngine) {
-    super( params, _controller);
+  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
+    super(params, _controller);
 
-    this._form = document.createElement('form');
+    this._form = document.createElement("form");
   }
 
   // update func from model
@@ -240,25 +240,25 @@ export class RadioButton extends InputElement {
     this._form.classList.add(this._type); // css
 
     // Add form name/title at the top
-    const heading = document.createElement('h2');
+    const heading = document.createElement("h2");
     heading.textContent = this._displayName;
-    heading.className = 'form-title';
+    heading.className = "form-title";
     this._form.appendChild(heading);
 
     // Use the same name for all radios in the group for unique selection
     Object.entries(this._questions).forEach(([_key, value]) => {
-      const label: HTMLLabelElement = document.createElement('label');
-      const span: HTMLSpanElement = document.createElement('span');
+      const label: HTMLLabelElement = document.createElement("label");
+      const span: HTMLSpanElement = document.createElement("span");
 
       span.textContent = String(value);
       label.appendChild(span);
 
-      const input = document.createElement('input');
-      input.type = 'radio';
+      const input = document.createElement("input");
+      input.type = "radio";
       input.name = this._name; // group name
       input.value = String(value);
 
-      input.addEventListener('change', (event) => {
+      input.addEventListener("change", (event) => {
         const target = event.target as HTMLInputElement;
         if (target.checked) {
           this._onClick(target);
@@ -267,22 +267,20 @@ export class RadioButton extends InputElement {
 
       label.appendChild(input);
       this._form.appendChild(label);
-      this._form.appendChild(document.createElement('br'));
+      this._form.appendChild(document.createElement("br"));
     });
 
     return this._form;
   }
-  
+
   // Get current selected value
 
   public getValue(): string | null {
-
-  const selected = this._form.querySelector("input:checked") as HTMLInputElement | null;
-  return selected ? selected.value : null;
-
-}
-
- 
+    const selected = this._form.querySelector(
+      "input:checked",
+    ) as HTMLInputElement | null;
+    return selected ? selected.value : null;
+  }
 }
 // Dropdown list
 
@@ -292,11 +290,10 @@ export class Dropdown extends InputElement {
   private _button: HTMLButtonElement;
   private _select: HTMLSelectElement;
 
-
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
     this._form = document.createElement("form");
-    this._button = document.createElement('button');
+    this._button = document.createElement("button");
     this._select = document.createElement("select");
   }
 
@@ -325,10 +322,10 @@ export class Dropdown extends InputElement {
     this._form.appendChild(this._select);
 
     // Submit button
-    
-    this._button.name = 'Submit';
-    this._button.textContent = 'Submit';
-    
+
+    this._button.name = "Submit";
+    this._button.textContent = "Submit";
+
     this._button.addEventListener("click", () => {
       this._onClick(this._select.value);
     });
