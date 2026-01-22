@@ -116,10 +116,110 @@ export class TextEntryWithButton extends InputElement {
     return input ? input.value : undefined;
   }
 
-  public getMetaValue(key: string): any {
-    return this._contextObj[key];
+}
+
+export class TextEntryWithDropdownAndButton extends InputElement {
+  protected _type: string = "TextEntryWithDropdownAndButton";
+
+  public _form: HTMLFormElement;
+  private _textInput!: HTMLInputElement;
+  private _select!: HTMLSelectElement;
+  private _button: HTMLButtonElement;
+
+  constructor(params: FormElementParam, controller: ControllerSimEngine) {
+    super(params, controller);
+    this._form = document.createElement("form");
+    this._button = document.createElement("button");
+  }
+
+  render(): HTMLFormElement {
+    this._form.id = this._id;
+    this._form.name = this._id;
+
+    // ---- Title ----
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    this._form.appendChild(heading);
+
+    /* ---------------- Text Input ---------------- */
+
+    const textLabel = document.createElement("label");
+    const textSpan = document.createElement("span");
+    textSpan.textContent = this._questions.textLabel ?? "Value";
+    textLabel.appendChild(textSpan);
+
+    this._textInput = document.createElement("input");
+    this._textInput.type = "text";
+    this._textInput.name = "textValue";
+
+    this._textInput.addEventListener("input", () => {
+      this._update?.();
+    });
+
+    textLabel.appendChild(this._textInput);
+    this._form.appendChild(textLabel);
+
+    /* ---------------- Dropdown ---------------- */
+
+    const selectLabel = document.createElement("label");
+    const selectSpan = document.createElement("span");
+    selectSpan.textContent =
+      this._questions.dropdownLabel ?? "Select Option";
+    selectLabel.appendChild(selectSpan);
+
+    this._select = document.createElement("select");
+    this._select.name = "dropdownValue";
+
+    const options = this._contextObj.options ?? {};
+    Object.entries(options).forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = String(label);
+      this._select.appendChild(option);
+    });
+
+    this._select.addEventListener("change", () => {
+      this._update?.();
+    });
+
+    selectLabel.appendChild(this._select);
+    this._form.appendChild(selectLabel);
+
+    /* ---------------- Submit Button ---------------- */
+
+    this._button.type = "submit";
+    this._button.textContent = this._displayName;
+
+    this._button.addEventListener("click", (e) => {
+      e.preventDefault();
+      this._onClick(this);
+    });
+
+    this._form.appendChild(this._button);
+
+    return this._form;
+  }
+
+  /* ---------------- Public getters ---------------- */
+
+  getTextValue(): string {
+    return this._textInput.value;
+  }
+
+  getDropdownValue(): string {
+    return this._select.value;
+  }
+
+  public getFieldValue(fieldName: string): string | undefined {
+    if (fieldName === "textValue") {
+      return this._textInput.value;
+    } else if (fieldName === "dropdownValue") {
+      return this._select.value;
+    }
+    return undefined;
   }
 }
+
 
 export class FileEntry extends InputElement {
   protected _type: string = "FileEntryWithButton";

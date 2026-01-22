@@ -3,8 +3,7 @@ import {
   InputElement,
   RadioButton,
   TextEntryWithButton,
-  Dropdown,
-  SimpleButton,
+  TextEntryWithDropdownAndButton
 } from "./button.js";
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
@@ -13,8 +12,6 @@ import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit } from "../m/quantities.js";
 import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
-
-
 
 export class ViewSimEngine {
   private _workbench: Workbench;
@@ -86,29 +83,7 @@ export class ViewSimEngine {
       })
       .build() as RadioButton;
 
-    // const clientForm = buttonBuilder
-    //   .setButtonType(TextEntryWithButton)
-    //   .setButtonName("ClientForm")
-    //   .setButtonDisplayName("Create Client")
-    //   .setQuestions({
-    //     name: "Client Name",
-    //     email: "Client Email",
-    //   })
-    //   .setOnClick(function (this: TextEntryWithButton, e: Event) {
-    //     e.preventDefault();
-    //     const formData = new FormData(this._form);
-    //     const name = formData.get("name") as string;
-    //     const email = formData.get("email") as string;
-
-    //     // update model
-    //     this._controller.onClientNameChange(name);
-    //     this._controller.onClientEmailChange(email);
-
-    //     // submit via controller
-    //     this._controller.submitClient();
-    //   })
-    //   .build();
-
+    // Client Form Button
     const clientForm = buttonBuilder
       .setButtonType(TextEntryWithButton)
       .setButtonName("ClientForm")
@@ -130,77 +105,29 @@ export class ViewSimEngine {
       })
       .build();
 
-    // const speedInput = buttonBuilder
-    //   .setButtonType(TextEntryWithButton)
-    //   .setButtonName("SpeedInput")
-    //   .setButtonDisplayName("Enter your speed")
-    //   .setQuestions({
-    //     speed: "Speed value",
-    //   })
-    //   .setContextObj({
-    //     units: {
-    //       kmh: SpeedUnit.KmPerHour,
-    //       mph: SpeedUnit.MeterPerSecond,
-    //       ms: SpeedUnit.MilePerHour,
-    //     },
-    //   })
-    //   .setUpdate(function (this: TextEntryWithButton) {
-    //     const speed = Number(this.getFieldValue("speed"));
-    //     const unit = this.getMetaValue("units") as SpeedUnit;
-
-    //     if (!Number.isNaN(speed)) {
-    //       this._controller?.onSpeedValueChange(speed);
-    //     }
-    //     if (unit) {
-    //       this._controller?.onSpeedUnitChange(unit);
-    //     }
-    //   })
-    //   .setOnClick(function (this: TextEntryWithButton, e: Event) {
-    //     e.preventDefault();
-
-    //     // FORCE final sync from UI → model
-    //     const speed = Number(this.getFieldValue("speed"));
-    //     const unit = this.getMetaValue("units") as SpeedUnit;
-
-    //     if (!Number.isNaN(speed)) {
-    //       this._controller?.onSpeedValueChange(speed);
-    //     }
-    //     if (unit) {
-    //       this._controller?.onSpeedUnitChange(unit);
-    //     }
-
-    //     // now submit
-    //     this._controller?.submitSpeed();
-    //   })
-
-    //   .build();
-
-    const speedValueInput = buttonBuilder
-      .setButtonType(TextEntryWithButton)
-      .setButtonName("SpeedValue")
-      .setButtonDisplayName("Enter Speed Value")
+    // Speed Input Button
+    const speedInput = buttonBuilder
+      .setButtonType(TextEntryWithDropdownAndButton)
+      .setButtonName("SpeedInput")
+      .setButtonDisplayName("Submit Speed")
       .setQuestions({
-        speed: "Speed value",
+        textLabel: "Speed",
+        dropdownLabel: "Unit",
       })
-      .setUpdate(function (this: TextEntryWithButton) {
-        const speed = Number(this.getFieldValue("speed"));
-        if (!Number.isNaN(speed)) {
-          this._controller.onSpeedValueChange(speed);
+      .setContextObj({
+        options: {
+          kmh: "Km/h",
+          ms: "m/s",
+          mph: "mph",
+        },
+      })
+      .setUpdate(function (this: TextEntryWithDropdownAndButton) {
+        const value = Number(this.getTextValue());
+        const unit = this.getDropdownValue();
+
+        if (!Number.isNaN(value)) {
+          this._controller.onSpeedValueChange(value);
         }
-      })
-      .build();
-
-    const speedUnitDropdown = buttonBuilder
-      .setButtonType(Dropdown)
-      .setButtonName("SpeedUnit")
-      .setButtonDisplayName("Speed Unit")
-      .setQuestions({
-        kmh: SpeedUnit.KmPer,
-        ms: SpeedUnit.MeterPerSecond,
-        mph: SpeedUnit.MilePerHour,
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        if (!selected) return;
 
         const unitMap: Record<string, SpeedUnit> = {
           kmh: SpeedUnit.KmPerHour,
@@ -208,15 +135,9 @@ export class ViewSimEngine {
           mph: SpeedUnit.MilePerHour,
         };
 
-        this._controller.onSpeedUnitChange(unitMap[selected]);
+        this._controller.onSpeedUnitChange(unitMap[unit]);
       })
-      .build();
-
-    const submitSpeedButton = buttonBuilder
-      .setButtonType(SimpleButton)
-      .setButtonName("SubmitSpeed")
-      .setButtonDisplayName("Submit Speed")
-      .setOnClick(function (this: InputElement) {
+      .setOnClick(function (this: TextEntryWithDropdownAndButton) {
         this._controller.submitSpeed();
       })
       .build();
@@ -298,9 +219,7 @@ export class ViewSimEngine {
       shaderButton,
       vertexButton,
       clientForm,
-      speedValueInput,
-      speedUnitDropdown,
-      submitSpeedButton,
+      speedInput,
     ]);
 
     // Create workbench
