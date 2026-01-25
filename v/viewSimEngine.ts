@@ -227,8 +227,12 @@ export class ViewSimEngine {
   } // end constructor
 
   render(): void {
-    document.body.appendChild(this._workbench.getElement());
+  const root = document.getElementById("app");
+  if (root) {
+    root.appendChild(this._workbench.getElement());
   }
+}
+
 
   toggleWorkbench(isVisible: boolean): void {
     this._workbench.setVisibility(isVisible);
