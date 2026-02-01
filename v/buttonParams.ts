@@ -1,5 +1,6 @@
 import { 
   TextEntryWithButton, 
+  TextEntryWithDropdownAndButton,
   Checkbox, 
   RadioButton, 
   FileEntry, 
@@ -11,6 +12,7 @@ import {
 // All valid button classes
 export type ButtonType =
   | typeof TextEntryWithButton
+  | typeof TextEntryWithDropdownAndButton
   | typeof Checkbox
   | typeof RadioButton
   | typeof FileEntry

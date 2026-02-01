@@ -1,5 +1,5 @@
 
-// import { Speed, SpeedUnit } from './quantities'
+import { SpeedUnit } from './quantities.js'
 // import { Density, DensityUnit } from './quantities'
 
 import {ModelGeneric} from '../m/modelGeneric.js';
@@ -11,11 +11,21 @@ export class ModelSimEngine {
   private _dimension: ModelGeneric<Dimensions>;
   private _shader: ModelGeneric<ShaderType>;
   private _vertex: ModelGeneric<VertexFormat>;
+
+
+  // new form fields
+  private _clientName = new ModelGeneric<string>();
+  private _clientEmail = new ModelGeneric<string>();
+
+  private _speedValue = new ModelGeneric<number>();private _speedUnit = new ModelGeneric<SpeedUnit>();
+
+  
   
   constructor() {
     this._dimension = new ModelGeneric<Dimensions>();
     this._shader = new ModelGeneric<ShaderType>();
     this._vertex = new ModelGeneric<VertexFormat>();
+
   }
 
   // Getters
@@ -31,6 +41,23 @@ export class ModelSimEngine {
     return this._vertex;
   }
 
+  public get clientName(): ModelGeneric<string> {
+    return this._clientName;
+  }
+
+  public get clientEmail(): ModelGeneric<string> {
+    return this._clientEmail;
+  }
+
+  public get speedValue() {
+    return this._speedValue;
+  }
+  
+  public get speedUnit() {
+    return this._speedUnit;
+  }
+
+
   // Setters
   public set dimension(dim: Dimensions) {
     this._dimension.setData(dim);
@@ -42,6 +69,26 @@ export class ModelSimEngine {
 
   public set vertex(vertex: VertexFormat) {
     this._vertex.setData(vertex);
+  }
+
+  public setClientName(v: string) {
+    console.log("[Model] clientName =", v);
+    this._clientName.setData(v);
+  }
+
+  public setClientEmail(v: string) {
+    console.log("[Model] clientEmail =", v);
+    this._clientEmail.setData(v);
+  }
+
+  public setSpeedValue(v: number) {
+    console.log("[Model] speedValue =", v);
+    this._speedValue.setData(v);
+  }
+
+  public setSpeedUnit(u: SpeedUnit) {
+    console.log("[Model] speedUnit =", u);
+    this._speedUnit.setData(u);
   }
 
   

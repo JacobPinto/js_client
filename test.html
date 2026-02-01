@@ -3,17 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>WebGL Render Example</title>
-  <link rel="stylesheet" href="test.css">
-  <style>
-    body {
-      margin: 0;
-    }
+  <!-- Compiled Tailwind CSS -->
+  <link rel="stylesheet" href="./dist/output.css">
 
-    canvas {
-      display: block;
-      background: #222;
-    }
-  </style>
   <!--canvas id="webgl-canvas" width="800" height="600"></canvas-->
   <!--script type="module">
       import { start } from './render.js';
@@ -24,6 +16,8 @@
   <!--script>
     window.onload = () => pl.v.createWorldModel.setupWorldModel();
   </script-->
+
+  <!-- App entry -->
   <script type="module">
     import { start } from './clientSimEngine.js';
     window.onload = () => {
@@ -31,13 +25,21 @@
     };
   </script>
 </head>
-<body>
-  <main>
-    
-  </main>
-  <div class="output-bar">
-    <!-- Create an output field -->
-      <label> Output: <output id="output0" name="output"/></label>
-    </div>
+<body class="m-0 bg-gray-100">
+
+  <!-- App mount point -->
+  <main id="app" class="w-full min-h-screen"></main>
+
+  <!-- output (bottom-right) -->
+  <div
+    class="fixed bottom-4 right-4
+           bg-white border border-gray-300
+           rounded-md px-4 py-2
+           shadow-lg z-50 text-sm"
+  >
+    Output:
+    <output id="output0" class="ml-2 font-semibold text-blue-600"></output>
+  </div>
+
 </body>
 </html>

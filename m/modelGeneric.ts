@@ -17,6 +17,10 @@ export class ModelGeneric<T> {
     this._data = data;
     this.notify();
   }
+  
+  public getData(): T | undefined {
+    return this._data;
+  }
 
   public register(obs: Observer) {
     this._observers.push(obs);

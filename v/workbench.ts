@@ -1,35 +1,46 @@
 import { Toolbar } from './toolbar.js';
 
 export class Workbench {
-  private _name: string;
   private _toolbars: Toolbar[];
   private _container: HTMLElement;
-  private _visible: boolean = true;   // new boolean member
 
   constructor(name: string, toolbars: Toolbar[]) {
-    this._name = name;
     this._toolbars = toolbars;
-    this._container = document.createElement('div');
-    this._container.className = 'workbench';
+
+    this._container = document.createElement("div");
     this._container.id = `workbench_${name}`;
+
+    // Stack toolbars vertically
+    this._container.className = "flex flex-col w-full gap-4";
+
     this.render();
   }
 
+  /** Append all toolbars to workbench */
   private render(): void {
-    this._toolbars.forEach(tb => this._container.appendChild(tb.getElement()));
+    this._toolbars.forEach((tb) => {
+      this._container.appendChild(tb.getElement());
+    });
   }
 
+  /** Root DOM element */
   getElement(): HTMLElement {
     return this._container;
   }
 
+  /** Show / hide entire workbench */
   setVisibility(isVisible: boolean): void {
-    this._visible = isVisible;
-    this._container.style.display = isVisible ? 'block' : 'none';
+    this._container.style.display = isVisible ? "flex" : "none";
   }
 
+  /** Show / hide a specific toolbar */
   setToolbarVisibility(toolbarName: string, isVisible: boolean): void {
-    const tb = this._toolbars.find(t => (t as any)._name === toolbarName);
-    if (tb) tb.setVisibility(isVisible);
+    const toolbar = this._toolbars.find(
+      (tb) => tb.getName() === toolbarName
+    );
+
+    if (toolbar) {
+      toolbar.setVisibility(isVisible);
+    }
   }
 }

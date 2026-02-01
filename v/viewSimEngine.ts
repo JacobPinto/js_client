@@ -1,25 +1,31 @@
 //import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown, SimpleButton } from './button.js';
-import { RadioButton } from './button.js';
-import { ButtonBuilder } from './buttonBuilder.js';
-import { Toolbar } from './toolbar.js';
-import { Workbench } from './workbench.js';
-import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
-import { ModelSimEngine} from '../m/modelSimEngine.js';
-import { ControllerSimEngine } from '../c/controllerSimEngine.js';
+import {
+  InputElement,
+  RadioButton,
+  TextEntryWithButton,
+  TextEntryWithDropdownAndButton
+} from "./button.js";
+import { ButtonBuilder } from "./buttonBuilder.js";
+import { Toolbar } from "./toolbar.js";
+import { Workbench } from "./workbench.js";
+import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
+import { SpeedUnit } from "../m/quantities.js";
+import { ModelSimEngine } from "../m/modelSimEngine.js";
+import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 
 export class ViewSimEngine {
   private _workbench: Workbench;
-  private _buttons: (RadioButton)[] = [];
+  private _buttons: InputElement[] = [];
 
   constructor(controller: ControllerSimEngine) {
     // Create ButtonBuilder
     let buttonBuilder = new ButtonBuilder(controller);
 
-    //  Dimensions Button 
+    //  Dimensions Button
     const dimensionsButton = buttonBuilder
       .setButtonType(RadioButton)
-      .setButtonName('Dimensions')
-      .setButtonDisplayName('Dimensions')
+      .setButtonName("Dimensions")
+      .setButtonDisplayName("Dimensions")
       .setQuestions({ d2: Dimensions.D2, d3: Dimensions.D3 })
       .setOnClick(function (this: RadioButton) {
         const selected = this.getValue() as Dimensions;
@@ -27,11 +33,11 @@ export class ViewSimEngine {
       })
       .build() as RadioButton;
 
-    //  Shader Button 
+    //  Shader Button
     const shaderButton = buttonBuilder
       .setButtonType(RadioButton)
-      .setButtonName('ShaderType')
-      .setButtonDisplayName('Shader')
+      .setButtonName("ShaderType")
+      .setButtonDisplayName("Shader")
       .setQuestions({ flat: ShaderType.Flat, smooth: ShaderType.Smooth })
       .setOnClick(function (this: RadioButton) {
         const selected = this.getValue() as ShaderType;
@@ -40,12 +46,15 @@ export class ViewSimEngine {
       .setUpdate(function (this: RadioButton, dim: Dimensions) {
         if (!this._controller) return;
         if (!this._form) return;
-  
+
         console.log(`[ShaderButton] Reacting to dimension: ${dim}`);
-        const radios = this._form.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
-        const targetShader = dim === Dimensions.D2 ? ShaderType.Flat : ShaderType.Smooth;
-  
-        radios.forEach(r => {
+        const radios = this._form.querySelectorAll(
+          'input[type="radio"]',
+        ) as NodeListOf<HTMLInputElement>;
+        const targetShader =
+          dim === Dimensions.D2 ? ShaderType.Flat : ShaderType.Smooth;
+
+        radios.forEach((r) => {
           r.disabled = false;
           if (r.value === targetShader) {
             r.checked = true;
@@ -54,23 +63,86 @@ export class ViewSimEngine {
           } else if (dim === Dimensions.D2 && r.value === ShaderType.Smooth) {
             r.disabled = true;
           }
-        })
+        });
       })
       .build() as RadioButton;
 
-    // Vertex Button 
+    // Vertex Button
     const vertexButton = buttonBuilder
       .setButtonType(RadioButton)
-      .setButtonName('VertexFormat')
-      .setButtonDisplayName('Vertex Format')
-      .setQuestions({ list: VertexFormat.List, strip: VertexFormat.Strip, index: VertexFormat.Index })
+      .setButtonName("VertexFormat")
+      .setButtonDisplayName("Vertex Format")
+      .setQuestions({
+        list: VertexFormat.List,
+        strip: VertexFormat.Strip,
+        index: VertexFormat.Index,
+      })
       .setOnClick(function (this: RadioButton) {
         const selected = this.getValue() as VertexFormat;
         this._controller?.onClickVertexFormat?.(selected);
       })
       .build() as RadioButton;
 
-    // Register observers 
+    // Client Form Button
+    const clientForm = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("ClientForm")
+      .setButtonDisplayName("Create Client")
+      .setQuestions({
+        name: "Client Name",
+        email: "Client Email",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const name = this.getFieldValue("name");
+        const email = this.getFieldValue("email");
+
+        if (name) this._controller.onClientNameChange(name);
+        if (email) this._controller.onClientEmailChange(email);
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitClient();
+      })
+      .build();
+
+    // Speed Input Button
+    const speedInput = buttonBuilder
+      .setButtonType(TextEntryWithDropdownAndButton)
+      .setButtonName("SpeedInput")
+      .setButtonDisplayName("Submit Speed")
+      .setQuestions({
+        textLabel: "Speed",
+        dropdownLabel: "Unit",
+      })
+      .setContextObj({
+        options: {
+          kmh: "Km/h",
+          ms: "m/s",
+          mph: "mph",
+        },
+      })
+      .setUpdate(function (this: TextEntryWithDropdownAndButton) {
+        const value = Number(this.getTextValue());
+        const unit = this.getDropdownValue();
+
+        if (!Number.isNaN(value)) {
+          this._controller.onSpeedValueChange(value);
+        }
+
+        const unitMap: Record<string, SpeedUnit> = {
+          kmh: SpeedUnit.KmPerHour,
+          ms: SpeedUnit.MeterPerSecond,
+          mph: SpeedUnit.MilePerHour,
+        };
+
+        this._controller.onSpeedUnitChange(unitMap[unit]);
+      })
+      .setOnClick(function (this: TextEntryWithDropdownAndButton) {
+        this._controller.submitSpeed();
+      })
+      .build();
+
+    // Register observers
     controller.model.dimension.register(shaderButton);
 
     // Store buttons
@@ -130,8 +202,7 @@ export class ViewSimEngine {
 
       */
 
-
-      /*
+    /*
 
     
       // Create toolbars
@@ -142,18 +213,27 @@ export class ViewSimEngine {
     toolbar2.getElement().classList.add('toolbar-vertical');
     */
 
-
     // small toolbar
-    const smallToolbar = new Toolbar('Small Toolbar', [dimensionsButton, shaderButton, vertexButton]);
+    const smallToolbar = new Toolbar("Small Toolbar", [
+      dimensionsButton,
+      shaderButton,
+      vertexButton,
+      clientForm,
+      speedInput,
+    ]);
 
     // Create workbench
-    this._workbench = new Workbench('mainWorkbench', [smallToolbar]);
+    this._workbench = new Workbench("mainWorkbench", [smallToolbar]);
   } // end constructor
 
   render(): void {
-    document.body.appendChild(this._workbench.getElement());
+  const root = document.getElementById("app");
+  if (root) {
+    root.appendChild(this._workbench.getElement());
   }
-  
+}
+
+
   toggleWorkbench(isVisible: boolean): void {
     this._workbench.setVisibility(isVisible);
   }
@@ -161,5 +241,4 @@ export class ViewSimEngine {
   toggleToolbar(name: string, isVisible: boolean): void {
     this._workbench.setToolbarVisibility(name, isVisible);
   }
-
 }
