@@ -40,6 +40,7 @@ export class InputElement {
   protected _name: string;
   protected _id: string;
   protected _displayName: string;
+  protected _submitLabel?: string;
   protected _questions: { [key: string]: string };
   protected _contextObj: { [key: string]: any };
   protected _onClick: Function;
@@ -54,6 +55,7 @@ export class InputElement {
     this._name = params.name;
     this._id = this._getId();
     this._displayName = params.displayName;
+    this._submitLabel = params.submitLabel;
     this._questions = params.questions;
     this._contextObj = params.contextObj ?? {}; // default empty object
     this._onClick = (params.onClick ?? (() => {})).bind(this);
@@ -130,7 +132,7 @@ export class TextEntryWithButton extends InputElement {
     this._form.appendChild(label);
   });
 
-  this._button.textContent = this._displayName;
+  this._button.textContent = this._submitLabel ?? "Submit";
   this._button.className = BUTTON;
   this._button.onclick = this._onClick as EventListener;
 
@@ -154,11 +156,11 @@ export class TextEntryWithButton extends InputElement {
 }
 
 export class TextEntryWithDropdownAndButton extends InputElement {
-  protected _type: string = "TextEntryWithDropdownAndButton";
+  protected _type = "TextEntryWithDropdownAndButton";
 
   public _form: HTMLFormElement;
-  private _textInput!: HTMLInputElement;
-  private _select!: HTMLSelectElement;
+  private _inputs: Record<string, HTMLInputElement> = {};
+  private _selects: Record<string, HTMLSelectElement> = {};
   private _button: HTMLButtonElement;
 
   constructor(params: FormElementParam, controller: ControllerSimEngine) {
@@ -168,87 +170,79 @@ export class TextEntryWithDropdownAndButton extends InputElement {
   }
 
   render(): HTMLElement {
-  this._form.id = this._id;
-  this._form.className = FORM_CONTAINER;
+    this._form.id = this._id;
+    this._form.className = FORM_CONTAINER;
 
-  const heading = document.createElement("h2");
-  heading.textContent = this._displayName;
-  heading.className = FORM_TITLE;
-  this._form.appendChild(heading);
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+    this._form.appendChild(heading);
 
-  // Text input
-  const textLabel = document.createElement("label");
-  textLabel.className = LABEL;
+    Object.entries(this._questions).forEach(([key, labelText]) => {
+      /* -------- Text Input -------- */
+      const textLabel = document.createElement("label");
+      textLabel.className = LABEL;
 
-  const textSpan = document.createElement("span");
-  textSpan.textContent = this._questions.textLabel ?? "Value";
+      const span = document.createElement("span");
+      span.textContent = labelText;
 
-  this._textInput = document.createElement("input");
-  this._textInput.type = "text";
-  this._textInput.className = INPUT;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = INPUT;
 
-  this._textInput.addEventListener("input", () => this._update?.());
+      input.addEventListener("input", () => this._update?.());
 
-  textLabel.append(textSpan, this._textInput);
-  this._form.appendChild(textLabel);
+      textLabel.append(span, input);
+      this._form.appendChild(textLabel);
+      this._inputs[key] = input;
 
-  // Dropdown
-  const selectLabel = document.createElement("label");
-  selectLabel.className = LABEL;
+      /* -------- Dropdown -------- */
+      const selectLabel = document.createElement("label");
+      selectLabel.className = LABEL;
 
-  const selectSpan = document.createElement("span");
-  selectSpan.textContent = this._questions.dropdownLabel ?? "Unit";
+      const select = document.createElement("select");
+      select.className = INPUT;
 
-  this._select = document.createElement("select");
-  this._select.className = INPUT;
+      const options = this._contextObj?.[key]?.options ?? {};
+      Object.entries(options).forEach(([v, l]) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = String(l);
+        select.appendChild(opt);
+      });
 
-  Object.entries(this._contextObj.options ?? {}).forEach(([v, l]) => {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = String(l);
-    this._select.appendChild(opt);
-  });
+      select.addEventListener("change", () => this._update?.());
 
-  this._select.addEventListener("change", () => this._update?.());
+      selectLabel.append("Unit", select);
+      this._form.appendChild(selectLabel);
+      this._selects[key] = select;
+    });
 
-  selectLabel.append(selectSpan, this._select);
-  this._form.appendChild(selectLabel);
+    /* -------- Submit Button -------- */
+    this._button.textContent = this._submitLabel ?? "Submit";
+    this._button.className = BUTTON;
+    this._button.onclick = (e) => {
+      e.preventDefault();
+      this._onClick(this);
+    };
 
-  // Button
-  this._button.textContent = this._displayName;
-  this._button.className = BUTTON;
-  this._button.onclick = (e) => {
-    e.preventDefault();
-    this._onClick(this);
-  };
+    this._form.appendChild(this._button);
 
-  this._form.appendChild(this._button);
+    const wrapper = document.createElement("div");
+    wrapper.className = CONTROL_WRAPPER;
+    wrapper.appendChild(this._form);
 
-  const wrapper = document.createElement("div");
-  wrapper.className = CONTROL_WRAPPER;
-  wrapper.appendChild(this._form);
-
-  return wrapper;
-}
-
-
-  /* ---------------- Public getters ---------------- */
-
-  getTextValue(): string {
-    return this._textInput.value;
+    return wrapper;
   }
 
-  getDropdownValue(): string {
-    return this._select.value;
+  /* -------- Public getters -------- */
+
+  getTextValue(key: string): string {
+    return this._inputs[key]?.value ?? "";
   }
 
-  public getFieldValue(fieldName: string): string | undefined {
-    if (fieldName === "textValue") {
-      return this._textInput.value;
-    } else if (fieldName === "dropdownValue") {
-      return this._select.value;
-    }
-    return undefined;
+  getDropdownValue(key: string): string {
+    return this._selects[key]?.value ?? "";
   }
 }
 

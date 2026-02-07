@@ -1,5 +1,5 @@
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
-import { SpeedUnit } from "../m/quantities.js";
+import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 
 import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ViewSimEngine } from "../v/viewSimEngine.js";
@@ -111,6 +111,14 @@ export class ControllerSimEngine {
     this.model.setSpeedUnit(u);
   }
 
+  public onAccelerationValueChange(v: number) {
+    this.model.setAccelerationValue(v);
+  }
+
+  public onAccelerationUnitChange(u: AccelerationUnit) {
+    this.model.setAccelerationUnit(u);
+  }
+
   /*
   public updateShaderType(shaderType: ShaderType): void{
     this._model.shaderType = shaderType;
@@ -145,20 +153,38 @@ export class ControllerSimEngine {
     }
   }
 
-  submitSpeed() {
+  submitPhysicalParams() {
     const speed = this._model.speedValue.getData();
-    const unit = this._model.speedUnit.getData();
+    const speedUnit = this._model.speedUnit.getData();
+
+    const acceleration = this._model.accelerationValue.getData();
+    const accelerationUnit = this._model.accelerationUnit.getData();
 
     if (speed == null || Number.isNaN(speed)) {
       console.error("[Controller] Speed value is required");
       return;
     }
 
-    if (!unit) {
+    if (!speedUnit) {
       console.error("[Controller] Speed unit is required");
       return;
     }
 
-    console.log("[Controller] Speed submitted:", { speed, unit });
+    if (acceleration == null || Number.isNaN(acceleration)) {
+      console.error("[Controller] Acceleration value is required");
+      return;
+    }
+
+    if (!accelerationUnit) {
+      console.error("[Controller] Acceleration unit is required");
+      return;
+    }
+
+    console.log("[Controller] Physical Params submitted:", {
+      speed,
+      speedUnit,
+      acceleration,
+      accelerationUnit,
+    });
   }
 }

@@ -3,13 +3,13 @@ import {
   InputElement,
   RadioButton,
   TextEntryWithButton,
-  TextEntryWithDropdownAndButton
+  TextEntryWithDropdownAndButton,
 } from "./button.js";
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
 import { Workbench } from "./workbench.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
-import { SpeedUnit } from "../m/quantities.js";
+import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 
@@ -88,6 +88,7 @@ export class ViewSimEngine {
       .setButtonType(TextEntryWithButton)
       .setButtonName("ClientForm")
       .setButtonDisplayName("Create Client")
+      .setSubmitLabel("Submit Client")
       .setQuestions({
         name: "Client Name",
         email: "Client Email",
@@ -105,40 +106,63 @@ export class ViewSimEngine {
       })
       .build();
 
-    // Speed Input Button
-    const speedInput = buttonBuilder
+    const physicalParams = buttonBuilder
       .setButtonType(TextEntryWithDropdownAndButton)
-      .setButtonName("SpeedInput")
-      .setButtonDisplayName("Submit Speed")
+      .setButtonName("PhysicalParams")
+      .setButtonDisplayName("Physical Params")
+      .setSubmitLabel("Submit Physical Params")
       .setQuestions({
-        textLabel: "Speed",
-        dropdownLabel: "Unit",
+        speed: "Speed",
+        acceleration: "Acceleration",
       })
       .setContextObj({
-        options: {
-          kmh: "Km/h",
-          ms: "m/s",
-          mph: "mph",
+        speed: {
+          options: {
+            kmh: "Km/h",
+            ms: "m/s",
+            mph: "mph",
+          },
+        },
+        acceleration: {
+          options: {
+            ms2: "m/s²",
+            g: "g",
+          },
         },
       })
       .setUpdate(function (this: TextEntryWithDropdownAndButton) {
-        const value = Number(this.getTextValue());
-        const unit = this.getDropdownValue();
+        const speed = Number(this.getTextValue("speed"));
+        const speedUnit = this.getDropdownValue("speed");
 
-        if (!Number.isNaN(value)) {
-          this._controller.onSpeedValueChange(value);
+        const acc = Number(this.getTextValue("acceleration"));
+        const accUnit = this.getDropdownValue("acceleration");
+
+        if (!Number.isNaN(speed)) {
+          this._controller.onSpeedValueChange(speed);
         }
 
-        const unitMap: Record<string, SpeedUnit> = {
+        if (!Number.isNaN(acc)) {
+          this._controller.onAccelerationValueChange(acc);
+        }
+
+        // map units here if needed
+        const speedUnitMap: Record<string, SpeedUnit> = {
           kmh: SpeedUnit.KmPerHour,
           ms: SpeedUnit.MeterPerSecond,
           mph: SpeedUnit.MilePerHour,
         };
+        const accUnitMap: Record<string, AccelerationUnit> = {
+          ms2: AccelerationUnit.MeterPerSecondSquared,
+          cms2: AccelerationUnit.CmPerSecondSquared,
+          mis2: AccelerationUnit.MilePerHourSquared, 
+        };
 
-        this._controller.onSpeedUnitChange(unitMap[unit]);
+        this._controller.onSpeedUnitChange(speedUnitMap[speedUnit]);
+        this._controller.onAccelerationUnitChange(accUnitMap[accUnit]);
+
       })
       .setOnClick(function (this: TextEntryWithDropdownAndButton) {
-        this._controller.submitSpeed();
+        this._controller.submitPhysicalParams();
       })
       .build();
 
@@ -219,7 +243,7 @@ export class ViewSimEngine {
       shaderButton,
       vertexButton,
       clientForm,
-      speedInput,
+      physicalParams,
     ]);
 
     // Create workbench
@@ -227,12 +251,11 @@ export class ViewSimEngine {
   } // end constructor
 
   render(): void {
-  const root = document.getElementById("app");
-  if (root) {
-    root.appendChild(this._workbench.getElement());
+    const root = document.getElementById("app");
+    if (root) {
+      root.appendChild(this._workbench.getElement());
+    }
   }
-}
-
 
   toggleWorkbench(isVisible: boolean): void {
     this._workbench.setVisibility(isVisible);

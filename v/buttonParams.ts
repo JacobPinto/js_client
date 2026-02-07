@@ -25,6 +25,7 @@ export class FormElementParam {
   public type?: ButtonType;
   public name: string = '';
   public displayName: string = '';
+  public submitLabel?: string = '';
   public questions: Record<string, string> = {};
   public contextObj?: Record<string, string>;
   public onClick?: Function;

@@ -1,5 +1,5 @@
 
-import { SpeedUnit } from './quantities.js'
+import { SpeedUnit, AccelerationUnit } from './quantities.js'
 // import { Density, DensityUnit } from './quantities'
 
 import {ModelGeneric} from '../m/modelGeneric.js';
@@ -17,8 +17,11 @@ export class ModelSimEngine {
   private _clientName = new ModelGeneric<string>();
   private _clientEmail = new ModelGeneric<string>();
 
-  private _speedValue = new ModelGeneric<number>();private _speedUnit = new ModelGeneric<SpeedUnit>();
+  private _speedValue = new ModelGeneric<number>();
+  private _speedUnit = new ModelGeneric<SpeedUnit>();
 
+  private _accelerationValue = new ModelGeneric<number>();
+  private _accelerationUnit = new ModelGeneric<AccelerationUnit>();
   
   
   constructor() {
@@ -57,6 +60,14 @@ export class ModelSimEngine {
     return this._speedUnit;
   }
 
+  public get accelerationValue() {
+    return this._accelerationValue;
+  }
+
+  public get accelerationUnit() {
+    return this._accelerationUnit;
+  }
+
 
   // Setters
   public set dimension(dim: Dimensions) {
@@ -90,6 +101,16 @@ export class ModelSimEngine {
     console.log("[Model] speedUnit =", u);
     this._speedUnit.setData(u);
   }
+
+  public setAccelerationValue(v: number) {
+    console.log("[Model] accelerationValue =", v);
+    this._accelerationValue.setData(v);
+  }   
+
+  public setAccelerationUnit(u: AccelerationUnit) {
+    console.log("[Model] accelerationUnit =", u);
+    this._accelerationUnit.setData(u);
+  } 
 
   
   // Software params.

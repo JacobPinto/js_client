@@ -34,6 +34,11 @@ export class ButtonBuilder {
     return this;
   }
 
+  setSubmitLabel(label: string) {
+    this._params.submitLabel = label;
+    return this;
+  }
+
   setQuestions(questions: { [key: string]: string }) {
     this._params.questions = questions;
     return this;
