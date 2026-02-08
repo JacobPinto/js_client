@@ -1,17 +1,20 @@
+import { Workbench } from "./workbench.js";
 
 export interface RenderableButton {
   render(): HTMLElement;
+  getView?(): HTMLElement;
   getName?(): string;
 }
 
 export class Toolbar {
   private _name: string;
   private _container: HTMLElement;
+  private _workbench?: Workbench;
 
   constructor(
     name: string,
     buttons: RenderableButton[],
-    orientation: "horizontal" | "vertical" = "horizontal"
+    orientation: "horizontal" | "vertical" = "horizontal",
   ) {
     this._name = name;
     this._container = document.createElement("div");
@@ -22,13 +25,27 @@ export class Toolbar {
         : "flex flex-col items-start gap-4 px-4 py-4";
 
     this._container.id = `toolbar_${name}`;
-    buttons.forEach(btn => this._container.appendChild(btn.render()));
+
+    buttons.forEach((btn) => {
+      const btnEl = btn.render();
+
+      btnEl.addEventListener("click", () => {
+        if (btn.getView) {
+          this._workbench?.showView(btn.getView());
+        }
+      });
+
+      this._container.appendChild(btnEl);
+    });
+  }
+
+  attachWorkbench(wb: Workbench): void {
+    this._workbench = wb;
   }
 
   getName(): string {
-  return this._name;
-}
-
+    return this._name;
+  }
 
   getElement(): HTMLElement {
     return this._container;

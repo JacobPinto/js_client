@@ -88,7 +88,7 @@ export class ViewSimEngine {
       .setButtonType(TextEntryWithButton)
       .setButtonName("ClientForm")
       .setButtonDisplayName("Create Client")
-      .setSubmitLabel("Submit Client")
+      .setSubmitLabel("Submit")
       .setQuestions({
         name: "Client Name",
         email: "Client Email",
@@ -106,11 +106,12 @@ export class ViewSimEngine {
       })
       .build();
 
+
     const physicalParams = buttonBuilder
       .setButtonType(TextEntryWithDropdownAndButton)
       .setButtonName("PhysicalParams")
       .setButtonDisplayName("Physical Params")
-      .setSubmitLabel("Submit Physical Params")
+      .setSubmitLabel("Submit")
       .setQuestions({
         speed: "Speed",
         acceleration: "Acceleration",
@@ -239,15 +240,21 @@ export class ViewSimEngine {
 
     // small toolbar
     const smallToolbar = new Toolbar("Small Toolbar", [
-      dimensionsButton,
       shaderButton,
-      vertexButton,
       clientForm,
+    ]);
+
+    const smallToolbar1 = new Toolbar("Small Toolbar", [
+      dimensionsButton,
+      vertexButton,
       physicalParams,
     ]);
 
+
+    
+
     // Create workbench
-    this._workbench = new Workbench("mainWorkbench", [smallToolbar]);
+    this._workbench = new Workbench("mainWorkbench", [smallToolbar1, smallToolbar]);
   } // end constructor
 
   render(): void {

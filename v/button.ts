@@ -5,20 +5,16 @@ import { Dimensions } from "../m/modelEnums.js";
 /* ================= Tailwind Design System ================= */
 
 // Wrapper so each control aligns horizontally in toolbar
-const CONTROL_WRAPPER =
-  "flex flex-col items-start";
+const CONTROL_WRAPPER = "flex flex-col items-start";
 
 // Form container
-const FORM_CONTAINER =
-  "flex flex-col gap-3";
+const FORM_CONTAINER = "flex flex-col gap-3";
 
 // Titles
-const FORM_TITLE =
-  "text-sm font-semibold text-gray-800";
+const FORM_TITLE = "text-sm font-semibold text-gray-800";
 
 // Labels
-const LABEL =
-  "flex flex-col gap-1 text-sm text-gray-600";
+const LABEL = "flex flex-col gap-1 text-sm text-gray-600";
 
 // Input + Select
 const INPUT =
@@ -27,13 +23,12 @@ const INPUT =
   "shadow-sm transition focus:outline-none " +
   "focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
 
-// Button 
+// Button
 const BUTTON =
   "px-4 py-2 rounded-md border border-gray-300 bg-white " +
   "text-sm font-medium text-gray-700 shadow-sm transition " +
   "hover:border-gray-400 hover:shadow-md " +
   "focus:outline-none focus:ring-2 focus:ring-blue-500";
-
 
 export class InputElement {
   protected _type: string = "InputElement";
@@ -97,6 +92,7 @@ export class TextEntryWithButton extends InputElement {
   protected _type: string = "TextEntryWithButton";
   public _form: HTMLFormElement;
   private _button: HTMLButtonElement;
+  private _view?: HTMLElement;
 
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
@@ -106,45 +102,52 @@ export class TextEntryWithButton extends InputElement {
   }
 
   render(): HTMLElement {
-  this._form.id = this._id;
-  this._form.className = FORM_CONTAINER;
+    this._form.id = this._id;
+    this._form.className = FORM_CONTAINER;
 
-  const heading = document.createElement("h2");
-  heading.textContent = this._displayName;
-  heading.className = FORM_TITLE;
-  this._form.appendChild(heading);
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+    this._form.appendChild(heading);
 
-  Object.entries(this._questions).forEach(([key, labelText]) => {
-    const label = document.createElement("label");
-    label.className = LABEL;
+    Object.entries(this._questions).forEach(([key, labelText]) => {
+      const label = document.createElement("label");
+      label.className = LABEL;
 
-    const span = document.createElement("span");
-    span.textContent = labelText;
+      const span = document.createElement("span");
+      span.textContent = labelText;
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.name = key;
-    input.className = INPUT;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.name = key;
+      input.className = INPUT;
 
-    input.addEventListener("input", () => this._update?.());
+      input.addEventListener("input", () => this._update?.());
 
-    label.append(span, input);
-    this._form.appendChild(label);
-  });
+      label.append(span, input);
+      this._form.appendChild(label);
+    });
 
-  this._button.textContent = this._submitLabel ?? "Submit";
-  this._button.className = BUTTON;
-  this._button.onclick = this._onClick as EventListener;
+    this._button.textContent = this._submitLabel ?? "Submit";
+    this._button.className = BUTTON;
+    this._button.onclick = this._onClick as EventListener;
 
-  this._form.appendChild(this._button);
+    this._form.appendChild(this._button);
 
-  const wrapper = document.createElement("div");
-  wrapper.className = CONTROL_WRAPPER;
-  wrapper.appendChild(this._form);
+    if (this._view) return this._view;
 
-  return wrapper;
-}
+    const wrapper = document.createElement("div");
+    wrapper.className = CONTROL_WRAPPER;
+    wrapper.appendChild(this._form);
 
+    this._view = wrapper;
+
+    return wrapper;
+  }
+
+  getView(): HTMLElement {
+    return this.render();
+  }
 
   public getFieldValue(fieldName: string): string | undefined {
     const input = this._form.querySelector(
@@ -152,7 +155,6 @@ export class TextEntryWithButton extends InputElement {
     ) as HTMLInputElement;
     return input ? input.value : undefined;
   }
-
 }
 
 export class TextEntryWithDropdownAndButton extends InputElement {
@@ -162,6 +164,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
   private _inputs: Record<string, HTMLInputElement> = {};
   private _selects: Record<string, HTMLSelectElement> = {};
   private _button: HTMLButtonElement;
+  private _view?: HTMLElement;
 
   constructor(params: FormElementParam, controller: ControllerSimEngine) {
     super(params, controller);
@@ -228,14 +231,22 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 
     this._form.appendChild(this._button);
 
+    if (this._view) return this._view;
+
     const wrapper = document.createElement("div");
     wrapper.className = CONTROL_WRAPPER;
     wrapper.appendChild(this._form);
+
+    this._view = wrapper;
 
     return wrapper;
   }
 
   /* -------- Public getters -------- */
+
+  getView(): HTMLElement {
+    return this.render();
+  }
 
   getTextValue(key: string): string {
     return this._inputs[key]?.value ?? "";
@@ -245,7 +256,6 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     return this._selects[key]?.value ?? "";
   }
 }
-
 
 export class FileEntry extends InputElement {
   protected _type: string = "FileEntryWithButton";
@@ -351,12 +361,12 @@ export class Checkbox extends InputElement {
 export class RadioButton extends InputElement {
   protected _type: string = "RadioButton";
   public _form: HTMLFormElement;
+  private _view?: HTMLElement;
 
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
 
     this._form = document.createElement("form");
-    
   }
 
   render(): HTMLElement {
@@ -400,12 +410,20 @@ export class RadioButton extends InputElement {
       this._form.appendChild(label);
     });
 
+    if (this._view) return this._view;
+
     /* -------- Wrapper for toolbar alignment -------- */
     const wrapper = document.createElement("div");
     wrapper.className = "flex flex-col items-start";
     wrapper.appendChild(this._form);
 
+    this._view = wrapper;
+
     return wrapper;
+  }
+
+  getView(): HTMLElement {
+    return this.render();
   }
 
   // Get current selected value
