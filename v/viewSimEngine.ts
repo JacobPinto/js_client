@@ -239,12 +239,13 @@ export class ViewSimEngine {
     */
 
     // small toolbar
-    const smallToolbar = new Toolbar("Small Toolbar", [
+    const smallToolbar = new Toolbar(" Toolbar 1", [
       shaderButton,
       clientForm,
+      dimensionsButton
     ]);
 
-    const smallToolbar1 = new Toolbar("Small Toolbar", [
+    const smallToolbar1 = new Toolbar(" Toolbar 2", [
       dimensionsButton,
       vertexButton,
       physicalParams,
@@ -264,11 +265,4 @@ export class ViewSimEngine {
     }
   }
 
-  toggleWorkbench(isVisible: boolean): void {
-    this._workbench.setVisibility(isVisible);
-  }
-
-  toggleToolbar(name: string, isVisible: boolean): void {
-    this._workbench.setToolbarVisibility(name, isVisible);
-  }
 }

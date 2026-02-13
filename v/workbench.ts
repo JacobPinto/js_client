@@ -3,54 +3,84 @@ import { Toolbar } from "./toolbar.js";
 export class Workbench {
   private _toolbars: Toolbar[];
   private _container: HTMLElement;
+
+  private _toolbarSelector: HTMLElement;
+  private _toolbarContainer: HTMLElement;
   private _contentArea: HTMLElement;
-  private _activeView: HTMLElement | null = null;
+
+  private _activeToolbar: Toolbar | null = null;
 
   constructor(name: string, toolbars: Toolbar[]) {
     this._toolbars = toolbars;
 
     this._container = document.createElement("div");
-    this._container.id = `workbench_${name}`;
-    this._container.className = "flex flex-col w-full gap-4";
+    this._container.className = "flex flex-col gap-4 w-full";
 
-    // Toolbars
-    this._toolbars.forEach((tb) => {
-      tb.attachWorkbench(this);   
-      this._container.appendChild(tb.getElement());
+    
+    // Toolbar Selector section
+   
+    this._toolbarSelector = document.createElement("div");
+    this._toolbarSelector.className =
+      "flex gap-4 border-b border-gray-300 p-4";
+
+    this._toolbars.forEach((toolbar) => {
+      const selectorBtn = document.createElement("button");
+
+      selectorBtn.textContent = toolbar.getName();
+      selectorBtn.className =
+        "px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800";
+
+      selectorBtn.addEventListener("click", () => {
+        this.showToolbar(toolbar);
+      });
+
+      this._toolbarSelector.appendChild(selectorBtn);
     });
 
-    // Active content area
+    //Dynamic Toolbar Container
+
+    this._toolbarContainer = document.createElement("div");
+    this._toolbarContainer.className =
+      "flex flex-wrap gap-4 p-4";
+
+    //Content Area
+    
     this._contentArea = document.createElement("div");
     this._contentArea.className =
       "min-h-[200px] p-6 border border-gray-300 rounded-lg";
 
-    this._container.appendChild(this._contentArea);
+    this._container.append(
+      this._toolbarSelector,
+      this._toolbarContainer,
+      this._contentArea
+    );
   }
 
-  showView(view: HTMLElement): void {
-    if (this._activeView) {
-      this._contentArea.removeChild(this._activeView);
-    }
-    this._activeView = view;
-    this._contentArea.appendChild(view);
+  
+  //  Replace Toolbar
+  
+  private showToolbar(toolbar: Toolbar): void {
+    if (this._activeToolbar === toolbar) return;
+
+    toolbar.renderButtons((view: HTMLElement) => {
+      this.showView(view);
+    });
+
+    this._toolbarContainer.replaceChildren(
+      toolbar.getElement()
+    );
+
+    this._contentArea.replaceChildren(); // clear content
+    this._activeToolbar = toolbar;
+  }
+
+  //Replace Content View
+ 
+  private showView(view: HTMLElement): void {
+    this._contentArea.replaceChildren(view);
   }
 
   getElement(): HTMLElement {
     return this._container;
   }
-
-  setVisibility(isVisible: boolean): void {
-    this._container.style.display = isVisible ? "flex" : "none";
-  }
-
-  setToolbarVisibility(toolbarName: string, isVisible: boolean): void {
-  const toolbar = this._toolbars.find(
-    (tb) => tb.getName() === toolbarName
-  );
-
-  if (toolbar) {
-    toolbar.setVisibility(isVisible);
-  }
-}
-
 }

@@ -7,8 +7,13 @@ import { Dimensions } from "../m/modelEnums.js";
 // Wrapper so each control aligns horizontally in toolbar
 const CONTROL_WRAPPER = "flex flex-col items-start";
 
+// Toolbar button (primary)
+const TOOLBAR_BUTTON =
+  "px-4 py-2 rounded-md bg-blue-500 text-white " +
+  "hover:bg-blue-600 transition text-sm font-medium";
+
 // Form container
-const FORM_CONTAINER = "flex flex-col gap-3";
+const FORM_CONTAINER = "flex flex-col gap-4";
 
 // Titles
 const FORM_TITLE = "text-sm font-semibold text-gray-800";
@@ -23,12 +28,10 @@ const INPUT =
   "shadow-sm transition focus:outline-none " +
   "focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
 
-// Button
-const BUTTON =
-  "px-4 py-2 rounded-md border border-gray-300 bg-white " +
-  "text-sm font-medium text-gray-700 shadow-sm transition " +
-  "hover:border-gray-400 hover:shadow-md " +
-  "focus:outline-none focus:ring-2 focus:ring-blue-500";
+// Form submit button
+const SUBMIT =
+  "px-4 py-2 rounded-md bg-gray-800 text-white " +
+  "hover:bg-gray-900 transition";
 
 export class InputElement {
   protected _type: string = "InputElement";
@@ -66,6 +69,8 @@ export class InputElement {
 export class SimpleButton extends InputElement {
   protected _type: string = "SimpleButton";
   public _button: HTMLButtonElement;
+  private _view?: HTMLElement;
+
 
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
@@ -76,7 +81,7 @@ export class SimpleButton extends InputElement {
     this._button.id = this._id;
     this._button.name = this._id;
     this._button.type = "button";
-    this._button.classList.add(this._type);
+    this._button.className = TOOLBAR_BUTTON + " " + this._type;
     this._button.textContent = this._displayName;
 
     this._button.addEventListener("click", (e) => {
@@ -85,6 +90,10 @@ export class SimpleButton extends InputElement {
     });
 
     return this._button;
+  }
+
+  getView(): HTMLElement {
+    return this.render();
   }
 }
 
@@ -129,7 +138,7 @@ export class TextEntryWithButton extends InputElement {
     });
 
     this._button.textContent = this._submitLabel ?? "Submit";
-    this._button.className = BUTTON;
+    this._button.className = SUBMIT;
     this._button.onclick = this._onClick as EventListener;
 
     this._form.appendChild(this._button);
@@ -223,7 +232,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 
     /* -------- Submit Button -------- */
     this._button.textContent = this._submitLabel ?? "Submit";
-    this._button.className = BUTTON;
+    this._button.className = SUBMIT;
     this._button.onclick = (e) => {
       e.preventDefault();
       this._onClick(this);
@@ -260,6 +269,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 export class FileEntry extends InputElement {
   protected _type: string = "FileEntryWithButton";
   public _form: HTMLFormElement;
+  private _view?: HTMLElement;
 
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
@@ -305,6 +315,15 @@ export class FileEntry extends InputElement {
 
     return this._form;
   }
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+    const wrapper = document.createElement("div");
+    wrapper.className = CONTROL_WRAPPER;
+    wrapper.appendChild(this.render());
+    this._view = wrapper;
+    return this._view;
+  }
 }
 
 /* Checkbox allows multiple options to be selected simultaneously.
@@ -312,6 +331,7 @@ export class FileEntry extends InputElement {
 export class Checkbox extends InputElement {
   protected _type: string = "Checkbox";
   public _form: HTMLFormElement;
+  private _view?: HTMLElement;
 
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
@@ -354,6 +374,15 @@ export class Checkbox extends InputElement {
     });
 
     return this._form;
+  }
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+    const wrapper = document.createElement("div");
+    wrapper.className = CONTROL_WRAPPER;
+    wrapper.appendChild(this.render());
+    this._view = wrapper;
+    return this._view;
   }
 }
 
@@ -442,6 +471,7 @@ export class Dropdown extends InputElement {
   public _form: HTMLFormElement;
   private _button: HTMLButtonElement;
   private _select: HTMLSelectElement;
+  private _view?: HTMLElement;
 
   constructor(params: FormElementParam, _controller: ControllerSimEngine) {
     super(params, _controller);
@@ -477,7 +507,8 @@ export class Dropdown extends InputElement {
     // Submit button
 
     this._button.name = "Submit";
-    this._button.textContent = "Submit";
+    this._button.textContent = this._submitLabel ?? "Submit";
+    this._button.className = SUBMIT;
 
     this._button.addEventListener("click", () => {
       this._onClick(this._select.value);
@@ -486,6 +517,15 @@ export class Dropdown extends InputElement {
     this._form.appendChild(this._button);
 
     return this._form;
+  }
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+    const wrapper = document.createElement("div");
+    wrapper.className = CONTROL_WRAPPER;
+    wrapper.appendChild(this.render());
+    this._view = wrapper;
+    return this._view;
   }
 
   getValue(): string {
