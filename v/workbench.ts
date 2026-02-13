@@ -16,12 +16,10 @@ export class Workbench {
     this._container = document.createElement("div");
     this._container.className = "flex flex-col gap-4 w-full";
 
-    
     // Toolbar Selector section
-   
+
     this._toolbarSelector = document.createElement("div");
-    this._toolbarSelector.className =
-      "flex gap-4 border-b border-gray-300 p-4";
+    this._toolbarSelector.className = "flex gap-4 border-b border-gray-300 p-4";
 
     this._toolbars.forEach((toolbar) => {
       const selectorBtn = document.createElement("button");
@@ -40,25 +38,23 @@ export class Workbench {
     //Dynamic Toolbar Container
 
     this._toolbarContainer = document.createElement("div");
-    this._toolbarContainer.className =
-      "flex flex-wrap gap-4 p-4";
+    this._toolbarContainer.className = "flex flex-wrap gap-4 p-4";
 
     //Content Area
-    
+
     this._contentArea = document.createElement("div");
     this._contentArea.className =
-      "min-h-[200px] p-6 border border-gray-300 rounded-lg";
+      "min-h-[200px] p-8 flex justify-center items-start";
 
     this._container.append(
       this._toolbarSelector,
       this._toolbarContainer,
-      this._contentArea
+      this._contentArea,
     );
   }
 
-  
   //  Replace Toolbar
-  
+
   private showToolbar(toolbar: Toolbar): void {
     if (this._activeToolbar === toolbar) return;
 
@@ -66,16 +62,14 @@ export class Workbench {
       this.showView(view);
     });
 
-    this._toolbarContainer.replaceChildren(
-      toolbar.getElement()
-    );
+    this._toolbarContainer.replaceChildren(toolbar.getElement());
 
     this._contentArea.replaceChildren(); // clear content
     this._activeToolbar = toolbar;
   }
 
   //Replace Content View
- 
+
   private showView(view: HTMLElement): void {
     this._contentArea.replaceChildren(view);
   }

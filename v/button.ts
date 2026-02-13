@@ -1,16 +1,12 @@
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 import { FormElementParam } from "./buttonParams.js";
-import { Dimensions } from "../m/modelEnums.js";
 
-/* ================= Tailwind Design System ================= */
+/* ================= Tailwind Design ================= */
 
-// Wrapper so each control aligns horizontally in toolbar
-const CONTROL_WRAPPER = "flex flex-col items-start";
-
-// Toolbar button (primary)
+// Toolbar button
 const TOOLBAR_BUTTON =
   "px-4 py-2 rounded-md bg-blue-500 text-white " +
-  "hover:bg-blue-600 transition text-sm font-medium";
+  "hover:bg-blue-600 transition text-sm font-medium shadow-sm";
 
 // Form container
 const FORM_CONTAINER = "flex flex-col gap-4";
@@ -19,7 +15,12 @@ const FORM_CONTAINER = "flex flex-col gap-4";
 const FORM_TITLE = "text-sm font-semibold text-gray-800";
 
 // Labels
+
 const LABEL = "flex flex-col gap-1 text-sm text-gray-600";
+
+const ROW = "flex items-center gap-4 text-sm text-gray-700";
+
+const LABEL_TEXT = "w-32 text-gray-600";
 
 // Input + Select
 const INPUT =
@@ -28,90 +29,356 @@ const INPUT =
   "shadow-sm transition focus:outline-none " +
   "focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
 
-// Form submit button
+// Submit button
 const SUBMIT =
   "px-4 py-2 rounded-md bg-gray-800 text-white " +
-  "hover:bg-gray-900 transition";
+  "hover:bg-gray-900 transition shadow-sm";
+
+const CLEAR =
+  "px-4 py-2 rounded-md bg-gray-800 text-white " +
+  "hover:bg-gray-900 transition shadow-sm";
+
+//Base Class
 
 export class InputElement {
   protected _type: string = "InputElement";
   protected _name: string;
-  protected _id: string;
   protected _displayName: string;
   protected _submitLabel?: string;
-  protected _questions: { [key: string]: string };
-  protected _contextObj: { [key: string]: any };
+  protected _questions: Record<string, string>;
+  protected _contextObj: Record<string, any>;
   protected _onClick: Function;
-  protected _update?: Function; // optional update if this view element is an observer
+  protected _update?: Function;
   public _controller: ControllerSimEngine;
 
-  protected _getId(): string {
-    return this._type + "_" + this._name;
-  }
+  protected _view?: HTMLElement;
 
   constructor(params: FormElementParam, controller: ControllerSimEngine) {
     this._name = params.name;
-    this._id = this._getId();
     this._displayName = params.displayName;
     this._submitLabel = params.submitLabel;
-    this._questions = params.questions;
-    this._contextObj = params.contextObj ?? {}; // default empty object
+    this._questions = params.questions ?? {};
+    this._contextObj = params.contextObj ?? {};
     this._onClick = (params.onClick ?? (() => {})).bind(this);
     this._update = params.update?.bind(this);
     this._controller = controller;
   }
 
+  /* Toolbar trigger button */
+  render(): HTMLElement {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = this._displayName;
+    button.className = TOOLBAR_BUTTON;
+    return button;
+  }
+
   update(value: any): void {
     this._update?.(value);
   }
-}
-
-export class SimpleButton extends InputElement {
-  protected _type: string = "SimpleButton";
-  public _button: HTMLButtonElement;
-  private _view?: HTMLElement;
-
-
-  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
-    super(params, _controller);
-    this._button = document.createElement("button");
-  }
-
-  render(): HTMLButtonElement {
-    this._button.id = this._id;
-    this._button.name = this._id;
-    this._button.type = "button";
-    this._button.className = TOOLBAR_BUTTON + " " + this._type;
-    this._button.textContent = this._displayName;
-
-    this._button.addEventListener("click", (e) => {
-      e.preventDefault();
-      this._onClick(this._name);
-    });
-
-    return this._button;
-  }
 
   getView(): HTMLElement {
-    return this.render();
+    throw new Error("getView() must be implemented by subclass.");
   }
 }
 
-export class TextEntryWithButton extends InputElement {
-  protected _type: string = "TextEntryWithButton";
-  public _form: HTMLFormElement;
-  private _button: HTMLButtonElement;
-  private _view?: HTMLElement;
+//SimpleButton
 
-  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
-    super(params, _controller);
+export class SimpleButton extends InputElement {
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+
+    const container = document.createElement("div");
+    container.className = "p-6 border rounded-lg shadow-sm flex flex-col gap-4";
+
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = this._submitLabel ?? "Execute";
+    btn.className = SUBMIT;
+
+    btn.addEventListener("click", () => {
+      this._onClick();
+    });
+
+    container.append(heading, btn);
+
+    this._view = container;
+    return this._view;
+  }
+}
+
+//TextEntryWithButton
+
+export class TextEntryWithButton extends InputElement {
+  public _form!: HTMLFormElement;
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
 
     this._form = document.createElement("form");
-    this._button = document.createElement("button");
+    this._form.className = FORM_CONTAINER;
+
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+    this._form.appendChild(heading);
+
+    Object.entries(this._questions).forEach(([key, labelText]) => {
+      const row = document.createElement("div");
+      row.className = ROW;
+
+      const labelSpan = document.createElement("span");
+      labelSpan.textContent = labelText;
+      labelSpan.className = LABEL_TEXT;
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.name = key;
+      input.className = INPUT + " flex-1";
+
+      input.addEventListener("input", () => this._update?.());
+
+      row.append(labelSpan, input);
+      this._form.appendChild(row);
+    });
+
+    const buttonRow = document.createElement("div");
+    buttonRow.className = "flex justify-end gap-4 pt-4";
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.textContent = "Clear";
+    clearBtn.className = CLEAR;
+
+    clearBtn.addEventListener("click", () => {
+      this._form.reset();
+      this._update?.();
+    });
+
+    const submit = document.createElement("button");
+    submit.type = "button";
+    submit.textContent = this._submitLabel ?? "Submit";
+    submit.className = SUBMIT;
+
+    submit.addEventListener("click", (e) => {
+      e.preventDefault();
+      this._onClick(e);
+    });
+
+    buttonRow.append(clearBtn, submit);
+    this._form.appendChild(buttonRow);
+
+    this._view = this._form;
+    return this._view;
   }
 
-  render(): HTMLElement {
-    this._form.id = this._id;
+  public getFieldValue(fieldName: string): string | undefined {
+    const input = this._form.querySelector(
+      `input[name="${fieldName}"]`,
+    ) as HTMLInputElement;
+    return input ? input.value : undefined;
+  }
+}
+
+// TextEntryWithDropdownAndButton
+
+export class TextEntryWithDropdownAndButton extends InputElement {
+  public _form!: HTMLFormElement;
+  private _inputs: Record<string, HTMLInputElement> = {};
+  private _selects: Record<string, HTMLSelectElement> = {};
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+
+    this._form = document.createElement("form");
+    this._form.className = FORM_CONTAINER;
+
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+    this._form.appendChild(heading);
+
+    Object.entries(this._questions).forEach(([key, labelText]) => {
+      /* -------- Input Row -------- */
+      const inputRow = document.createElement("div");
+      inputRow.className = ROW;
+
+      const labelSpan = document.createElement("span");
+      labelSpan.textContent = labelText;
+      labelSpan.className = LABEL_TEXT;
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = INPUT + " flex-1";
+
+      input.addEventListener("input", () => this._update?.());
+
+      inputRow.append(labelSpan, input);
+      this._form.appendChild(inputRow);
+
+      /* -------- Dropdown Row -------- */
+      const selectRow = document.createElement("div");
+      selectRow.className = ROW;
+
+      const unitLabel = document.createElement("span");
+      unitLabel.textContent = "Unit";
+      unitLabel.className = LABEL_TEXT;
+
+      const select = document.createElement("select");
+      select.className = INPUT + " flex-1";
+
+      const options = this._contextObj[key]?.options ?? {};
+      Object.entries(options).forEach(([v, l]) => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = String(l);
+        select.appendChild(opt);
+      });
+
+      select.addEventListener("change", () => this._update?.());
+
+      selectRow.append(unitLabel, select);
+      this._form.appendChild(selectRow);
+
+      this._inputs[key] = input;
+      this._selects[key] = select;
+    });
+
+    const buttonRow = document.createElement("div");
+    buttonRow.className = "flex justify-end gap-4 pt-4";
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.textContent = "Clear";
+    clearBtn.className = CLEAR;
+
+    clearBtn.addEventListener("click", () => {
+      this._form.reset();
+      this._update?.();
+    });
+
+    const submit = document.createElement("button");
+    submit.type = "button";
+    submit.textContent = this._submitLabel ?? "Submit";
+    submit.className = SUBMIT;
+
+    submit.addEventListener("click", (e) => {
+      e.preventDefault();
+      this._onClick();
+    });
+
+    buttonRow.append(clearBtn, submit);
+    this._form.appendChild(buttonRow);
+
+    this._view = this._form;
+    return this._view;
+  }
+
+  getTextValue(key: string): string {
+    return this._inputs[key]?.value ?? "";
+  }
+
+  getDropdownValue(key: string): string {
+    return this._selects[key]?.value ?? "";
+  }
+}
+
+// RadioButton
+
+export class RadioButton extends InputElement {
+  public _form!: HTMLFormElement;
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+
+    this._form = document.createElement("form");
+    this._form.className =
+      "rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3";
+
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+    this._form.appendChild(heading);
+
+    Object.entries(this._questions).forEach(([_, value]) => {
+      const label = document.createElement("label");
+      label.className = "flex items-center gap-3 text-sm text-gray-700";
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = this._name;
+      input.value = String(value);
+
+      input.addEventListener("change", () => {
+        if (input.checked) this._onClick(input);
+      });
+
+      label.append(input, document.createTextNode(String(value)));
+      this._form.appendChild(label);
+    });
+
+    this._view = this._form;
+    return this._view;
+  }
+
+  public getValue(): string | null {
+    const selected = this._form.querySelector(
+      "input:checked",
+    ) as HTMLInputElement | null;
+    return selected ? selected.value : null;
+  }
+}
+
+// Checkbox
+
+export class Checkbox extends InputElement {
+  public _form!: HTMLFormElement;
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+
+    this._form = document.createElement("form");
+    this._form.className = FORM_CONTAINER;
+
+    const heading = document.createElement("h2");
+    heading.textContent = this._displayName;
+    heading.className = FORM_TITLE;
+    this._form.appendChild(heading);
+
+    Object.entries(this._questions).forEach(([key, value]) => {
+      const label = document.createElement("label");
+      label.className = LABEL;
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.name = key;
+
+      input.addEventListener("change", () => {
+        this._onClick(input);
+      });
+
+      label.append(input, document.createTextNode(String(value)));
+      this._form.appendChild(label);
+    });
+
+    this._view = this._form;
+    return this._view;
+  }
+}
+
+// FileEntry
+
+export class FileEntry extends InputElement {
+  public _form!: HTMLFormElement;
+
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+
+    this._form = document.createElement("form");
     this._form.className = FORM_CONTAINER;
 
     const heading = document.createElement("h2");
@@ -127,62 +394,34 @@ export class TextEntryWithButton extends InputElement {
       span.textContent = labelText;
 
       const input = document.createElement("input");
-      input.type = "text";
+      input.type = "file";
       input.name = key;
-      input.className = INPUT;
 
-      input.addEventListener("input", () => this._update?.());
+      input.addEventListener("change", (e) => {
+        const target = e.target as HTMLInputElement;
+        if (target.files) {
+          this._onClick(target.files);
+        }
+      });
 
       label.append(span, input);
       this._form.appendChild(label);
     });
 
-    this._button.textContent = this._submitLabel ?? "Submit";
-    this._button.className = SUBMIT;
-    this._button.onclick = this._onClick as EventListener;
-
-    this._form.appendChild(this._button);
-
-    if (this._view) return this._view;
-
-    const wrapper = document.createElement("div");
-    wrapper.className = CONTROL_WRAPPER;
-    wrapper.appendChild(this._form);
-
-    this._view = wrapper;
-
-    return wrapper;
-  }
-
-  getView(): HTMLElement {
-    return this.render();
-  }
-
-  public getFieldValue(fieldName: string): string | undefined {
-    const input = this._form.querySelector(
-      `input[name="${fieldName}"]`,
-    ) as HTMLInputElement;
-    return input ? input.value : undefined;
+    this._view = this._form;
+    return this._view;
   }
 }
 
-export class TextEntryWithDropdownAndButton extends InputElement {
-  protected _type = "TextEntryWithDropdownAndButton";
+// Dropdown
 
-  public _form: HTMLFormElement;
-  private _inputs: Record<string, HTMLInputElement> = {};
-  private _selects: Record<string, HTMLSelectElement> = {};
-  private _button: HTMLButtonElement;
-  private _view?: HTMLElement;
+export class Dropdown extends InputElement {
+  public _form!: HTMLFormElement;
 
-  constructor(params: FormElementParam, controller: ControllerSimEngine) {
-    super(params, controller);
+  getView(): HTMLElement {
+    if (this._view) return this._view;
+
     this._form = document.createElement("form");
-    this._button = document.createElement("button");
-  }
-
-  render(): HTMLElement {
-    this._form.id = this._id;
     this._form.className = FORM_CONTAINER;
 
     const heading = document.createElement("h2");
@@ -190,345 +429,30 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     heading.className = FORM_TITLE;
     this._form.appendChild(heading);
 
-    Object.entries(this._questions).forEach(([key, labelText]) => {
-      /* -------- Text Input -------- */
-      const textLabel = document.createElement("label");
-      textLabel.className = LABEL;
-
-      const span = document.createElement("span");
-      span.textContent = labelText;
-
-      const input = document.createElement("input");
-      input.type = "text";
-      input.className = INPUT;
-
-      input.addEventListener("input", () => this._update?.());
-
-      textLabel.append(span, input);
-      this._form.appendChild(textLabel);
-      this._inputs[key] = input;
-
-      /* -------- Dropdown -------- */
-      const selectLabel = document.createElement("label");
-      selectLabel.className = LABEL;
-
-      const select = document.createElement("select");
-      select.className = INPUT;
-
-      const options = this._contextObj?.[key]?.options ?? {};
-      Object.entries(options).forEach(([v, l]) => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = String(l);
-        select.appendChild(opt);
-      });
-
-      select.addEventListener("change", () => this._update?.());
-
-      selectLabel.append("Unit", select);
-      this._form.appendChild(selectLabel);
-      this._selects[key] = select;
-    });
-
-    /* -------- Submit Button -------- */
-    this._button.textContent = this._submitLabel ?? "Submit";
-    this._button.className = SUBMIT;
-    this._button.onclick = (e) => {
-      e.preventDefault();
-      this._onClick(this);
-    };
-
-    this._form.appendChild(this._button);
-
-    if (this._view) return this._view;
-
-    const wrapper = document.createElement("div");
-    wrapper.className = CONTROL_WRAPPER;
-    wrapper.appendChild(this._form);
-
-    this._view = wrapper;
-
-    return wrapper;
-  }
-
-  /* -------- Public getters -------- */
-
-  getView(): HTMLElement {
-    return this.render();
-  }
-
-  getTextValue(key: string): string {
-    return this._inputs[key]?.value ?? "";
-  }
-
-  getDropdownValue(key: string): string {
-    return this._selects[key]?.value ?? "";
-  }
-}
-
-export class FileEntry extends InputElement {
-  protected _type: string = "FileEntryWithButton";
-  public _form: HTMLFormElement;
-  private _view?: HTMLElement;
-
-  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
-    super(params, _controller);
-
-    this._form = document.createElement("form");
-  }
-
-  render(): HTMLFormElement {
-    this._form.id = this._id;
-    this._form.name = this._id;
-    this._form.classList.add(this._type); // css
-
-    // Add form name/title at the top
-    const heading = document.createElement("h2");
-    heading.textContent = this._displayName;
-    heading.className = "form-title";
-    this._form.appendChild(heading);
-
-    Object.entries(this._questions).forEach(([key, value]) => {
-      const label: HTMLLabelElement = document.createElement("label");
-      const span: HTMLSpanElement = document.createElement("span");
-
-      span.textContent = String(value);
-      label.appendChild(span);
-
-      const input = document.createElement("input");
-      input.type = "file";
-      input.name = key;
-
-      // Add event listener for file selection
-      input.addEventListener("change", (event) => {
-        const target = event.target as HTMLInputElement;
-        // Files selected by the user
-        const files = target.files;
-        console.log("File input changed:", files);
-        this._onClick(target); // Call your handler if needed
-      });
-
-      label.appendChild(input);
-      this._form.appendChild(label);
-      this._form.appendChild(document.createElement("br"));
-    });
-
-    return this._form;
-  }
-
-  getView(): HTMLElement {
-    if (this._view) return this._view;
-    const wrapper = document.createElement("div");
-    wrapper.className = CONTROL_WRAPPER;
-    wrapper.appendChild(this.render());
-    this._view = wrapper;
-    return this._view;
-  }
-}
-
-/* Checkbox allows multiple options to be selected simultaneously.
- * For unique selection, use a RadioButton */
-export class Checkbox extends InputElement {
-  protected _type: string = "Checkbox";
-  public _form: HTMLFormElement;
-  private _view?: HTMLElement;
-
-  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
-    super(params, _controller);
-
-    this._form = document.createElement("form");
-  }
-
-  render(): HTMLFormElement {
-    this._form.id = this._id;
-    this._form.name = this._id;
-    this._form.classList.add(this._type); // css
-
-    // Add form name/title at the top
-    const heading = document.createElement("h2");
-    heading.textContent = this._displayName;
-    heading.className = "form-title";
-    this._form.appendChild(heading);
-
-    Object.entries(this._questions).forEach(([key, value]) => {
-      const label: HTMLLabelElement = document.createElement("label");
-      const span: HTMLSpanElement = document.createElement("span");
-
-      span.textContent = String(value);
-      label.appendChild(span);
-
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.name = key;
-
-      // Add event listener to the checkbox
-      input.addEventListener("change", (event) => {
-        const target = event.target as HTMLInputElement;
-        console.log(`${target.name} checked:`, target.checked);
-        this._onClick(target);
-      });
-
-      label.appendChild(input);
-      this._form.appendChild(label);
-      this._form.appendChild(document.createElement("br"));
-    });
-
-    return this._form;
-  }
-
-  getView(): HTMLElement {
-    if (this._view) return this._view;
-    const wrapper = document.createElement("div");
-    wrapper.className = CONTROL_WRAPPER;
-    wrapper.appendChild(this.render());
-    this._view = wrapper;
-    return this._view;
-  }
-}
-
-/* Radio buttons allow for a unique selection among choices */
-export class RadioButton extends InputElement {
-  protected _type: string = "RadioButton";
-  public _form: HTMLFormElement;
-  private _view?: HTMLElement;
-
-  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
-    super(params, _controller);
-
-    this._form = document.createElement("form");
-  }
-
-  render(): HTMLElement {
-    this._form.id = this._id;
-    this._form.name = this._id;
-    // Card container
-    this._form.className =
-      "rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3";
-
-    // Add form name/title at the top
-    const heading = document.createElement("h2");
-    heading.textContent = this._displayName;
-    heading.className = "text-sm font-semibold text-gray-800";
-    this._form.appendChild(heading);
-
-    // Use the same name for all radios in the group for unique selection
-    Object.entries(this._questions).forEach(([_key, value]) => {
-      const label: HTMLLabelElement = document.createElement("label");
-      label.className =
-        "flex items-center gap-3 cursor-pointer text-sm text-gray-700";
-
-      const input = document.createElement("input");
-      input.type = "radio";
-      input.name = this._name; // group name
-      input.value = String(value);
-
-      // Tailwind-styled radio
-      input.className = "h-4 w-4 accent-blue-600";
-
-      input.addEventListener("change", (event) => {
-        const target = event.target as HTMLInputElement;
-        if (target.checked) {
-          this._onClick(target);
-        }
-      });
-
-      const text = document.createElement("span");
-      text.textContent = String(value);
-
-      label.append(input, text);
-      this._form.appendChild(label);
-    });
-
-    if (this._view) return this._view;
-
-    /* -------- Wrapper for toolbar alignment -------- */
-    const wrapper = document.createElement("div");
-    wrapper.className = "flex flex-col items-start";
-    wrapper.appendChild(this._form);
-
-    this._view = wrapper;
-
-    return wrapper;
-  }
-
-  getView(): HTMLElement {
-    return this.render();
-  }
-
-  // Get current selected value
-
-  public getValue(): string | null {
-    const selected = this._form.querySelector(
-      "input:checked",
-    ) as HTMLInputElement | null;
-    return selected ? selected.value : null;
-  }
-}
-// Dropdown list
-
-export class Dropdown extends InputElement {
-  protected _type: string = "Dropdown";
-  public _form: HTMLFormElement;
-  private _button: HTMLButtonElement;
-  private _select: HTMLSelectElement;
-  private _view?: HTMLElement;
-
-  constructor(params: FormElementParam, _controller: ControllerSimEngine) {
-    super(params, _controller);
-    this._form = document.createElement("form");
-    this._button = document.createElement("button");
-    this._select = document.createElement("select");
-  }
-
-  render(): HTMLFormElement {
-    this._form.id = this._id;
-    this._form.name = this._id;
-    this._form.classList.add(this._type);
-
-    // Add form title
-    const heading = document.createElement("h2");
-    heading.textContent = this._displayName;
-    heading.className = "form-title";
-    this._form.appendChild(heading);
-
-    // Dropdown
-    this._select = document.createElement("select");
-    this._select.name = this._name;
+    const select = document.createElement("select");
+    select.className = INPUT;
 
     Object.entries(this._questions).forEach(([value, labelText]) => {
       const option = document.createElement("option");
-      option.value = String(value);
-      option.textContent = String(labelText);
-      this._select.appendChild(option);
+      option.value = value;
+      option.textContent = labelText;
+      select.appendChild(option);
     });
 
-    this._form.appendChild(this._select);
+    this._form.appendChild(select);
 
-    // Submit button
+    const submit = document.createElement("button");
+    submit.type = "button";
+    submit.textContent = this._submitLabel ?? "Submit";
+    submit.className = SUBMIT;
 
-    this._button.name = "Submit";
-    this._button.textContent = this._submitLabel ?? "Submit";
-    this._button.className = SUBMIT;
-
-    this._button.addEventListener("click", () => {
-      this._onClick(this._select.value);
+    submit.addEventListener("click", () => {
+      this._onClick(select.value);
     });
 
-    this._form.appendChild(this._button);
+    this._form.appendChild(submit);
 
-    return this._form;
-  }
-
-  getView(): HTMLElement {
-    if (this._view) return this._view;
-    const wrapper = document.createElement("div");
-    wrapper.className = CONTROL_WRAPPER;
-    wrapper.appendChild(this.render());
-    this._view = wrapper;
+    this._view = this._form;
     return this._view;
-  }
-
-  getValue(): string {
-    return this._select.value;
   }
 }

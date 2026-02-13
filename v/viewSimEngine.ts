@@ -255,7 +255,7 @@ export class ViewSimEngine {
     
 
     // Create workbench
-    this._workbench = new Workbench("mainWorkbench", [smallToolbar1, smallToolbar]);
+    this._workbench = new Workbench("mainWorkbench", [smallToolbar, smallToolbar1]);
   } // end constructor
 
   render(): void {
