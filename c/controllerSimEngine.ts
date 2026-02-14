@@ -142,14 +142,18 @@ export class ControllerSimEngine {
 
       console.log("[Controller] Submitting client:", { name, email });
 
+      this._model.setOutputMessage("Submitting client...");
+
       const created = await createClient("http://localhost:3001", {
         name,
         email,
       });
 
       console.log("[Controller] Client created:", created);
+      this._model.setOutputMessage(`Client "${created.name}" successfully created.`);
     } catch (err) {
       console.error("[Controller] Submit failed:", (err as Error).message);
+      this._model.setOutputMessage(`Submit failed: ${(err as Error).message}`);
     }
   }
 
@@ -162,21 +166,25 @@ export class ControllerSimEngine {
 
     if (speed == null || Number.isNaN(speed)) {
       console.error("[Controller] Speed value is required");
+      this._model.setOutputMessage("Speed value is required.");
       return;
     }
 
     if (!speedUnit) {
       console.error("[Controller] Speed unit is required");
+      this._model.setOutputMessage("Speed unit is required.");
       return;
     }
 
     if (acceleration == null || Number.isNaN(acceleration)) {
       console.error("[Controller] Acceleration value is required");
+      this._model.setOutputMessage("Acceleration value is required.");
       return;
     }
 
     if (!accelerationUnit) {
       console.error("[Controller] Acceleration unit is required");
+      this._model.setOutputMessage("Acceleration unit is required.");
       return;
     }
 
@@ -186,5 +194,11 @@ export class ControllerSimEngine {
       acceleration,
       accelerationUnit,
     });
+    
+    this._model.setOutputMessage(
+      ` Physical Parameters Submitted:
+       Speed: ${speed} (${speedUnit})
+       Acceleration: ${acceleration} (${accelerationUnit})`
+    );
   }
 }

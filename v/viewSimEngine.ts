@@ -10,6 +10,7 @@ import { Toolbar } from "./toolbar.js";
 import { Workbench } from "./workbench.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
+import { Output } from "./output.js";
 import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 
@@ -126,8 +127,9 @@ export class ViewSimEngine {
         },
         acceleration: {
           options: {
-            ms2: "m/s²",
-            g: "g",
+            ms2: "m/s^2",
+            cms2: "cm/s^2",
+            mis2: "mi/hr^2",
           },
         },
       })
@@ -155,7 +157,7 @@ export class ViewSimEngine {
         const accUnitMap: Record<string, AccelerationUnit> = {
           ms2: AccelerationUnit.MeterPerSecondSquared,
           cms2: AccelerationUnit.CmPerSecondSquared,
-          mis2: AccelerationUnit.MilePerHourSquared, 
+          mis2: AccelerationUnit.MilePerHourSquared,
         };
 
         this._controller.onSpeedUnitChange(speedUnitMap[speedUnit]);
@@ -242,7 +244,7 @@ export class ViewSimEngine {
     const smallToolbar = new Toolbar(" Toolbar 1", [
       shaderButton,
       clientForm,
-      dimensionsButton
+      dimensionsButton,
     ]);
 
     const smallToolbar1 = new Toolbar(" Toolbar 2", [
@@ -251,11 +253,20 @@ export class ViewSimEngine {
       physicalParams,
     ]);
 
-
-    
-
     // Create workbench
-    this._workbench = new Workbench("mainWorkbench", [smallToolbar, smallToolbar1]);
+    this._workbench = new Workbench("mainWorkbench", [
+      smallToolbar,
+      smallToolbar1,
+    ]);
+
+    const output = new Output();
+
+    // register as observer
+    controller.model.outputMessage.register(output);
+
+    // append to UI
+    this._workbench.getElement().appendChild(output.getElement());
+
   } // end constructor
 
   render(): void {

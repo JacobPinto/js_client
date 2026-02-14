@@ -22,6 +22,8 @@ export class ModelSimEngine {
 
   private _accelerationValue = new ModelGeneric<number>();
   private _accelerationUnit = new ModelGeneric<AccelerationUnit>();
+
+  private _outputMessage = new ModelGeneric<string>();
   
   
   constructor() {
@@ -68,6 +70,10 @@ export class ModelSimEngine {
     return this._accelerationUnit;
   }
 
+  public get outputMessage() {
+    return this._outputMessage;
+  }
+
 
   // Setters
   public set dimension(dim: Dimensions) {
@@ -111,6 +117,10 @@ export class ModelSimEngine {
     console.log("[Model] accelerationUnit =", u);
     this._accelerationUnit.setData(u);
   } 
+
+  public setOutputMessage(msg: string) {    
+    this._outputMessage.setData(msg);
+  }
 
   
   // Software params.
