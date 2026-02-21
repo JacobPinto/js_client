@@ -129,6 +129,13 @@ const router = express.Router();
 });*/
 
 // Create a new user
+
+// command to get IP address
+// ip route show | grep -i default | awk '{ print $3}'
+
+
+// curl -X POST http://localhost:3000/user/createnew/ -H "Content-Type: application/json"   -d '{"name": "Bob Smith", "email": "bob.smith@example.com" }'
+
 router.post('/createnew/', (req, res) => {
   const { name, email } = req.body;
   const newUser = new UserInfo(name, email);
