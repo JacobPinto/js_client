@@ -9,6 +9,7 @@ export class Workbench {
   private _contentArea: HTMLElement;
 
   private _activeToolbar: Toolbar | null = null;
+  private _activeSelectorBtn: HTMLElement | null = null;
 
   constructor(name: string, toolbars: Toolbar[]) {
     this._toolbars = toolbars;
@@ -26,10 +27,33 @@ export class Workbench {
 
       selectorBtn.textContent = toolbar.getName();
       selectorBtn.className =
-        "px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800";
+        "px-6 py-2 rounded-md bg-gray-100 text-gray-700 border border-gray-200 hover:bg-white hover:shadow-md transition-all duration-200";
 
       selectorBtn.addEventListener("click", () => {
-        this.showToolbar(toolbar);
+        // Remove active style from all selector buttons
+        this._toolbarSelector.querySelectorAll("button").forEach((btn) => {
+          btn.classList.remove(
+            "bg-white",
+            "shadow-md",
+            "ring-1",
+            "ring-gray-300",
+            "text-gray-800",
+          );
+
+          btn.classList.add("bg-gray-100", "text-gray-700");
+        });
+
+        //active style to clicked button
+        selectorBtn.classList.remove("bg-gray-100", "text-gray-700");
+        selectorBtn.classList.add(
+          "bg-white",
+          "text-gray-800",
+          "shadow-md",
+          "ring-1",
+          "ring-gray-300",
+        );
+
+        this.showToolbar(toolbar, selectorBtn);
       });
 
       this._toolbarSelector.appendChild(selectorBtn);
@@ -55,8 +79,18 @@ export class Workbench {
 
   //  Replace Toolbar
 
-  private showToolbar(toolbar: Toolbar): void {
+  private showToolbar(toolbar: Toolbar, selectorBtn: HTMLElement): void {
     if (this._activeToolbar === toolbar) return;
+
+    //active toolbar selector button highlighting
+    if (this._activeSelectorBtn) {
+      this._activeSelectorBtn.classList.remove("bg-blue-600", "shadow-lg");
+      this._activeSelectorBtn.classList.add("bg-gray-700");
+    }
+
+    selectorBtn.classList.remove("bg-gray-700");
+    selectorBtn.classList.add("bg-blue-600", "shadow-lg");
+    this._activeSelectorBtn = selectorBtn;
 
     toolbar.renderButtons((view: HTMLElement) => {
       this.showView(view);

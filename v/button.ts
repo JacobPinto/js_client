@@ -5,8 +5,11 @@ import { FormElementParam } from "./buttonParams.js";
 
 // Toolbar button
 const TOOLBAR_BUTTON =
-  "px-4 py-2 rounded-md bg-blue-500 text-white " +
-  "hover:bg-blue-600 transition text-sm font-medium shadow-sm";
+  "px-4 py-2 rounded-md " +
+  "bg-gray-100 text-gray-700 " +
+  "border border-gray-200 " +
+  "hover:bg-white hover:shadow-md " +
+  "transition-all duration-200 text-sm font-medium";
 
 // Form container
 const FORM_CONTAINER = "flex flex-col gap-4";
@@ -31,12 +34,16 @@ const INPUT =
 
 // Submit button
 const SUBMIT =
-  "px-4 py-2 rounded-md bg-gray-800 text-white " +
-  "hover:bg-gray-900 transition shadow-sm";
+  "px-6 py-2 rounded-md" +
+  "bg-gray-100 " +
+  "text-gray-700 " +
+  "border border-gray-200 " +
+  "hover:shadow-md " +
+  "hover:border-gray-300 " +
+  "hover:bg-white " +
+  "transition-all duration-200";
 
-const CLEAR =
-  "px-4 py-2 rounded-md bg-gray-800 text-white " +
-  "hover:bg-gray-900 transition shadow-sm";
+const CLEAR = SUBMIT;
 
 //Base Class
 
@@ -220,16 +227,8 @@ export class TextEntryWithDropdownAndButton extends InputElement {
       inputRow.append(labelSpan, input);
       this._form.appendChild(inputRow);
 
-      /* -------- Dropdown Row -------- */
-      const selectRow = document.createElement("div");
-      selectRow.className = ROW;
-
-      const unitLabel = document.createElement("span");
-      unitLabel.textContent = "Unit";
-      unitLabel.className = LABEL_TEXT;
-
       const select = document.createElement("select");
-      select.className = INPUT + " flex-1";
+      select.className = INPUT + " w-40";
 
       const options = this._contextObj[key]?.options ?? {};
       Object.entries(options).forEach(([v, l]) => {
@@ -241,8 +240,8 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 
       select.addEventListener("change", () => this._update?.());
 
-      selectRow.append(unitLabel, select);
-      this._form.appendChild(selectRow);
+      // Add dropdown to SAME ROW as input
+      inputRow.appendChild(select);
 
       this._inputs[key] = input;
       this._selects[key] = select;
