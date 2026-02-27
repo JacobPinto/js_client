@@ -4,19 +4,25 @@ import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ViewSimEngine } from "../v/viewSimEngine.js";
 
-// Local function to create client via HTTP
-async function createClient(
-  baseUrl: string,
-  data: { name: string; email: string },
-) {
-  const response = await fetch(`${baseUrl}/client`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+interface ServerRequestConfig {
+  method: "GET" | "POST" | "PUT" | "DELETE";
+  endpoint: string;
+  body?: any;
+}
+
+async function serverRequest(config: ServerRequestConfig) {
+  const response = await fetch(`http://localhost:3000${config.endpoint}`, {
+    method: config.method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: config.body ? JSON.stringify(config.body) : undefined,
   });
+
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
   return response.json();
 }
 
@@ -144,9 +150,10 @@ export class ControllerSimEngine {
 
       this._model.setOutputMessage("Submitting client...");
 
-      const created = await createClient("http://localhost:3001", {
-        name,
-        email,
+      const created = await serverRequest({
+        method: "POST",
+        endpoint: "/user/createnew",
+        body: { name, email },
       });
 
       console.log("[Controller] Client created:", created);

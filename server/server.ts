@@ -1,5 +1,6 @@
 
 import express from 'express';
+import cors from 'cors';  
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -21,10 +22,14 @@ app.set("view engine", "ejs");
 app.set('views', path.join(__dirname, 'views'));
 // By involking app.use() we reuse this stuff across multiple endpoints
 // Middleware can also be with router.use(...)
+
 function loggerMiddleware(req:any,res:any,next:any){
   console.log(req.originalUrl);
   next();
 }
+
+// place CORS early so other middleware/routes see the headers
+app.use(cors());
 app.use(loggerMiddleware);
 app.use(express.urlencoded({extended:true})); // for parsing application/x-www-form-urlencoded
 app.use(express.json()); // for parsing application/json
