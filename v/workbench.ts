@@ -1,5 +1,13 @@
 import { Toolbar } from "./toolbar.js";
 
+/**
+ * Workbench
+ * 
+ * Main layout container that manages multiple toolbars and content area.
+ * Provides toolbar selection via top nav buttons and displays corresponding form views.
+ * Structure: Toolbar Selector (top) -> Toolbar Buttons (second) -> Content Area (main)
+ */
+
 export class Workbench {
   private _toolbars: Toolbar[];
   private _container: HTMLElement;
@@ -14,10 +22,12 @@ export class Workbench {
   constructor(name: string, toolbars: Toolbar[]) {
     this._toolbars = toolbars;
 
+    // Main container
     this._container = document.createElement("div");
     this._container.className = "flex flex-col gap-4 w-full";
 
-    // Toolbar Selector section
+    // =================== Toolbar Selector Section ===================
+    // Top navigation to switch between different toolbars
 
     this._toolbarSelector = document.createElement("div");
     this._toolbarSelector.className = "flex gap-4 border-b border-gray-300 p-4";
@@ -43,7 +53,7 @@ export class Workbench {
           btn.classList.add("bg-gray-100", "text-gray-700");
         });
 
-        //active style to clicked button
+        // Apply active style to clicked button
         selectorBtn.classList.remove("bg-gray-100", "text-gray-700");
         selectorBtn.classList.add(
           "bg-white",
@@ -59,12 +69,14 @@ export class Workbench {
       this._toolbarSelector.appendChild(selectorBtn);
     });
 
-    //Dynamic Toolbar Container
+    // =================== Toolbar Container Section ===================
+    // Displays buttons from the active toolbar
 
     this._toolbarContainer = document.createElement("div");
     this._toolbarContainer.className = "flex flex-wrap gap-4 p-4";
 
-    //Content Area
+    // =================== Content Area Section ===================
+    // Displays the selected form/view from button clicks
 
     this._contentArea = document.createElement("div");
     this._contentArea.className =
@@ -79,10 +91,14 @@ export class Workbench {
 
   //  Replace Toolbar
 
+  /**
+   * Switches to a different toolbar and updates selector button styling.
+   * Renders the toolbar's buttons and clears the content area.
+   */
   private showToolbar(toolbar: Toolbar, selectorBtn: HTMLElement): void {
     if (this._activeToolbar === toolbar) return;
 
-    //active toolbar selector button highlighting
+    // Update selector button styling for selected toolbar
     if (this._activeSelectorBtn) {
       this._activeSelectorBtn.classList.remove("bg-blue-600", "shadow-lg");
       this._activeSelectorBtn.classList.add("bg-gray-700");
@@ -98,16 +114,22 @@ export class Workbench {
 
     this._toolbarContainer.replaceChildren(toolbar.getElement());
 
-    this._contentArea.replaceChildren(); // clear content
+    // Clear content area for new toolbar
+    this._contentArea.replaceChildren();
     this._activeToolbar = toolbar;
   }
 
-  //Replace Content View
-
+  /**
+   * Displays a form view in the content area.
+    * Replaces any existing content with the new view.
+   */
   private showView(view: HTMLElement): void {
     this._contentArea.replaceChildren(view);
   }
 
+  /**
+   * Get the main workbench container element.
+   */
   getElement(): HTMLElement {
     return this._container;
   }

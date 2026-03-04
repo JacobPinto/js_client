@@ -5,6 +5,13 @@ import { SpeedUnit, AccelerationUnit } from './quantities.js'
 import {ModelGeneric} from '../m/modelGeneric.js';
 import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
 
+/**
+ * ModelSimEngine
+ * 
+ * Core simulation model that manages all simulation parameters and state.
+ * Uses ModelGeneric to provide observable state management for each property.
+ * This allows the View and Controller layers to subscribe to model changes.
+ */
 export class ModelSimEngine {
 
   // The smaller models help to build the larger simulation model.
@@ -12,17 +19,19 @@ export class ModelSimEngine {
   private _shader: ModelGeneric<ShaderType>;
   private _vertex: ModelGeneric<VertexFormat>;
 
-
-  // new form fields
+  // User information models
   private _clientName = new ModelGeneric<string>();
   private _clientEmail = new ModelGeneric<string>();
 
+  // Physical parameters - Speed
   private _speedValue = new ModelGeneric<number>();
   private _speedUnit = new ModelGeneric<SpeedUnit>();
 
+  // Physical parameters - Acceleration
   private _accelerationValue = new ModelGeneric<number>();
   private _accelerationUnit = new ModelGeneric<AccelerationUnit>();
 
+  // Output 
   private _outputMessage = new ModelGeneric<string>();
   
   
@@ -33,7 +42,9 @@ export class ModelSimEngine {
 
   }
 
-  // Getters
+  // GETTERS
+  // Return the ModelGeneric wrappers to allow observers to subscribe to state changes
+
   public get dimension(): ModelGeneric<Dimensions> {
     return this._dimension;
   }
@@ -75,7 +86,9 @@ export class ModelSimEngine {
   }
 
 
-  // Setters
+  // SETTERS 
+  // Update model data and log changes 
+  
   public set dimension(dim: Dimensions) {
     this._dimension.setData(dim);
   }

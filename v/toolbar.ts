@@ -3,6 +3,13 @@ export interface RenderableButton {
   getView(): HTMLElement;
 }
 
+/**
+ * Toolbar
+ * 
+ * Container that renders toolbar of buttons.
+ * Each button toggles between showing different form views.
+ * Manages button state (active/inactive styling) and view switching.
+ */
 export class Toolbar {
   private _name: string;
   private _container: HTMLElement;
@@ -33,7 +40,11 @@ export class Toolbar {
     return this._container;
   }
 
-  /* Render toolbar buttons only */
+  /**
+   * Renders all buttons in the toolbar.
+   * Handles button click events to toggle active state and display form views.
+   * onClick - Callback function invoked with the selected form view
+   */
   renderButtons(onClick: (view: HTMLElement) => void): void {
     this._container.replaceChildren();
 
@@ -41,7 +52,7 @@ export class Toolbar {
       const toolbarButton = btn.render();
 
       toolbarButton.addEventListener("click", () => {
-        // Remove active styles from previous button
+        // Deactivate previously selected button
         if (this._activeButton) {
           this._activeButton.classList.remove(
             "bg-white",
@@ -54,7 +65,7 @@ export class Toolbar {
           this._activeButton.classList.add("bg-gray-100", "text-gray-700");
         }
 
-        // Apply active styles to clicked button
+        // Activate clicked button with highlighted styles
         toolbarButton.classList.remove("bg-gray-100", "text-gray-700");
         toolbarButton.classList.add(
           "bg-white",
@@ -66,7 +77,7 @@ export class Toolbar {
 
         this._activeButton = toolbarButton;
 
-        // Show form/content
+        // Display the selected form/view
         onClick(btn.getView());
       });
 

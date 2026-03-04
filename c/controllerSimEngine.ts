@@ -4,7 +4,7 @@ import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ViewSimEngine } from "../v/viewSimEngine.js";
 
-// Local function to create client via HTTP
+// Local function to create client via server
 async function createClient(
   baseUrl: string,
   data: { name: string; email: string },
@@ -20,6 +20,13 @@ async function createClient(
   return response.json();
 }
 
+/**
+ * ControllerSimEngine
+ * 
+ * MVC Controller that manages interactions between the View and Model.
+ * Handles user input events, validates data, and coordinates model updates.
+ * Acts as an intermediary that processes view events and updates the simulation model.
+ */
 export class ControllerSimEngine {
   private _model: ModelSimEngine;
 
@@ -95,6 +102,8 @@ export class ControllerSimEngine {
     this._model.vertex = vertexFormat;
   }
 
+  // Handle input changes for client details
+
   public onClientNameChange(v: string) {
     this.model.setClientName(v);
   }
@@ -102,6 +111,9 @@ export class ControllerSimEngine {
   public onClientEmailChange(v: string) {
     this.model.setClientEmail(v);
   }
+
+
+  // Handle input changes for speed and acceleration values/units
 
   public onSpeedValueChange(v: number) {
     this.model.setSpeedValue(v);
@@ -131,6 +143,14 @@ export class ControllerSimEngine {
 
 */
 
+  // SUBMISSION HANDLERS 
+  // Handle form submissions and data processing
+
+  /**
+   * Submits client information to the backend server.
+   * Validates client name and email, sends HTTP POST request, and updates output message.
+   * Handles errors with user-friendly feedback.
+   */
   public async submitClient() {
     try {
       const name = this._model.clientName.getData();
@@ -157,6 +177,13 @@ export class ControllerSimEngine {
     }
   }
 
+  /*
+
+   * Submits physical parameters (speed and acceleration with units).
+   * Validates all required fields and provides error feedback.
+   * Updates the model output message with submission status or error details.
+   * 
+   */
   submitPhysicalParams() {
     const speed = this._model.speedValue.getData();
     const speedUnit = this._model.speedUnit.getData();
@@ -164,24 +191,28 @@ export class ControllerSimEngine {
     const acceleration = this._model.accelerationValue.getData();
     const accelerationUnit = this._model.accelerationUnit.getData();
 
+    //Speed value must be a valid number
     if (speed == null || Number.isNaN(speed)) {
       console.error("[Controller] Speed value is required");
       this._model.setOutputMessage("Speed value is required.");
       return;
     }
 
+    //Speed unit must be selected
     if (!speedUnit) {
       console.error("[Controller] Speed unit is required");
       this._model.setOutputMessage("Speed unit is required.");
       return;
     }
 
+    // Acceleration value must be a valid number
     if (acceleration == null || Number.isNaN(acceleration)) {
       console.error("[Controller] Acceleration value is required");
       this._model.setOutputMessage("Acceleration value is required.");
       return;
     }
 
+    // Acceleration unit must be selected
     if (!accelerationUnit) {
       console.error("[Controller] Acceleration unit is required");
       this._model.setOutputMessage("Acceleration unit is required.");

@@ -1,5 +1,13 @@
-import { Observer } from '../m/modelObserver';
+import { Observer } from '../m/modelObserver.js';
 
+/**
+ * ModelGeneric<T>
+ * 
+ * A generic observable class that implements the Observer design pattern.
+ * Provides state management for any data type T with change notification capabilities.
+ * 
+ * When data is updated, all registered observers are notified of the change.
+ */
 export class ModelGeneric<T> {
   /* 
    * does not necessarily have a value. If it's undefined we

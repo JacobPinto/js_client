@@ -1,7 +1,7 @@
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 import { FormElementParam } from "./buttonParams.js";
 
-/* ================= Tailwind Design ================= */
+// ================= Tailwind CSS Style Constants =================
 
 // Toolbar button
 const TOOLBAR_BUTTON =
@@ -71,7 +71,7 @@ export class InputElement {
     this._controller = controller;
   }
 
-  /* Toolbar trigger button */
+  // Creates the toolbar button that opens this element's view
   render(): HTMLElement {
     const button = document.createElement("button");
     button.type = "button";
@@ -80,10 +80,12 @@ export class InputElement {
     return button;
   }
 
+  // Called by observers when model data changes
   update(value: any): void {
     this._update?.(value);
   }
 
+  // Returns the full form/input view for display
   getView(): HTMLElement {
     throw new Error("getView() must be implemented by subclass.");
   }
@@ -118,8 +120,8 @@ export class SimpleButton extends InputElement {
   }
 }
 
-//TextEntryWithButton
-
+// Text Input with Submit Button 
+// Form with text input fields and Clear/Submit buttons
 export class TextEntryWithButton extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -183,6 +185,7 @@ export class TextEntryWithButton extends InputElement {
     return this._view;
   }
 
+  // Retrieves value from a specific text input field
   public getFieldValue(fieldName: string): string | undefined {
     const input = this._form.querySelector(
       `input[name="${fieldName}"]`,
@@ -191,7 +194,7 @@ export class TextEntryWithButton extends InputElement {
   }
 }
 
-// TextEntryWithDropdownAndButton
+//  Text Input with Dropdown and Submit and clear Buttons
 
 export class TextEntryWithDropdownAndButton extends InputElement {
   public _form!: HTMLFormElement;
@@ -230,6 +233,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
       const select = document.createElement("select");
       select.className = INPUT + " w-40";
 
+      // Retrieve options from context for dropdown
       const options = this._contextObj[key]?.options ?? {};
       Object.entries(options).forEach(([v, l]) => {
         const opt = document.createElement("option");
@@ -240,9 +244,11 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 
       select.addEventListener("change", () => this._update?.());
 
+      // Keep input and dropdown paired in same row
       // Add dropdown to SAME ROW as input
       inputRow.appendChild(select);
 
+      // Store references for retrieving values
       this._inputs[key] = input;
       this._selects[key] = select;
     });
@@ -277,17 +283,19 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     return this._view;
   }
 
+  // Get text input value by field key
   getTextValue(key: string): string {
     return this._inputs[key]?.value ?? "";
   }
 
+  // Get dropdown select value by field key
   getDropdownValue(key: string): string {
     return this._selects[key]?.value ?? "";
   }
 }
 
-// RadioButton
-
+// =================== Radio Button Group ===================
+// Multiple radio options where only one can be selected
 export class RadioButton extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -324,6 +332,7 @@ export class RadioButton extends InputElement {
     return this._view;
   }
 
+  // Get currently selected radio button value
   public getValue(): string | null {
     const selected = this._form.querySelector(
       "input:checked",
@@ -332,8 +341,8 @@ export class RadioButton extends InputElement {
   }
 }
 
-// Checkbox
-
+//  Checkbox 
+// Multiple checkboxes for multi-select options
 export class Checkbox extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -412,8 +421,8 @@ export class FileEntry extends InputElement {
   }
 }
 
-// Dropdown
-
+// Dropdown 
+// Single select dropdown with options and submit button
 export class Dropdown extends InputElement {
   public _form!: HTMLFormElement;
 
