@@ -2,13 +2,22 @@ import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 
 import { ModelSimEngine } from "../m/modelSimEngine.js";
-import { ViewSimEngine } from "../v/viewSimEngine.js";
 
+/*
+interface for server requests.
+Defines the structure of HTTP requests sent to the backend.
+*/
 interface ServerRequestConfig {
   method: "GET" | "POST" | "PUT" | "DELETE";
   endpoint: string;
   body?: any;
 }
+
+/*
+Generic server request function.
+Used to send HTTP requests (GET, POST, PUT, DELETE) to the backend server.
+This centralizes all fetch calls in one place.
+*/
 
 async function serverRequest(config: ServerRequestConfig) {
   const response = await fetch(`http://localhost:3000${config.endpoint}`, {
@@ -137,6 +146,9 @@ export class ControllerSimEngine {
 
 */
 
+// CLIENT SUBMISSION
+//Sends client information to the backend server.
+
   public async submitClient() {
     try {
       const name = this._model.clientName.getData();
@@ -150,6 +162,7 @@ export class ControllerSimEngine {
 
       this._model.setOutputMessage("Submitting client...");
 
+      // Send POST request to server to create new client
       const created = await serverRequest({
         method: "POST",
         endpoint: "/user/createnew",
