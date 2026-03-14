@@ -46,7 +46,11 @@ export class ViewSimEngine {
       })
       .setUpdate(function (this: RadioButton, dim: Dimensions) {
         if (!this._controller) return;
-        if (!this._form) return;
+
+        // Ensure the form exists (view may not have been rendered yet)
+        if (!this._form) {
+          this.getView();
+        }
 
         console.log(`[ShaderButton] Reacting to dimension: ${dim}`);
         const radios = this._form.querySelectorAll(
