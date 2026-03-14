@@ -4,6 +4,9 @@
     "outDir": "../dist/server"
   },
   "include": [
-    "*.ts"
-, "user/user.ts"  ]
+    "*.ts",
+    "user/**/*.ts",
+    "grpc/**/*.ts",
+    "geometry/**/*.ts"
+  ]
 }

@@ -4,11 +4,13 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build",
+    "build": "tsc --build && npm run organize-grpc",
     "clean": "tsc --build --clean",
+    "organize-grpc": "node -e \"const fs = require('fs'); const path = require('path'); const grpcDir = 'dist/server/grpc'; if (!fs.existsSync(grpcDir)) fs.mkdirSync(grpcDir, {recursive: true}); ['grpcServer', 'grpcClient'].forEach(f => {  ['js', 'js.map', 'd.ts'].forEach(ext => { const src = path.join('dist/server', f + '.' + ext); if (fs.existsSync(src)) fs.renameSync(src, path.join(grpcDir, f + '.' + ext)); }); }); if (fs.existsSync('server/grpc/client.proto') && !fs.existsSync(path.join(grpcDir, 'client.proto'))) fs.copyFileSync('server/grpc/client.proto', path.join(grpcDir, 'client.proto'));\"",
     "lint": "eslint . --ext .ts",
     "dev:server": "nodemon --exec ts-node server/server.ts",
-    "start:server": "node dist/server/server.js"
+    "start:server": "node dist/server/server.js",
+    "grpc:test": "node dist/server/grpc/grpcClient.js"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +35,8 @@
   },
   "type": "module",
   "dependencies": {
+    "@grpc/grpc-js": "^1.14.3",
+    "@grpc/proto-loader": "^0.8.0",
     "cors": "^2.8.6",
     "express": "^5.1.0"
   }

@@ -1,4 +1,4 @@
-import { Observer } from '../m/modelObserver';
+import { Observer } from '../m/modelObserver.js';
 
 export class ModelGeneric<T> {
   /* 

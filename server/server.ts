@@ -9,6 +9,7 @@ import userRouter from './user/user.js'; // use the default export
 import { isCurrentUser } from './user/user.js';
 import geometryRouter from './geometry/geometry.js';
 import projectRouter from './project.js';
+import { startGrpcServer } from './grpc/grpcServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -110,4 +111,9 @@ app.get('/users/:userId',(req,res)=>{
 // Redirect a respose through another endpoint
 
 // Listen on port
-app.listen(ServerConfig.port);
+app.listen(ServerConfig.port, () => {
+  console.log(`HTTP server running at http://localhost:${ServerConfig.port}`);
+
+  // Start gRPC server after HTTP server starts
+  startGrpcServer();
+});
