@@ -1,21 +1,19 @@
-
-import { SpeedUnit, AccelerationUnit } from './quantities.js'
+import { SpeedUnit, AccelerationUnit } from "./quantities.js";
 // import { Density, DensityUnit } from './quantities'
 
-import {ModelGeneric} from '../m/modelGeneric.js';
-import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
+import { ModelGeneric } from "../m/modelGeneric.js";
+import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 
 export class ModelSimEngine {
-
   // The smaller models help to build the larger simulation model.
   private _dimension: ModelGeneric<Dimensions>;
   private _shader: ModelGeneric<ShaderType>;
   private _vertex: ModelGeneric<VertexFormat>;
 
-
   // new form fields
   private _clientName = new ModelGeneric<string>();
   private _clientEmail = new ModelGeneric<string>();
+  private _userId = new ModelGeneric<string>();
 
   private _speedValue = new ModelGeneric<number>();
   private _speedUnit = new ModelGeneric<SpeedUnit>();
@@ -24,13 +22,20 @@ export class ModelSimEngine {
   private _accelerationUnit = new ModelGeneric<AccelerationUnit>();
 
   private _outputMessage = new ModelGeneric<string>();
-  
-  
+
+  private _uploadedFile = new ModelGeneric<File>();
+
+  // Grid params.
+  private _gridName = new ModelGeneric<string>();
+  private _nbPoints = new ModelGeneric<[number, number]>();
+  private _startCoords = new ModelGeneric<[number, number]>();
+  private _endCoords = new ModelGeneric<[number, number]>();
+  private _grids = new ModelGeneric<any[]>();
+
   constructor() {
     this._dimension = new ModelGeneric<Dimensions>();
     this._shader = new ModelGeneric<ShaderType>();
     this._vertex = new ModelGeneric<VertexFormat>();
-
   }
 
   // Getters
@@ -54,10 +59,14 @@ export class ModelSimEngine {
     return this._clientEmail;
   }
 
+  public get userId(): ModelGeneric<string> {
+    return this._userId;
+  }
+
   public get speedValue() {
     return this._speedValue;
   }
-  
+
   public get speedUnit() {
     return this._speedUnit;
   }
@@ -74,6 +83,25 @@ export class ModelSimEngine {
     return this._outputMessage;
   }
 
+  public get uploadedFile() {
+    return this._uploadedFile;
+  }
+
+  public get gridName() {
+    return this._gridName;
+  }
+
+  public get nbPoints() {
+    return this._nbPoints;
+  }
+
+  public get startCoords() {
+    return this._startCoords;
+  }
+
+  public get endCoords() {
+    return this._endCoords;
+  }
 
   // Setters
   public set dimension(dim: Dimensions) {
@@ -111,18 +139,38 @@ export class ModelSimEngine {
   public setAccelerationValue(v: number) {
     console.log("[Model] accelerationValue =", v);
     this._accelerationValue.setData(v);
-  }   
+  }
 
   public setAccelerationUnit(u: AccelerationUnit) {
     console.log("[Model] accelerationUnit =", u);
     this._accelerationUnit.setData(u);
-  } 
+  }
 
-  public setOutputMessage(msg: string) {    
+  public setOutputMessage(msg: string) {
     this._outputMessage.setData(msg);
   }
 
-  
+  public setUploadedFile(file: File) {
+    console.log("[Model] File uploaded:", file.name);
+    this._uploadedFile.setData(file);
+  }
+
+  public setGridName(name: string) {
+    this._gridName.setData(name);
+  }
+
+  public setNbPoints(nbPoints: [number, number]) {
+    this._nbPoints.setData(nbPoints);
+  }
+
+  public setStartCoords(coords: [number, number]) {
+    this._startCoords.setData(coords);
+  }
+
+  public setEndCoords(coords: [number, number]) {
+    this._endCoords.setData(coords);
+  }
+
   // Software params.
   /*public softwareVersion!: number;
   public schemaVersion!: number;
@@ -160,5 +208,4 @@ export class ModelSimEngine {
   //class BounceBack {
   //  public a: number;
   //}
-
 } // end ModelSimEngine

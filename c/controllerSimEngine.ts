@@ -134,6 +134,52 @@ export class ControllerSimEngine {
     this.model.setAccelerationUnit(u);
   }
 
+  public onGridNameChange(v: string) {
+    this.model.setGridName(v);
+  }   
+
+  public onNbPointsChange(v: [number, number]) {
+    this.model.setNbPoints(v);
+  }
+
+  public onStartCoordsChange(v: [number, number]) {
+    this.model.setStartCoords(v);
+  }
+
+  public onEndCoordsChange(v: [number, number]) {
+    this.model.setEndCoords(v);
+  } 
+
+  public async onFileUpload(file: File) {
+  try {
+    //store file in model
+    this.model.setUploadedFile(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const userId = this.model.userId.getData();
+    if (!userId) throw new Error("User ID is required for file upload");
+
+      const response = await fetch(`http://localhost:3000/${userId}/file/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+    if (!response.ok) {
+      throw new Error("Upload failed");
+    }
+
+    const data = await response.json();
+
+    console.log("[Controller] File uploaded:", data);
+
+  } catch (err) {
+    console.error("[Controller] Upload error:", (err as Error).message);
+    this.model.setOutputMessage("File upload failed");
+  }
+}
+
   /*
   public updateShaderType(shaderType: ShaderType): void{
     this._model.shaderType = shaderType;
@@ -171,6 +217,11 @@ export class ControllerSimEngine {
 
       console.log("[Controller] Client created:", created);
       this._model.setOutputMessage(`Client "${created.name}" successfully created.`);
+
+      // Store the userId for future requests
+      if (created.userID) {
+        this._model.userId.setData(created.userID);
+      }
     } catch (err) {
       console.error("[Controller] Submit failed:", (err as Error).message);
       this._model.setOutputMessage(`Submit failed: ${(err as Error).message}`);
@@ -221,4 +272,31 @@ export class ControllerSimEngine {
        Acceleration: ${acceleration} (${accelerationUnit})`
     );
   }
+
+  public async submitGrid() {
+    try {
+      const userId = this._model.userId.getData();
+      if (!userId) {
+        throw new Error("User ID not set: create a client first");
+      }
+
+      const result = await serverRequest({
+        method: "POST",
+        endpoint: `/${userId}/grid/block`,
+        body: {
+          name: this._model.gridName.getData(),
+          nb_points: this._model.nbPoints.getData(),
+          start_coords: this._model.startCoords.getData(),
+          end_coords: this._model.endCoords.getData()
+        }
+      });
+
+      this._model.setOutputMessage("Grid created");
+      console.log(result);
+    } catch (err) {
+      console.error("[Controller] submitGrid failed:", (err as Error).message);
+      this._model.setOutputMessage(`Grid create failed: ${(err as Error).message}`);
+    }
+  }
+
 }

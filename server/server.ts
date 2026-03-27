@@ -6,9 +6,11 @@ import {fileURLToPath} from 'url';
 
 import { ServerConfig } from './serverConfig.js';
 import userRouter from './user/user.js'; // use the default export
-import { isCurrentUser } from './user/user.js';
+import { isCurrentUser, findUserInfoByUserId } from './user/user.js';
 import geometryRouter from './geometry/geometry.js';
 import projectRouter from './project.js';
+import gridRouter from './grid/grid.js';
+import fileRouter from './fileRouter.js';
 import { startGrpcServer } from './grpc/grpcServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,14 +57,18 @@ app.use('/:userId', (req, res, next) => {
     });
   }
   
-  // Add userId to request for sub-routers to use
+  // Add userId and user object to request for sub-routers to use
   req.userId = userId;
+  req.user = findUserInfoByUserId(userId);
   next();
 });
 
 // Service specific routers
 app.use("/:userId/geometry", geometryRouter);
 app.use("/:userId/project", projectRouter);
+app.use("/:userId/grid", gridRouter);
+app.use("/usr/:userId/file", fileRouter);
+app.use("/file", fileRouter); // also support direct /file/upload for client convenience
 //================================
 
 

@@ -21,6 +21,7 @@
     "@tailwindcss/cli": "^4.1.18",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
+    "@types/multer": "^2.1.0",
     "@types/node": "^24.0.10",
     "autoprefixer": "^10.4.23",
     "eslint": "^9.38.0",
@@ -38,6 +39,7 @@
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.0",
     "cors": "^2.8.6",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "multer": "^2.1.1"
   }
 }

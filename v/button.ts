@@ -373,6 +373,7 @@ export class Checkbox extends InputElement {
 
 export class FileEntry extends InputElement {
   public _form!: HTMLFormElement;
+  private _inputs: Record<string, HTMLInputElement> = {};
 
   getView(): HTMLElement {
     if (this._view) return this._view;
@@ -391,24 +392,61 @@ export class FileEntry extends InputElement {
 
       const span = document.createElement("span");
       span.textContent = labelText;
+      span.className = "font-medium";
 
       const input = document.createElement("input");
       input.type = "file";
       input.name = key;
+      input.className = INPUT;
+
+      // Show selected filename
+      const fileNameDisplay = document.createElement("span");
+      fileNameDisplay.className = "text-sm text-gray-500 mt-1";
 
       input.addEventListener("change", (e) => {
         const target = e.target as HTMLInputElement;
-        if (target.files) {
+        if (target.files?.[0]) {
+          fileNameDisplay.textContent = `Selected: ${target.files[0].name}`;
           this._onClick(target.files);
         }
       });
 
-      label.append(span, input);
+      label.append(span, input, fileNameDisplay);
       this._form.appendChild(label);
+      this._inputs[key] = input;
     });
+
+    // Add Clear and Submit buttons
+    const buttonRow = document.createElement("div");
+    buttonRow.className = "flex justify-end gap-4 pt-4";
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.textContent = "Clear";
+    clearBtn.className = CLEAR;
+    clearBtn.addEventListener("click", () => {
+      this._form.reset();
+      Object.values(this._inputs).forEach(input => {
+        const display = input.nextElementSibling as HTMLElement;
+        if (display) display.textContent = "";
+      });
+    });
+
+    const submit = document.createElement("button");
+    submit.type = "button";
+    submit.textContent = this._submitLabel ?? "Upload";
+    submit.className = SUBMIT;
+    submit.addEventListener("click", () => this._onClick());
+
+    buttonRow.append(clearBtn, submit);
+    this._form.appendChild(buttonRow);
 
     this._view = this._form;
     return this._view;
+  }
+
+  public getFile(key: string): File | undefined {
+    return this._inputs[key]?.files?.[0];
   }
 }
 
@@ -444,7 +482,6 @@ export class Dropdown extends InputElement {
     submit.type = "button";
     submit.textContent = this._submitLabel ?? "Submit";
     submit.className = SUBMIT;
-
     submit.addEventListener("click", () => {
       this._onClick(select.value);
     });

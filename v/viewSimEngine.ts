@@ -1,9 +1,10 @@
-//import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown, SimpleButton } from './button.js';
 import {
   InputElement,
   RadioButton,
   TextEntryWithButton,
-  TextEntryWithDropdownAndButton,
+  TextEntryWithDropdownAndButton, 
+  FileEntry,
+
 } from "./button.js";
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
@@ -11,7 +12,6 @@ import { Workbench } from "./workbench.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { Output } from "./output.js";
-import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 
 export class ViewSimEngine {
@@ -169,94 +169,100 @@ export class ViewSimEngine {
       })
       .build();
 
+    const uploadbutton = buttonBuilder
+      .setButtonType(FileEntry)
+      .setButtonName("UploadFile")
+      .setButtonDisplayName("Upload File")
+      .setQuestions({
+        file: "Select a file to upload",
+      })
+      .setOnClick(function (this: FileEntry, file?: File) {
+        if (file) {
+          this._controller.onFileUpload(file);
+        } else {
+          console.warn("No file selected for upload.");
+        }   })      
+      .build();
+
+   const gridButton = buttonBuilder
+  .setButtonType(TextEntryWithButton)
+  .setButtonName("CreateGrid")
+  .setButtonDisplayName("Create Grid")
+  .setSubmitLabel("Create")
+  .setQuestions({
+    name: "Grid Name",
+    nbx: "Nb Points X",
+    nby: "Nb Points Y",
+    startx1: "Start X",
+    starty1: "Start Y",
+    endx2: "End X",
+    endy2: "End Y",
+  })
+
+  .setUpdate(function (this: TextEntryWithButton) {
+    const name = this.getFieldValue("name");
+
+    const nbx = Number(this.getFieldValue("nbx"));
+    const nby = Number(this.getFieldValue("nby"));
+
+    const x1 = Number(this.getFieldValue("startx1"));
+    const y1 = Number(this.getFieldValue("starty1"));
+
+    const x2 = Number(this.getFieldValue("endx2"));
+    const y2 = Number(this.getFieldValue("endy2"));
+
+    if (name) this._controller.onGridNameChange(name);
+
+    if (!Number.isNaN(nbx) && !Number.isNaN(nby)) {
+      this._controller.onNbPointsChange([nbx, nby]);
+    }
+
+    if (!Number.isNaN(x1) && !Number.isNaN(y1)) {
+      this._controller.onStartCoordsChange([x1, y1]);
+    }
+
+    if (!Number.isNaN(x2) && !Number.isNaN(y2)) {
+      this._controller.onEndCoordsChange([x2, y2]);
+    }
+  })
+
+  .setOnClick(function (this: TextEntryWithButton, e: Event) {
+    e.preventDefault();
+    this._controller.submitGrid();
+  })
+
+  .build();
+
     // Register observers
     controller.model.dimension.register(shaderButton);
 
     // Store buttons
     this._buttons.push(dimensionsButton, shaderButton, vertexButton);
 
-    /*
-    const colorDropdown = new ButtonBuilder()
-      .setButtonType(Dropdown)
-      .setButtonName("Color")
-      .setButtonDisplayName("Color")
-      .setQuestions({
-        red: Color.Red,
-        blue: Color.Blue,
-        green: Color.Green
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        console.log("Selected color:", selected ?? this.getValue());
-      })
-      .build();
 
-    const shaderDropdown = new ButtonBuilder()
-      .setButtonType(Dropdown)
-      .setButtonName("ShaderType")
-      .setButtonDisplayName("Shader Type")
-      .setQuestions({
-        flat: ShaderType.Flat,
-        smooth: ShaderType.Smooth
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        console.log("Shader type:", selected ?? this.getValue());
-      })
-      .build();
+    // // small toolbar
+    // const smallToolbar = new Toolbar(" Toolbar 1", [
+    //   shaderButton,
+    //   clientForm,
+    //   dimensionsButton,
+    //     uploadbutton,
+    // ]);
 
-    const vertexDropdown = new ButtonBuilder()
-      .setButtonType(Dropdown)
-      .setButtonName("VertexFormat")
-      .setButtonDisplayName("Vertex Format")
-      .setQuestions({
-        list: VertexFormat.List,
-        strip: VertexFormat.Strip,
-        index: VertexFormat.Index
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        console.log("Vertex format:", selected ?? this.getValue());
-      })
-      .build();
-
-      // remove simple button
-    const simpleBtn = new ButtonBuilder()
-      .setButtonType(SimpleButton)
-      .setButtonName("Apply")
-      .setButtonDisplayName("Apply")
-      .setOnClick(function (this: SimpleButton, value?: string) {
-        console.log("Simple button clicked:", value ?? this._name);
-      })
-      .build();
-
-      */
-
-    /*
-
-    
-      // Create toolbars
-    const toolbar1 = new Toolbar('basicInputs', [myButton1, myButton2]);
-    toolbar1.getElement().classList.add('toolbar-horizontal');
-
-    const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
-    toolbar2.getElement().classList.add('toolbar-vertical');
-    */
-
-    // small toolbar
-    const smallToolbar = new Toolbar(" Toolbar 1", [
-      shaderButton,
-      clientForm,
-      dimensionsButton,
+    const grid = new Toolbar("Grid", [
+      uploadbutton,
+      gridButton
     ]);
 
-    const smallToolbar1 = new Toolbar(" Toolbar 2", [
+    const geometry = new Toolbar("Geometry", [  
       dimensionsButton,
+      shaderButton,
       vertexButton,
-      physicalParams,
     ]);
 
     // Create workbench
     this._workbench = new Workbench("mainWorkbench", [
-      smallToolbar,
-      smallToolbar1,
+      geometry,
+      grid,
     ]);
 
     const output = new Output();
