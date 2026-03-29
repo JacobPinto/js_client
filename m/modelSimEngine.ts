@@ -32,6 +32,11 @@ export class ModelSimEngine {
   private _endCoords = new ModelGeneric<[number, number]>();
   private _grids = new ModelGeneric<any[]>();
 
+  // LB Solver params.
+  private _eqn_str = new ModelGeneric<string>();
+  private _velocity = new ModelGeneric<number>();
+  private _viscosity = new ModelGeneric<number>();
+
   constructor() {
     this._dimension = new ModelGeneric<Dimensions>();
     this._shader = new ModelGeneric<ShaderType>();
@@ -103,6 +108,19 @@ export class ModelSimEngine {
     return this._endCoords;
   }
 
+  public get eqn_str() {
+    return this._eqn_str;
+  }   
+
+  public get velocity() {
+    return this._velocity;
+  }   
+
+  public get viscosity() {
+    return this._viscosity; 
+  }
+
+
   // Setters
   public set dimension(dim: Dimensions) {
     this._dimension.setData(dim);
@@ -169,6 +187,18 @@ export class ModelSimEngine {
 
   public setEndCoords(coords: [number, number]) {
     this._endCoords.setData(coords);
+  }
+
+  public setEqn_str(eqn_str: string) {  
+    this._eqn_str.setData(eqn_str);
+  }
+
+  public setVelocity(velocity: number) {
+    this._velocity.setData(velocity);
+  } 
+
+  public setViscosity(viscosity: number) {
+    this._viscosity.setData(viscosity);
   }
 
   // Software params.

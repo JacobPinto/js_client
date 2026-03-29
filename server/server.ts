@@ -10,7 +10,7 @@ import { isCurrentUser, findUserInfoByUserId } from './user/user.js';
 import geometryRouter from './geometry/geometry.js';
 import projectRouter from './project.js';
 import gridRouter from './grid/grid.js';
-import fileRouter from './fileRouter.js';
+import LBSolverRouter from './lbSolver/lbSolver.js';
 import { startGrpcServer } from './grpc/grpcServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -67,9 +67,7 @@ app.use('/:userId', (req, res, next) => {
 app.use("/:userId/geometry", geometryRouter);
 app.use("/:userId/project", projectRouter);
 app.use("/:userId/grid", gridRouter);
-app.use("/usr/:userId/file", fileRouter);
-app.use("/file", fileRouter); // also support direct /file/upload for client convenience
-//================================
+app.use("/:userId/lb_solver", LBSolverRouter);  
 
 
 // GET endpoint (req,res, next) is also possible

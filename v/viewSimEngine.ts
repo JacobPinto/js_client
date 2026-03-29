@@ -2,9 +2,8 @@ import {
   InputElement,
   RadioButton,
   TextEntryWithButton,
-  TextEntryWithDropdownAndButton, 
+  TextEntryWithDropdownAndButton,
   FileEntry,
-
 } from "./button.js";
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
@@ -107,7 +106,6 @@ export class ViewSimEngine {
       })
       .build();
 
-
     const physicalParams = buttonBuilder
       .setButtonType(TextEntryWithDropdownAndButton)
       .setButtonName("PhysicalParams")
@@ -162,83 +160,129 @@ export class ViewSimEngine {
 
         this._controller.onSpeedUnitChange(speedUnitMap[speedUnit]);
         this._controller.onAccelerationUnitChange(accUnitMap[accUnit]);
-
       })
       .setOnClick(function (this: TextEntryWithDropdownAndButton) {
         this._controller.submitPhysicalParams();
       })
       .build();
 
-    const uploadbutton = buttonBuilder
+    const loadfilebutton = buttonBuilder
       .setButtonType(FileEntry)
-      .setButtonName("UploadFile")
-      .setButtonDisplayName("Upload File")
+      .setButtonName("LoadFile")
+      .setButtonDisplayName("Load File")
       .setQuestions({
-        file: "Select a file to upload",
+        file: "Select a file",
       })
       .setOnClick(function (this: FileEntry, file?: File) {
         if (file) {
           this._controller.onFileUpload(file);
         } else {
-          console.warn("No file selected for upload.");
-        }   })      
+          console.warn("No file selected.");
+        }
+      })
       .build();
 
-   const gridButton = buttonBuilder
-  .setButtonType(TextEntryWithButton)
-  .setButtonName("CreateGrid")
-  .setButtonDisplayName("Create Grid")
-  .setSubmitLabel("Create")
-  .setQuestions({
-    name: "Grid Name",
-    nbx: "Nb Points X",
-    nby: "Nb Points Y",
-    startx1: "Start X",
-    starty1: "Start Y",
-    endx2: "End X",
-    endy2: "End Y",
-  })
+    const gridButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("CreateGrid")
+      .setButtonDisplayName("Create Grid")
+      .setSubmitLabel("Create")
+      .setQuestions({
+        name: "Grid Name",
+        nbx: "Nb Points X",
+        nby: "Nb Points Y",
+        startx1: "Start X",
+        starty1: "Start Y",
+        endx2: "End X",
+        endy2: "End Y",
+      })
 
-  .setUpdate(function (this: TextEntryWithButton) {
-    const name = this.getFieldValue("name");
+      .setUpdate(function (this: TextEntryWithButton) {
+        const name = this.getFieldValue("name");
 
-    const nbx = Number(this.getFieldValue("nbx"));
-    const nby = Number(this.getFieldValue("nby"));
+        const nbx = Number(this.getFieldValue("nbx"));
+        const nby = Number(this.getFieldValue("nby"));
 
-    const x1 = Number(this.getFieldValue("startx1"));
-    const y1 = Number(this.getFieldValue("starty1"));
+        const x1 = Number(this.getFieldValue("startx1"));
+        const y1 = Number(this.getFieldValue("starty1"));
 
-    const x2 = Number(this.getFieldValue("endx2"));
-    const y2 = Number(this.getFieldValue("endy2"));
+        const x2 = Number(this.getFieldValue("endx2"));
+        const y2 = Number(this.getFieldValue("endy2"));
 
-    if (name) this._controller.onGridNameChange(name);
+        if (name) this._controller.onGridNameChange(name);
 
-    if (!Number.isNaN(nbx) && !Number.isNaN(nby)) {
-      this._controller.onNbPointsChange([nbx, nby]);
-    }
+        if (!Number.isNaN(nbx) && !Number.isNaN(nby)) {
+          this._controller.onNbPointsChange([nbx, nby]);
+        }
 
-    if (!Number.isNaN(x1) && !Number.isNaN(y1)) {
-      this._controller.onStartCoordsChange([x1, y1]);
-    }
+        if (!Number.isNaN(x1) && !Number.isNaN(y1)) {
+          this._controller.onStartCoordsChange([x1, y1]);
+        }
 
-    if (!Number.isNaN(x2) && !Number.isNaN(y2)) {
-      this._controller.onEndCoordsChange([x2, y2]);
-    }
-  })
+        if (!Number.isNaN(x2) && !Number.isNaN(y2)) {
+          this._controller.onEndCoordsChange([x2, y2]);
+        }
+      })
 
-  .setOnClick(function (this: TextEntryWithButton, e: Event) {
-    e.preventDefault();
-    this._controller.submitGrid();
-  })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitGrid();
+      })
 
-  .build();
+      .build();
+
+    const initialConditionsButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("InitialConditions")
+      .setButtonDisplayName("Initial Conditions")
+      .setSubmitLabel("Submit")
+      .setQuestions({
+        velocity: "Velocity",
+        viscosity: "Viscosity",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const velocity = Number(this.getFieldValue("velocity"));
+        const viscosity = Number(this.getFieldValue("viscosity"));
+
+        if (!Number.isNaN(velocity)) {
+          this._controller.onVelocityChange(velocity);
+        }
+
+        if (!Number.isNaN(viscosity)) {
+          this._controller.onViscosityChange(viscosity);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitInitialConditions();
+      })
+      .build();
+
+    const eqbutton1 = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("Equation")
+      .setButtonDisplayName("Equation String")
+      .setSubmitLabel("Submit")
+      .setQuestions({
+        eqn_str: "Equation String",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const eqn_str = this.getFieldValue("eqn_str");
+        if (eqn_str) {
+          this._controller.onEqn_strChange(eqn_str);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitEqnStr();
+      })
+      .build();
 
     // Register observers
     controller.model.dimension.register(shaderButton);
 
     // Store buttons
     this._buttons.push(dimensionsButton, shaderButton, vertexButton);
-
 
     // // small toolbar
     // const smallToolbar = new Toolbar(" Toolbar 1", [
@@ -248,21 +292,25 @@ export class ViewSimEngine {
     //     uploadbutton,
     // ]);
 
-    const grid = new Toolbar("Grid", [
-      uploadbutton,
-      gridButton
+    const grid = new Toolbar("Grid", [ 
+      gridButton,
     ]);
 
-    const geometry = new Toolbar("Geometry", [  
-      dimensionsButton,
-      shaderButton,
-      vertexButton,
+    const geometry = new Toolbar("Geometry", [
+      loadfilebutton,
+    ]);
+
+    const LBSolver = new Toolbar("LB Solver", [
+      initialConditionsButton,
+      eqbutton1,
+      clientForm,
     ]);
 
     // Create workbench
     this._workbench = new Workbench("mainWorkbench", [
       geometry,
       grid,
+      LBSolver,
     ]);
 
     const output = new Output();
@@ -272,7 +320,6 @@ export class ViewSimEngine {
 
     // append to UI
     this._workbench.getElement().appendChild(output.getElement());
-
   } // end constructor
 
   render(): void {
@@ -281,5 +328,4 @@ export class ViewSimEngine {
       root.appendChild(this._workbench.getElement());
     }
   }
-
 }

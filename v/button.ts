@@ -405,10 +405,15 @@ export class FileEntry extends InputElement {
 
       input.addEventListener("change", (e) => {
         const target = e.target as HTMLInputElement;
-        if (target.files?.[0]) {
-          fileNameDisplay.textContent = `Selected: ${target.files[0].name}`;
-          this._onClick(target.files);
+
+        if (!target.files || target.files.length === 0) {
+          console.warn("No file selected");
+          return;
         }
+
+        const file = target.files[0]; 
+
+        this._onClick?.call(this, file);
       });
 
       label.append(span, input, fileNameDisplay);
@@ -426,7 +431,7 @@ export class FileEntry extends InputElement {
     clearBtn.className = CLEAR;
     clearBtn.addEventListener("click", () => {
       this._form.reset();
-      Object.values(this._inputs).forEach(input => {
+      Object.values(this._inputs).forEach((input) => {
         const display = input.nextElementSibling as HTMLElement;
         if (display) display.textContent = "";
       });
