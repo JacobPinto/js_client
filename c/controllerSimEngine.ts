@@ -136,7 +136,7 @@ export class ControllerSimEngine {
 
   public onGridNameChange(v: string) {
     this.model.setGridName(v);
-  }   
+  }
 
   public onNbPointsChange(v: [number, number]) {
     this.model.setNbPoints(v);
@@ -148,7 +148,7 @@ export class ControllerSimEngine {
 
   public onEndCoordsChange(v: [number, number]) {
     this.model.setEndCoords(v);
-  } 
+  }
 
   public onEqn_strChange(v: string) {
     this.model.setEqn_str(v);
@@ -162,37 +162,42 @@ export class ControllerSimEngine {
     this.model.setViscosity(v);
   }
 
+  public onRunChange(v: number) {
+    this.model.setRun(v);
+  }
 
   public async onFileUpload(file: File) {
-  try {
-    //store file in model
-    this.model.setUploadedFile(file);
+    try {
+      //store file in model
+      this.model.setUploadedFile(file);
 
-    const formData = new FormData();
-    formData.append("file", file);
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const userId = this.model.userId.getData();
-    if (!userId) throw new Error("User ID is required for file upload");
+      const userId = this.model.userId.getData();
+      if (!userId) throw new Error("User ID is required for file upload");
 
-      const response = await fetch(`http://localhost:3000/${userId}/geometry/loadfile`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `http://localhost:3000/${userId}/geometry/loadfile`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
-    if (!response.ok) {
-      throw new Error("Upload failed");
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+
+      console.log("[Controller] File uploaded:", data);
+      this.model.setOutputMessage("File uploaded successfully");
+    } catch (err) {
+      console.error("[Controller] Upload error:", (err as Error).message);
+      this.model.setOutputMessage("File upload failed");
     }
-
-    const data = await response.json();
-
-    console.log("[Controller] File uploaded:", data);
-    this.model.setOutputMessage("File uploaded successfully");
-
-  } catch (err) {
-    console.error("[Controller] Upload error:", (err as Error).message);
-    this.model.setOutputMessage("File upload failed");
   }
-}
 
   /*
   public updateShaderType(shaderType: ShaderType): void{
@@ -206,8 +211,8 @@ export class ControllerSimEngine {
 
 */
 
-// CLIENT SUBMISSION
-//Sends client information to the backend server.
+  // CLIENT SUBMISSION
+  //Sends client information to the backend server.
 
   public async submitClient() {
     try {
@@ -230,7 +235,9 @@ export class ControllerSimEngine {
       });
 
       console.log("[Controller] Client created:", created);
-      this._model.setOutputMessage(`Client "${created.name}" successfully created.`);
+      this._model.setOutputMessage(
+        `Client "${created.name}" successfully created.`,
+      );
 
       // Store the userId for future requests
       if (created.userID) {
@@ -279,11 +286,11 @@ export class ControllerSimEngine {
       acceleration,
       accelerationUnit,
     });
-    
+
     this._model.setOutputMessage(
       ` Physical Parameters Submitted:
        Speed: ${speed} (${speedUnit})
-       Acceleration: ${acceleration} (${accelerationUnit})`
+       Acceleration: ${acceleration} (${accelerationUnit})`,
     );
   }
 
@@ -301,59 +308,88 @@ export class ControllerSimEngine {
           name: this._model.gridName.getData(),
           nb_points: this._model.nbPoints.getData(),
           start_coords: this._model.startCoords.getData(),
-          end_coords: this._model.endCoords.getData()
-        }
+          end_coords: this._model.endCoords.getData(),
+        },
       });
 
       this._model.setOutputMessage("Grid created");
       console.log(result);
     } catch (err) {
       console.error("[Controller] submitGrid failed:", (err as Error).message);
-      this._model.setOutputMessage(`Grid create failed: ${(err as Error).message}`);
+      this._model.setOutputMessage(
+        `Grid create failed: ${(err as Error).message}`,
+      );
     }
   }
 
-  public async submitEqnStr(){
+  public async submitEqnStr() {
     try {
-      const userId = this._model.userId.getData();  
+      const userId = this._model.userId.getData();
       if (!userId) {
         throw new Error("User ID not set: create a client first");
       }
-      
+
       const eqn_str = await serverRequest({
         method: "POST",
-        endpoint: `/${userId}/lb_solver/eqn`,
-        body: { eqn_str: this._model.eqn_str.getData() }
+        endpoint: `/${userId}/lb_solver/eqn_str`,
+        body: { eqn_str: this._model.eqn_str.getData() },
       });
       this._model.setOutputMessage("Equation string submitted");
     } catch (err) {
-      console.error("[Controller] submitEqnStr failed:", (err as Error).message);
-      this._model.setOutputMessage(`Equation string submission failed: ${(err as Error).message}`);
+      console.error(
+        "[Controller] submitEqnStr failed:",
+        (err as Error).message,
+      );
+      this._model.setOutputMessage(
+        `Equation string submission failed: ${(err as Error).message}`,
+      );
     }
   }
 
-  public async submitInitialConditions(){
+  public async submitInitialConditions() {
     try {
-      const userId = this._model.userId.getData();  
+      const userId = this._model.userId.getData();
       if (!userId) {
         throw new Error("User ID not set: create a client first");
-      }   
+      }
 
       const initialConditions = await serverRequest({
         method: "POST",
         endpoint: `/${userId}/lb_solver/initial_conditions`,
         body: {
           velocity: this._model.velocity.getData(),
-          viscosity: this._model.viscosity.getData()
-        }
+          viscosity: this._model.viscosity.getData(),
+        },
       });
 
       this._model.setOutputMessage("Initial conditions submitted");
+    } catch (err) {
+      console.error(
+        "[Controller] submitInitialConditions failed:",
+        (err as Error).message,
+      );
+      this._model.setOutputMessage(
+        `Initial conditions submission failed: ${(err as Error).message}`,
+      );
     }
-    catch (err) {
-      console.error("[Controller] submitInitialConditions failed:", (err as Error).message);
-      this._model.setOutputMessage(`Initial conditions submission failed: ${(err as Error).message}`);
-    }   
   }
 
+  public async submitRun() {
+    try {
+      const userId = this._model.userId.getData();
+      if (!userId) {
+        throw new Error("User ID not set: create a client first");
+      }
+      const runResult = await serverRequest({
+        method: "POST",
+        endpoint: `/${userId}/lb_solver/run`,
+      });
+      this._model.setOutputMessage(" Run submitted successfully");
+    } catch (err) {
+      console.error("[Controller] submitRun failed:", (err as Error).message);
+      this._model.setOutputMessage(
+        `Run submission failed: ${(err as Error).message}`,
+      );
+    }
+  }
 }

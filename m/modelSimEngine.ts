@@ -36,6 +36,7 @@ export class ModelSimEngine {
   private _eqn_str = new ModelGeneric<string>();
   private _velocity = new ModelGeneric<number>();
   private _viscosity = new ModelGeneric<number>();
+  private _run = new ModelGeneric<number>();
 
   constructor() {
     this._dimension = new ModelGeneric<Dimensions>();
@@ -120,6 +121,10 @@ export class ModelSimEngine {
     return this._viscosity; 
   }
 
+  public get run() {
+    return this._run;
+  }
+
 
   // Setters
   public set dimension(dim: Dimensions) {
@@ -199,6 +204,10 @@ export class ModelSimEngine {
 
   public setViscosity(viscosity: number) {
     this._viscosity.setData(viscosity);
+  }
+
+  public setRun(run: number) {
+    this._run.setData(run);
   }
 
   // Software params.

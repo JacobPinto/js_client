@@ -278,6 +278,26 @@ export class ViewSimEngine {
       })
       .build();
 
+    const runButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("Run")
+      .setButtonDisplayName("Run Simulation")
+      .setSubmitLabel("Run")
+      .setQuestions({
+        run: "Run",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const run = Number(this.getFieldValue("run"));    
+        if (!Number.isNaN(run)) {
+          this._controller.onRunChange(run);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitRun();
+      })
+      .build();
+
     // Register observers
     controller.model.dimension.register(shaderButton);
 
@@ -303,6 +323,7 @@ export class ViewSimEngine {
     const LBSolver = new Toolbar("LB Solver", [
       initialConditionsButton,
       eqbutton1,
+      runButton,
       clientForm,
     ]);
 
