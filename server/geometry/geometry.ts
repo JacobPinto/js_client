@@ -26,6 +26,8 @@ class GeometryInfo {
   }
 }
 
+// #TBD remove owner and user info from geomtry.
+
 class GeometryByUser {
   private _owner: UserInfo;
   private _geometries: GeometryInfo[] = [];

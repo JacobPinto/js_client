@@ -6,6 +6,13 @@ const router = express.Router();
 // type BoundaryType = "constant_velocity_wall" | "bounce_back";
 
 class LBSolver {
+
+  // method to write its data to a json file
+
+// #TBD there should be a write method to add this data to a json file 
+// this write method shouldnt override other methods on the json file.
+// same for grid and geometry
+
   private _owner: UserInfo;
   private _eqn_str: string | null = null;
   private _velocity: number | null = null;
@@ -14,6 +21,11 @@ class LBSolver {
   // private norm: number = 0;
   // private data?: number;
   private _run: number = 0;
+
+  // #TDB base class for the boundary conditions 
+  // for each type of boundary conditions there will be a child class and child class will extend the base class
+  // some members of the boundry condition class type will be a enum, data should be a vector, list of boundary condn bassed on interface class.
+  //this list of boundry condn stored in lbsolver class
 
 
   constructor(owner: UserInfo) {

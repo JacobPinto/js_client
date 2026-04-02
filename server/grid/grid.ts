@@ -4,14 +4,16 @@ import { UserInfo } from "../user/user.js";
 const router = express.Router();
 
 
-// Grid Class
+// Grid Class will be a collection of blocks 
+// grid class will have an ID as integer and list of blocks.
 
-class Grid {
-  name: string;
-  owner: UserInfo;
-  nb_points: [number, number];
-  start_coords: [number, number];
-  end_coords: [number, number];
+class Grid { // #TBD rename to block
+  name: string; // change to block id if we want to allow multiple blocks per grid
+  owner: UserInfo;//delete
+  // dimensions: number; // 2 or 3
+  nb_points: [number, number]; // 3d dynamic array for one two or three dimensions, but for now we will stick to 2d
+  start_coords: [number, number]; // same as above
+  end_coords: [number, number]; // same as above
 
   constructor(
     name: string,
@@ -27,14 +29,14 @@ class Grid {
     this.end_coords = end_coords;
   }
 
-  update(data: Partial<Grid>) {
+  update(data: Partial<Grid>) { // update should take block id and data
     if (data.nb_points) this.nb_points = data.nb_points;
     if (data.start_coords) this.start_coords = data.start_coords;
     if (data.end_coords) this.end_coords = data.end_coords;
   }
 
   validate() {
-    const [nx, ny] = this.nb_points;
+    const [nx, ny] = this.nb_points; 
     const [x1, y1] = this.start_coords;
     const [x2, y2] = this.end_coords;
 
@@ -58,7 +60,7 @@ router.post("/block", (req, res) => {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  const grid = new Grid(
+  const grid = new Grid( // #TBD rename to block, push block into list of grid
     name,
     owner,
     nb_points,
@@ -98,6 +100,8 @@ router.put("/block/:name", (req, res) => {
 });
 
 // DELETE
+// one endpoint should handle deletion of block
+// another endpoint should handle deletion of grids by id 
 router.delete("/block/:name", (req, res) => {
   const index = grids.findIndex(
     g => g.name === req.params.name && g.owner.userId === req.userId
