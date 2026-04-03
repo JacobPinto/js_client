@@ -4,11 +4,13 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build",
-    "build:server": "tsc --project server",
+    "build": "tsc --build && npm run organize-grpc",
     "clean": "tsc --build --clean",
+    "organize-grpc": "node -e \"const fs = require('fs'); const path = require('path'); const grpcDir = 'dist/server/grpc'; if (!fs.existsSync(grpcDir)) fs.mkdirSync(grpcDir, {recursive: true}); ['grpcServer', 'grpcClient'].forEach(f => {  ['js', 'js.map', 'd.ts'].forEach(ext => { const src = path.join('dist/server', f + '.' + ext); if (fs.existsSync(src)) fs.renameSync(src, path.join(grpcDir, f + '.' + ext)); }); }); if (fs.existsSync('server/grpc/client.proto') && !fs.existsSync(path.join(grpcDir, 'client.proto'))) fs.copyFileSync('server/grpc/client.proto', path.join(grpcDir, 'client.proto'));\"",
     "lint": "eslint . --ext .ts",
-    "dev:start": "nodemon dist/server/server.js"
+    "dev:server": "nodemon --exec ts-node server/server.ts",
+    "start:server": "node dist/server/server.js",
+    "grpc:test": "node dist/server/grpc/grpcClient.js"
   },
   "keywords": [],
   "author": "",
@@ -16,19 +18,28 @@
   "description": "",
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@tailwindcss/cli": "^4.1.18",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
+    "@types/multer": "^2.1.0",
     "@types/node": "^24.0.10",
+    "autoprefixer": "^10.4.23",
     "eslint": "^9.38.0",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.4.0",
     "nodemon": "^3.1.11",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2"
   },
   "type": "module",
   "dependencies": {
-    "ejs": "^3.1.10",
-    "express": "^5.2.1"
+    "@grpc/grpc-js": "^1.14.3",
+    "@grpc/proto-loader": "^0.8.0",
+    "cors": "^2.8.6",
+    "express": "^5.1.0",
+    "multer": "^2.1.1"
   }
 }

@@ -1,5 +1,6 @@
 import { 
   TextEntryWithButton, 
+  TextEntryWithDropdownAndButton,
   Checkbox, 
   RadioButton, 
   FileEntry, 
@@ -33,6 +34,11 @@ export class ButtonBuilder {
     return this;
   }
 
+  setSubmitLabel(label: string) {
+    this._params.submitLabel = label;
+    return this;
+  }
+
   setQuestions(questions: { [key: string]: string }) {
     this._params.questions = questions;
     return this;
@@ -57,6 +63,8 @@ export class ButtonBuilder {
     switch (type) {
       case TextEntryWithButton:
         return new TextEntryWithButton(this._params, this._controller);
+      case TextEntryWithDropdownAndButton:
+        return new TextEntryWithDropdownAndButton(this._params, this._controller);
       case Checkbox:
         return new Checkbox(this._params, this._controller);
       case RadioButton:

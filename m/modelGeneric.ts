@@ -1,4 +1,4 @@
-import { Observer } from '../m/modelObserver';
+import { Observer } from '../m/modelObserver.js';
 
 export class ModelGeneric<T> {
   /* 
@@ -16,6 +16,10 @@ export class ModelGeneric<T> {
     console.log(`[ModelGeneric] Setting data: ${data}`);
     this._data = data;
     this.notify();
+  }
+  
+  public getData(): T | undefined {
+    return this._data;
   }
 
   public register(obs: Observer) {

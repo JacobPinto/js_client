@@ -1,12 +1,17 @@
+
 import express from 'express';
+import cors from 'cors';  
 import path from 'path';
 import {fileURLToPath} from 'url';
 
 import { ServerConfig } from './serverConfig.js';
 import userRouter from './user/user.js'; // use the default export
-import { isCurrentUser } from './user/user.js';
+import { isCurrentUser, findUserInfoByUserId } from './user/user.js';
 import geometryRouter from './geometry/geometry.js';
 import projectRouter from './project.js';
+import gridRouter from './grid/grid.js';
+import LBSolverRouter from './lbSolver/lbSolver.js';
+import { startGrpcServer } from './grpc/grpcServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,10 +25,14 @@ app.set("view engine", "ejs");
 app.set('views', path.join(__dirname, 'views'));
 // By involking app.use() we reuse this stuff across multiple endpoints
 // Middleware can also be with router.use(...)
+
 function loggerMiddleware(req:any,res:any,next:any){
   console.log(req.originalUrl);
   next();
 }
+
+// place CORS early so other middleware/routes see the headers
+app.use(cors());
 app.use(loggerMiddleware);
 app.use(express.urlencoded({extended:true})); // for parsing application/x-www-form-urlencoded
 app.use(express.json()); // for parsing application/json
@@ -48,15 +57,17 @@ app.use('/:userId', (req, res, next) => {
     });
   }
   
-  // Add userId to request for sub-routers to use
+  // Add userId and user object to request for sub-routers to use
   req.userId = userId;
+  req.user = findUserInfoByUserId(userId);
   next();
 });
 
 // Service specific routers
 app.use("/:userId/geometry", geometryRouter);
 app.use("/:userId/project", projectRouter);
-//================================
+app.use("/:userId/grid", gridRouter);
+app.use("/:userId/lb_solver", LBSolverRouter);  
 
 
 // GET endpoint (req,res, next) is also possible
@@ -104,4 +115,9 @@ app.get('/users/:userId',(req,res)=>{
 // Redirect a respose through another endpoint
 
 // Listen on port
-app.listen(ServerConfig.port);
+app.listen(ServerConfig.port, () => {
+  console.log(`HTTP server running at http://localhost:${ServerConfig.port}`);
+
+  // Start gRPC server after HTTP server starts
+  startGrpcServer();
+});

@@ -14,6 +14,13 @@ export enum SpeedUnit {
   MeterPerSecond = 'm/s',
   MilePerHour = 'mi/hr'
 }
+
+export enum AccelerationUnit {
+  MeterPerSecondSquared = 'm/s^2',
+  CmPerSecondSquared = 'cm/s^2',
+  MilePerHourSquared = 'mi/hr^2'
+}
+
 export enum DensityUnit {
   KgPerMeter3 = 'kg/m3',
 }

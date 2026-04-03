@@ -1,17 +1,43 @@
-
-// import { Speed, SpeedUnit } from './quantities'
+import { SpeedUnit, AccelerationUnit } from "./quantities.js";
 // import { Density, DensityUnit } from './quantities'
 
-import {ModelGeneric} from '../m/modelGeneric.js';
-import { Dimensions, ShaderType, VertexFormat } from '../m/modelEnums.js';
+import { ModelGeneric } from "../m/modelGeneric.js";
+import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 
 export class ModelSimEngine {
-
   // The smaller models help to build the larger simulation model.
   private _dimension: ModelGeneric<Dimensions>;
   private _shader: ModelGeneric<ShaderType>;
   private _vertex: ModelGeneric<VertexFormat>;
-  
+
+  // new form fields
+  private _clientName = new ModelGeneric<string>();
+  private _clientEmail = new ModelGeneric<string>();
+  private _userId = new ModelGeneric<string>();
+
+  private _speedValue = new ModelGeneric<number>();
+  private _speedUnit = new ModelGeneric<SpeedUnit>();
+
+  private _accelerationValue = new ModelGeneric<number>();
+  private _accelerationUnit = new ModelGeneric<AccelerationUnit>();
+
+  private _outputMessage = new ModelGeneric<string>();
+
+  private _uploadedFile = new ModelGeneric<File>();
+
+  // Grid params.
+  private _gridName = new ModelGeneric<string>();
+  private _nbPoints = new ModelGeneric<[number, number]>();
+  private _startCoords = new ModelGeneric<[number, number]>();
+  private _endCoords = new ModelGeneric<[number, number]>();
+  private _grids = new ModelGeneric<any[]>();
+
+  // LB Solver params.
+  private _eqn_str = new ModelGeneric<string>();
+  private _velocity = new ModelGeneric<number>();
+  private _viscosity = new ModelGeneric<number>();
+  private _run = new ModelGeneric<number>();
+
   constructor() {
     this._dimension = new ModelGeneric<Dimensions>();
     this._shader = new ModelGeneric<ShaderType>();
@@ -31,6 +57,75 @@ export class ModelSimEngine {
     return this._vertex;
   }
 
+  public get clientName(): ModelGeneric<string> {
+    return this._clientName;
+  }
+
+  public get clientEmail(): ModelGeneric<string> {
+    return this._clientEmail;
+  }
+
+  public get userId(): ModelGeneric<string> {
+    return this._userId;
+  }
+
+  public get speedValue() {
+    return this._speedValue;
+  }
+
+  public get speedUnit() {
+    return this._speedUnit;
+  }
+
+  public get accelerationValue() {
+    return this._accelerationValue;
+  }
+
+  public get accelerationUnit() {
+    return this._accelerationUnit;
+  }
+
+  public get outputMessage() {
+    return this._outputMessage;
+  }
+
+  public get uploadedFile() {
+    return this._uploadedFile;
+  }
+
+  public get gridName() {
+    return this._gridName;
+  }
+
+  public get nbPoints() {
+    return this._nbPoints;
+  }
+
+  public get startCoords() {
+    return this._startCoords;
+  }
+
+  public get endCoords() {
+    return this._endCoords;
+  }
+
+  public get eqn_str() {
+    return this._eqn_str;
+  }   
+
+  public get velocity() {
+    return this._velocity;
+  }   
+
+  public get viscosity() {
+    return this._viscosity; 
+  }
+
+  public get run() {
+    return this._run;
+  }
+
+
   // Setters
   public set dimension(dim: Dimensions) {
     this._dimension.setData(dim);
@@ -44,9 +139,80 @@ export class ModelSimEngine {
     this._vertex.setData(vertex);
   }
 
-  
+  public setClientName(v: string) {
+    console.log("[Model] clientName =", v);
+    this._clientName.setData(v);
+  }
 
-  /*
+  public setClientEmail(v: string) {
+    console.log("[Model] clientEmail =", v);
+    this._clientEmail.setData(v);
+  }
+
+  public setSpeedValue(v: number) {
+    console.log("[Model] speedValue =", v);
+    this._speedValue.setData(v);
+  }
+
+  public setSpeedUnit(u: SpeedUnit) {
+    console.log("[Model] speedUnit =", u);
+    this._speedUnit.setData(u);
+  }
+
+  public setAccelerationValue(v: number) {
+    console.log("[Model] accelerationValue =", v);
+    this._accelerationValue.setData(v);
+  }
+
+  public setAccelerationUnit(u: AccelerationUnit) {
+    console.log("[Model] accelerationUnit =", u);
+    this._accelerationUnit.setData(u);
+  }
+
+  public setOutputMessage(msg: string) {
+    this._outputMessage.setData(msg);
+  }
+
+  public setUploadedFile(file: File) {
+    console.log("[Model] File uploaded:", file.name);
+    this._uploadedFile.setData(file);
+  }
+
+  public setGridName(name: string) {
+    this._gridName.setData(name);
+  }
+
+  public setNbPoints(nbPoints: [number, number]) {
+    this._nbPoints.setData(nbPoints);
+  }
+
+  public setStartCoords(coords: [number, number]) {
+    this._startCoords.setData(coords);
+  }
+
+  public setEndCoords(coords: [number, number]) {
+    this._endCoords.setData(coords);
+  }
+
+  public setEqn_str(eqn_str: string) {  
+    this._eqn_str.setData(eqn_str);
+  }
+
+  public setVelocity(velocity: number) {
+    this._velocity.setData(velocity);
+  } 
+
+  public setViscosity(viscosity: number) {
+    this._viscosity.setData(viscosity);
+  }
+
+  public setRun(run: number) {
+    this._run.setData(run);
+  }
+
+  // Software params.
+  /*public softwareVersion!: number;
+  public schemaVersion!: number;
 
   // Physical params.
   public dimensions!: number;
@@ -81,5 +247,4 @@ export class ModelSimEngine {
   //class BounceBack {
   //  public a: number;
   //}
-
 } // end ModelSimEngine
