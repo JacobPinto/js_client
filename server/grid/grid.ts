@@ -1,6 +1,4 @@
 import express from "express";
-import { UserInfo } from "../user/user.js";
-
 const router = express.Router();
 
 
@@ -9,7 +7,6 @@ const router = express.Router();
 
 class Grid { // #TBD rename to block
   name: string; // change to block id if we want to allow multiple blocks per grid
-  owner: UserInfo;//delete
   // dimensions: number; // 2 or 3
   nb_points: [number, number]; // 3d dynamic array for one two or three dimensions, but for now we will stick to 2d
   start_coords: [number, number]; // same as above
@@ -17,13 +14,11 @@ class Grid { // #TBD rename to block
 
   constructor(
     name: string,
-    owner: UserInfo,
     nb_points: [number, number],
     start_coords: [number, number],
     end_coords: [number, number]
   ) {
     this.name = name;
-    this.owner = owner;
     this.nb_points = nb_points;
     this.start_coords = start_coords;
     this.end_coords = end_coords;
@@ -55,14 +50,9 @@ const grids: Grid[] = [];
 // CREATE
 router.post("/block", (req, res) => {
   const { name, nb_points, start_coords, end_coords } = req.body;
-  const owner = req.user;
-  if (!owner) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
+ 
   const grid = new Grid( // #TBD rename to block, push block into list of grid
     name,
-    owner,
     nb_points,
     start_coords,
     end_coords
@@ -77,34 +67,13 @@ router.post("/block", (req, res) => {
   res.json({ success: true, grid });
 });
 
-// GET (user-specific)
-router.get("/block", (req, res) => {
-  const userGrids = grids.filter(
-    g => g.owner.userId === req.userId
-  );
-
-  res.json({ grids: userGrids });
-});
-
-// UPDATE
-router.put("/block/:name", (req, res) => {
-  const grid = grids.find(
-    g => g.name === req.params.name && g.owner.userId === req.userId
-  );
-
-  if (!grid) return res.status(404).json({ error: "Not found" });
-
-  grid.update(req.body);
-
-  res.json({ success: true, grid });
-});
 
 // DELETE
 // one endpoint should handle deletion of block
 // another endpoint should handle deletion of grids by id 
 router.delete("/block/:name", (req, res) => {
   const index = grids.findIndex(
-    g => g.name === req.params.name && g.owner.userId === req.userId
+    g => g.name === req.params.name
   );
 
   if (index === -1) return res.status(404).json({ error: "Not found" });

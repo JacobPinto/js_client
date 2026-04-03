@@ -174,11 +174,9 @@ export class ControllerSimEngine {
       const formData = new FormData();
       formData.append("file", file);
 
-      const userId = this.model.userId.getData();
-      if (!userId) throw new Error("User ID is required for file upload");
 
       const response = await fetch(
-        `http://localhost:3000/${userId}/geometry/loadfile`,
+        `http://localhost:3000/geometry/loadfile`,
         {
           method: "POST",
           body: formData,
@@ -239,10 +237,6 @@ export class ControllerSimEngine {
         `Client "${created.name}" successfully created.`,
       );
 
-      // Store the userId for future requests
-      if (created.userID) {
-        this._model.userId.setData(created.userID);
-      }
     } catch (err) {
       console.error("[Controller] Submit failed:", (err as Error).message);
       this._model.setOutputMessage(`Submit failed: ${(err as Error).message}`);
@@ -296,14 +290,10 @@ export class ControllerSimEngine {
 
   public async submitGrid() {
     try {
-      const userId = this._model.userId.getData();
-      if (!userId) {
-        throw new Error("User ID not set: create a client first");
-      }
 
       const result = await serverRequest({
         method: "POST",
-        endpoint: `/${userId}/grid/block`,
+        endpoint: `/grid/block`,
         body: {
           name: this._model.gridName.getData(),
           nb_points: this._model.nbPoints.getData(),
@@ -324,14 +314,9 @@ export class ControllerSimEngine {
 
   public async submitEqnStr() {
     try {
-      const userId = this._model.userId.getData();
-      if (!userId) {
-        throw new Error("User ID not set: create a client first");
-      }
-
       const eqn_str = await serverRequest({
         method: "POST",
-        endpoint: `/${userId}/lb_solver/eqn_str`,
+        endpoint: `/lb_solver/eqn_str`,
         body: { eqn_str: this._model.eqn_str.getData() },
       });
       this._model.setOutputMessage("Equation string submitted");
@@ -348,14 +333,9 @@ export class ControllerSimEngine {
 
   public async submitInitialConditions() {
     try {
-      const userId = this._model.userId.getData();
-      if (!userId) {
-        throw new Error("User ID not set: create a client first");
-      }
-
       const initialConditions = await serverRequest({
         method: "POST",
-        endpoint: `/${userId}/lb_solver/initial_conditions`,
+        endpoint: `/lb_solver/initial_conditions`,
         body: {
           velocity: this._model.velocity.getData(),
           viscosity: this._model.viscosity.getData(),
@@ -376,13 +356,9 @@ export class ControllerSimEngine {
 
   public async submitRun() {
     try {
-      const userId = this._model.userId.getData();
-      if (!userId) {
-        throw new Error("User ID not set: create a client first");
-      }
       const runResult = await serverRequest({
         method: "POST",
-        endpoint: `/${userId}/lb_solver/run`,
+        endpoint: `/lb_solver/run`,
       });
       this._model.setOutputMessage(" Run submitted successfully");
     } catch (err) {

@@ -5,8 +5,8 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 import { ServerConfig } from './serverConfig.js';
-import userRouter from './user/user.js'; // use the default export
-import { isCurrentUser, findUserInfoByUserId } from './user/user.js';
+// import userRouter from './user/user.js'; // use the default export
+// import { isCurrentUser, findUserInfoByUserId } from './user/user.js';
 import geometryRouter from './geometry/geometry.js';
 import projectRouter from './project.js';
 import gridRouter from './grid/grid.js';
@@ -39,13 +39,14 @@ app.use(express.json()); // for parsing application/json
 //================================
 
 // Routers
-app.use("/user", userRouter); // For all user related endpoints
+//app.use("/user", userRouter); // For all user related endpoints
 
 /* 
  * Once the user gets logged in, all endpoints must start with userID so
  * we need a piece of middleware to redirect and alter these requests
  */
-app.use('/:userId', (req, res, next) => {
+//can be used later to validate if user exists 
+/*app.use('/:userId', (req, res, next) => {
   const userId = req.params.userId;
   
   // Validate if user exists
@@ -62,12 +63,13 @@ app.use('/:userId', (req, res, next) => {
   req.user = findUserInfoByUserId(userId);
   next();
 });
+*/
 
 // Service specific routers
-app.use("/:userId/geometry", geometryRouter);
-app.use("/:userId/project", projectRouter);
-app.use("/:userId/grid", gridRouter);
-app.use("/:userId/lb_solver", LBSolverRouter);  
+app.use("/geometry", geometryRouter);
+app.use("/project", projectRouter);
+app.use("/grid", gridRouter);
+app.use("/lb_solver", LBSolverRouter);  
 
 
 // GET endpoint (req,res, next) is also possible
@@ -96,6 +98,7 @@ app.get('/',(req,res)=>{
 // Routes to split up the main server file
 // Create routes/users.ts for this to work
 // and therin const router = express.Router();
+
 /*const userRouter = require('./routes/users');
 app.use("/users", userRouter);*/
 
@@ -104,10 +107,11 @@ app.use("/users", userRouter);*/
 
 // handle dynamic routes
 // The :userID and :bookId are dynamic parameters from req.params
-app.get('/users/:userId',(req,res)=>{
+/*app.get('/users/:userId',(req,res)=>{
   req.params.userId
   res.send("User ID: " + req.params.userId);
 });
+*/
 
 // json body
 // req.body.<json name>

@@ -1,5 +1,4 @@
 import express from "express";
-import { UserInfo } from "../user/user.js";
 
 const router = express.Router();
 
@@ -13,7 +12,6 @@ class LBSolver {
 // this write method shouldnt override other methods on the json file.
 // same for grid and geometry
 
-  private _owner: UserInfo;
   private _eqn_str: string | null = null;
   private _velocity: number | null = null;
   private _viscosity: number | null = null;
@@ -27,10 +25,6 @@ class LBSolver {
   // some members of the boundry condition class type will be a enum, data should be a vector, list of boundary condn bassed on interface class.
   //this list of boundry condn stored in lbsolver class
 
-
-  constructor(owner: UserInfo) {
-    this._owner = owner;
-  }
 
   /* ===== SETTERS ===== */
 
@@ -71,46 +65,15 @@ class LBSolver {
   get run() {
     return this._run;
   }
-
-  get owner() {
-    return this._owner;
-  }
 }
 
 //In-memory storage for LB Solvers 
-const lbSolvers: LBSolver[] = [];
-
-function getLBSolverForUser(user: UserInfo): LBSolver {
-  let solver = lbSolvers.find(
-    (s) => s.owner.userId === user.userId
-  );
-
-  if (!solver) {
-    solver = new LBSolver(user);
-    lbSolvers.push(solver);
-  }
-
-  return solver;
-}
-
-// Helper to ensure user is authenticated 
-function requireUser(req: any, res: any): UserInfo | null {
-  const user = req.user as UserInfo | undefined;
-
-  if (!user) {
-    res.status(401).json({ error: "Unauthorized" });
-    return null;
-  }
-
-  return user;
-}
+const solver = new LBSolver();
 
 //routes
 
 router.post("/eqn_str", (req, res) => {
   try {
-    const user = requireUser(req, res);
-    if (!user) return;
 
     const { eqn_str } = req.body;
 
@@ -120,7 +83,6 @@ router.post("/eqn_str", (req, res) => {
       });
     }
 
-    const solver = getLBSolverForUser(user);
     solver.setEquation(eqn_str);
 
     res.json({
@@ -136,8 +98,6 @@ router.post("/eqn_str", (req, res) => {
 
 router.post("/initial_conditions", (req, res) => {
   try {
-    const user = requireUser(req, res);
-    if (!user) return;
 
     const { velocity, viscosity } = req.body;
 
@@ -146,8 +106,6 @@ router.post("/initial_conditions", (req, res) => {
         error: "velocity & viscosity required",
       });
     }
-
-    const solver = getLBSolverForUser(user);
     solver.setInitialConditions(velocity, viscosity);
 
     res.json({
@@ -164,8 +122,6 @@ router.post("/initial_conditions", (req, res) => {
 
 router.post("/run", (req, res) => {
   try {
-    const user = requireUser(req, res);
-    if (!user) return;  
 
     const { run } = req.body;
 
@@ -174,7 +130,6 @@ router.post("/run", (req, res) => {
         error: "run is required",
       });
     }
-    const solver = getLBSolverForUser(user);
     solver.setRun(run);
 
     res.json({
@@ -189,28 +144,8 @@ router.post("/run", (req, res) => {
 });
 
 
- //Get full solver state
-
-router.get("/", (req, res) => {
-  const user = requireUser(req, res);
-  if (!user) return;
-
-  const solver = getLBSolverForUser(user);
-
-  res.json({
-    eqn_str: solver.eqn_str,
-    initial_conditions: {
-      velocity: solver.velocity,
-      viscosity: solver.viscosity,
-    },
-    run: solver.run,
-  });
-});
+// DELETE
 router.delete("/", (req, res) => {
-  const user = requireUser(req, res);
-  if (!user) return;
-
-  const solver = getLBSolverForUser(user);
   solver.reset();
 
   res.json({
