@@ -166,6 +166,18 @@ export class ControllerSimEngine {
     this.model.setViscosity(v);
   }
 
+  public onBcTypeChange(v: string) {
+    this.model.setBcType(v);
+  }
+
+  public onBcDataChange(v: number[]) {
+    this.model.setBcData(v);
+  }
+
+  public onBcNormChange(v: number) {
+    this.model.setBcNorm(v);
+  }
+
   public onRunChange(v: number) {
     this.model.setRun(v);
   }
@@ -364,6 +376,30 @@ export class ControllerSimEngine {
       );
       this._model.setOutputMessage(
         `Initial conditions submission failed: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  public async submitBoundaryConditions() {
+    try {
+      const bcType = this._model.bcType.getData();
+      const bcData = this._model.bcData.getData();
+      const bcNorm = this._model.bcNorm.getData();
+
+      const bc = await serverRequest({
+        method: "POST",
+        endpoint: `/lb_solver/boundary_conditions`,
+        body: { bcType, bcData, bcNorm },
+      });
+
+      this._model.setOutputMessage("Boundary conditions submitted");
+    } catch (err) {
+      console.error(
+        "[Controller] submitBoundaryConditions failed:",
+        (err as Error).message,
+      );
+      this._model.setOutputMessage(
+        `Boundary conditions submission failed: ${(err as Error).message}`,
       );
     }
   }

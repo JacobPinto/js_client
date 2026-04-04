@@ -2,7 +2,39 @@ import express from "express";
 
 const router = express.Router();
 
-// type BoundaryType = "constant_velocity_wall" | "bounce_back";
+export enum BoundaryType {
+  ConstantVelocityWall = "constant_velocity_wall",
+  bounceBack = "bounce_back",
+}
+
+// Base Class for Boundary Conditions
+class BoundaryCondition {
+  private _type: BoundaryType;
+  private _data?: number[]; // vector of data for the boundary condition
+  private _norm: number; // normal vector for the boundary condition, if applicable
+  
+  constructor(type: BoundaryType, data: number[] | undefined, norm: number) {
+    this._type = type;
+    this._data = data; 
+    this._norm = norm;
+  }
+}
+
+// Child Class for Constant Velocity Wall Boundary Condition
+class ConstantVelocityWall extends BoundaryCondition {
+  constructor(data: number[] | undefined, norm: number) {
+    super(BoundaryType.ConstantVelocityWall, data, norm);
+  }
+}
+
+
+// Child Class for Bounce Back Boundary Condition
+class BounceBack extends BoundaryCondition {
+  constructor(data: number[] | undefined, norm: number) {
+    super(BoundaryType.bounceBack, data, norm);
+  }
+}
+
 
 class LBSolver {
 
@@ -25,6 +57,8 @@ class LBSolver {
   // some members of the boundry condition class type will be a enum, data should be a vector, list of boundary condn bassed on interface class.
   //this list of boundry condn stored in lbsolver class
 
+  //list of boundary conditions for the lb solver
+  private _boundaryConditions: BoundaryCondition[] = [];
 
   /* ===== SETTERS ===== */
 
@@ -41,6 +75,16 @@ class LBSolver {
     this._run = run;
   }
 
+  addBoundaryCondition(bc: BoundaryCondition) {
+    this._boundaryConditions.push(bc);
+  }
+
+  removeBoundaryCondition(index: number) {
+    if (index < 0 || index >= this._boundaryConditions.length) {
+      throw new Error("Invalid boundary condition index");
+    }
+    this._boundaryConditions.splice(index, 1);
+  }
 
   reset() {
     this._eqn_str = null;
@@ -65,13 +109,19 @@ class LBSolver {
   get run() {
     return this._run;
   }
+
+  get boundaryConditions() {
+    return this._boundaryConditions;
+  }
+
 }
+
 
 //In-memory storage for LB Solvers 
 const solver = new LBSolver();
 
 //routes
-
+// POST Equation String
 router.post("/eqn_str", (req, res) => {
   try {
 
@@ -96,6 +146,7 @@ router.post("/eqn_str", (req, res) => {
   }
 });
 
+// POST Initial Conditions
 router.post("/initial_conditions", (req, res) => {
   try {
 
@@ -120,6 +171,7 @@ router.post("/initial_conditions", (req, res) => {
   }
 });
 
+// POST run
 router.post("/run", (req, res) => {
   try {
 
@@ -143,6 +195,29 @@ router.post("/run", (req, res) => {
   } 
 });
 
+// POST Boundary Condition
+router.post("/boundary_condition", (req, res) => {
+  try {
+    const { type, data, norm } = req.body;
+    if (!type || !norm) {
+      return res.status(400).json({
+        error: "type and norm are required",
+      });
+    }
+
+    const bc = new BoundaryCondition(type, data, norm);
+    solver.addBoundaryCondition(bc);
+
+    res.json({
+      message: "Boundary condition added successfully",
+      boundaryCondition: bc,
+    });
+  } catch {
+    res.status(500).json({
+      error: "Failed to add boundary condition",
+    });
+  }
+});
 
 // DELETE
 router.delete("/", (req, res) => {
