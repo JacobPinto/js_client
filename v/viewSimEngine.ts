@@ -188,7 +188,8 @@ export class ViewSimEngine {
       .setButtonDisplayName("Create Grid")
       .setSubmitLabel("Create")
       .setQuestions({
-        name: "Grid Name",
+        gridId: "Grid ID",
+        blockId: "Block ID",
         nbx: "Nb Points X",
         nby: "Nb Points Y",
         startx1: "Start X",
@@ -198,7 +199,8 @@ export class ViewSimEngine {
       })
 
       .setUpdate(function (this: TextEntryWithButton) {
-        const name = this.getFieldValue("name");
+        const gridId = Number(this.getFieldValue("gridId"));
+        const blockId = Number(this.getFieldValue("blockId"));
 
         const nbx = Number(this.getFieldValue("nbx"));
         const nby = Number(this.getFieldValue("nby"));
@@ -209,8 +211,14 @@ export class ViewSimEngine {
         const x2 = Number(this.getFieldValue("endx2"));
         const y2 = Number(this.getFieldValue("endy2"));
 
-        if (name) this._controller.onGridNameChange(name);
+        if (!Number.isNaN(gridId)) {
+          this._controller.onGridIdChange(gridId);
+        }
 
+        if (!Number.isNaN(blockId)) {
+          this._controller.onBlockIdChange(blockId);
+        }
+        
         if (!Number.isNaN(nbx) && !Number.isNaN(nby)) {
           this._controller.onNbPointsChange([nbx, nby]);
         }
@@ -287,7 +295,7 @@ export class ViewSimEngine {
         run: "Run",
       })
       .setUpdate(function (this: TextEntryWithButton) {
-        const run = Number(this.getFieldValue("run"));    
+        const run = Number(this.getFieldValue("run"));
         if (!Number.isNaN(run)) {
           this._controller.onRunChange(run);
         }
@@ -312,13 +320,9 @@ export class ViewSimEngine {
     //     uploadbutton,
     // ]);
 
-    const grid = new Toolbar("Grid", [ 
-      gridButton,
-    ]);
+    const grid = new Toolbar("Grid", [gridButton]);
 
-    const geometry = new Toolbar("Geometry", [
-      loadfilebutton,
-    ]);
+    const geometry = new Toolbar("Geometry", [loadfilebutton]);
 
     const LBSolver = new Toolbar("LB Solver", [
       initialConditionsButton,

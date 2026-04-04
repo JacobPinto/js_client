@@ -26,7 +26,8 @@ export class ModelSimEngine {
   private _uploadedFile = new ModelGeneric<File>();
 
   // Grid params.
-  private _gridName = new ModelGeneric<string>();
+  private _gridId = new ModelGeneric<number>();
+  private _blockId = new ModelGeneric<number>();
   private _nbPoints = new ModelGeneric<[number, number]>();
   private _startCoords = new ModelGeneric<[number, number]>();
   private _endCoords = new ModelGeneric<[number, number]>();
@@ -93,8 +94,12 @@ export class ModelSimEngine {
     return this._uploadedFile;
   }
 
-  public get gridName() {
-    return this._gridName;
+  public get gridId() {
+    return this._gridId;
+  }
+
+  public get blockId() {
+    return this._blockId;
   }
 
   public get nbPoints() {
@@ -178,8 +183,12 @@ export class ModelSimEngine {
     this._uploadedFile.setData(file);
   }
 
-  public setGridName(name: string) {
-    this._gridName.setData(name);
+  public setGridId(id: number) {
+    this._gridId.setData(id);
+  }
+
+  public setBlockId(id: number) {
+    this._blockId.setData(id);
   }
 
   public setNbPoints(nbPoints: [number, number]) {

@@ -134,8 +134,12 @@ export class ControllerSimEngine {
     this.model.setAccelerationUnit(u);
   }
 
-  public onGridNameChange(v: string) {
-    this.model.setGridName(v);
+  public onGridIdChange(id: number) {
+    this.model.setGridId(id);
+  }
+
+  public onBlockIdChange(id: number) {
+    this.model.setBlockId(id);
   }
 
   public onNbPointsChange(v: [number, number]) {
@@ -289,25 +293,35 @@ export class ControllerSimEngine {
   }
 
   public async submitGrid() {
-    try {
+    try {      
+
+      const gridId = this._model.gridId.getData();
+      const blockId = this._model.blockId.getData();
+
+      await serverRequest({
+      method: "POST",
+      endpoint: `/grid`,
+      body: { gridId },
+    });
+    
 
       const result = await serverRequest({
         method: "POST",
-        endpoint: `/grid/block`,
+        endpoint: `/grid/${gridId}/block`,
         body: {
-          name: this._model.gridName.getData(),
+          blockId,
           nb_points: this._model.nbPoints.getData(),
           start_coords: this._model.startCoords.getData(),
           end_coords: this._model.endCoords.getData(),
         },
       });
 
-      this._model.setOutputMessage("Grid created");
+      this._model.setOutputMessage("block added to grid");
       console.log(result);
     } catch (err) {
-      console.error("[Controller] submitGrid failed:", (err as Error).message);
+      console.error("[Controller] submit failed:", (err as Error).message);
       this._model.setOutputMessage(
-        `Grid create failed: ${(err as Error).message}`,
+        `Grid/block create failed: ${(err as Error).message}`,
       );
     }
   }
