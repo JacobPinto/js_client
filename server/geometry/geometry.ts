@@ -2,19 +2,20 @@ import express from "express";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
+import { JSONWritable } from "../jsonWritable.js";
 
-class GeometryInfo {
+class GeometryInfo extends JSONWritable {
   private _name: string;
   private _createdAt: Date;
-  private _filePath: string;
+  private _geometryFilePath: string;
 
 
   get name(): string {
     return this._name;
   }
 
-  get filePath(): string {
-    return this._filePath;
+  get geometryFilePath(): string {
+    return this._geometryFilePath;
   }
 
   get createdAt(): Date {
@@ -22,17 +23,28 @@ class GeometryInfo {
   }
 
   constructor(name: string, filePath: string) {
+    super();
     this._name = name;
-    this._filePath = filePath;
+    this._geometryFilePath = filePath;
     this._createdAt = new Date();
+  }
+
+  getKey(): string {
+    return `geometry_${this._name}`;
+  }
+
+  toJSON(): any {
+    return {
+      name: this._name,
+      filePath: this._geometryFilePath,
+      createdAt: this._createdAt,
+    };
   }
 }
 
 
 // geometry storage
 export const geometryStore: GeometryInfo[] = [];
-
-
 
 
 // Config-Based Loader
@@ -86,6 +98,7 @@ router.post("/loadfile", upload.single("file"), (req: any, res) => {
 
     const geometry = new GeometryInfo(geometryName, finalPath);
     geometryStore.push(geometry);
+    geometry.write();
     console.log("[Geometry] File loaded:", geometryName);
 
     res.json({

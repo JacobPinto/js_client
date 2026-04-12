@@ -1,5 +1,14 @@
 import express from "express";
+import { JSONWritable } from "../jsonWritable.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import e from "express";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const router = express.Router();
+ 
 
 class Block { 
   blockId: number;
@@ -35,13 +44,30 @@ class Block {
 }
 // Grid class is a collection of blocks.
 
-class Grid {
+class Grid extends JSONWritable {
   gridId: number;
   blocks: Block[];
 
   constructor(gridId: number, blocks: Block[] = []) {
+    super();
     this.gridId = gridId;
     this.blocks = blocks;
+  }
+
+  getKey() {
+    return "grid";
+  }
+
+  toJSON() {
+    return {
+      gridId: this.gridId,
+      blocks: this.blocks.map(block => ({
+      blockId: block.blockId,
+      nb_points: block.nb_points,
+      start_coords: block.start_coords,
+      end_coords: block.end_coords,
+    })),
+    };
   }
 
    addBlock(block: Block) {
@@ -62,6 +88,28 @@ class Grid {
 //In-Memory Storage
 const grids: Grid[] = [];
 
+// Initialize grids from simulation.json
+function initializeGrids() {
+  try {
+    const simulationPath = path.join(__dirname, "../../simulation.json");
+    
+    if (fs.existsSync(simulationPath)) {
+      const data = JSON.parse(fs.readFileSync(simulationPath, 'utf-8'));
+      if (data.grid) {
+        const gridData = data.grid;
+        const grid = new Grid(gridData.gridId, gridData.blocks.map((b: any) => 
+          new Block(b.blockId, b.nb_points, b.start_coords, b.end_coords)
+        ));
+        grids.push(grid);
+        console.log(`Loaded grid from simulation.json`);
+      }
+    }
+  } catch (err) {
+    console.warn('Could not initialize grids from simulation.json:', err);
+  }
+}
+initializeGrids();
+
 //Routes
 
 // CREATE GRID
@@ -75,6 +123,7 @@ router.post("/", (req, res) => {
 
   const grid = new Grid(gridId);
   grids.push(grid);
+  grid.write();
 
   res.json({ success: true, grid });
 });
@@ -97,13 +146,14 @@ router.post("/:gridId/block", (req, res) => {
   }
 
   grid.addBlock(block);
+  grid.write();
 
   res.json({ success: true, block });
 });
 
 
 // DELETE BLOCK
-router.delete("/grid/:gridId/block/:blockId", (req, res) => {
+router.delete("/:gridId/block/:blockId", (req, res) => {
   const { gridId, blockId } = req.params;
 
   const grid = grids.find(g => g.gridId === Number(gridId));
@@ -112,6 +162,7 @@ router.delete("/grid/:gridId/block/:blockId", (req, res) => {
   const removed = grid.removeBlock(Number(blockId));
   if (!removed) return res.status(404).json({ error: "Block not found" });
 
+  grid.write(); // Persist changes
   res.json({ success: true });
 });
 
@@ -124,6 +175,14 @@ router.delete("/:gridId", (req, res) => {
   }
 
   grids.splice(index, 1);
+  
+  // Clean up from JSON by writing empty grid data
+  const simulationPath = path.join(__dirname, "../../simulation.json");
+  if (fs.existsSync(simulationPath)) {
+    const data = JSON.parse(fs.readFileSync(simulationPath, 'utf-8'));
+    delete data.grid;
+    fs.writeFileSync(simulationPath, JSON.stringify(data, null, 2));
+  }
 
   res.json({ success: true });
 });
