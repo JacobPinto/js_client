@@ -4,6 +4,7 @@ import {
   TextEntryWithButton,
   TextEntryWithDropdownAndButton,
   FileEntry,
+  Dropdown,
 } from "./button.js";
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
@@ -218,7 +219,7 @@ export class ViewSimEngine {
         if (!Number.isNaN(blockId)) {
           this._controller.onBlockIdChange(blockId);
         }
-        
+
         if (!Number.isNaN(nbx) && !Number.isNaN(nby)) {
           this._controller.onNbPointsChange([nbx, nby]);
         }
@@ -286,6 +287,60 @@ export class ViewSimEngine {
       })
       .build();
 
+   const boundaryConditionButton = buttonBuilder
+  .setButtonType(TextEntryWithDropdownAndButton)
+  .setButtonName("BoundaryConditions")
+  .setButtonDisplayName("Boundary Conditions")
+  .setSubmitLabel("Submit")
+
+  .setQuestions({
+    type: "Type",
+    norm: "Normal",
+    data: "Data",
+  })
+
+  .setContextObj({
+    type: {
+      options: {
+        constant_velocity: "Constant Velocity",
+        bounce_back: "Bounce Back",
+      },
+    },
+    norm: {},
+    data: {},
+  })
+
+  .setUpdate(function (this: TextEntryWithDropdownAndButton) {
+    const type = this.getDropdownValue("type");
+    const norm = this.getTextValue("norm");
+    const data = this.getTextValue("data");
+
+    // Conditional UI
+    const rows = this._form.querySelectorAll("div");
+    const dataRow = rows[2];
+    if (dataRow) {
+      (dataRow as HTMLElement).style.display =
+        type === "constant_velocity" ? "flex" : "none";
+    }
+
+    if (type) {
+      this._controller.onBcTypeChange(type);
+    }
+
+    if (!Number.isNaN(Number(norm))) {
+      this._controller.onBcNormChange(Number(norm));
+    }
+
+    if (type === "constant_velocity" && !Number.isNaN(Number(data))) {
+      this._controller.onBcDataChange(Number(data));
+    }
+  })
+
+  .setOnClick(function (this: TextEntryWithDropdownAndButton) {
+    this._controller.submitBoundaryConditions();
+  })
+
+  .build();
     const runButton = buttonBuilder
       .setButtonType(TextEntryWithButton)
       .setButtonName("Run")
@@ -326,6 +381,7 @@ export class ViewSimEngine {
 
     const LBSolver = new Toolbar("LB Solver", [
       initialConditionsButton,
+      boundaryConditionButton,
       eqbutton1,
       runButton,
       clientForm,

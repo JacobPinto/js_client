@@ -170,7 +170,7 @@ export class ControllerSimEngine {
     this.model.setBcType(v);
   }
 
-  public onBcDataChange(v: number[]) {
+  public onBcDataChange(v: number) {
     this.model.setBcData(v);
   }
 
@@ -382,14 +382,14 @@ export class ControllerSimEngine {
 
   public async submitBoundaryConditions() {
     try {
-      const bcType = this._model.bcType.getData();
-      const bcData = this._model.bcData.getData();
-      const bcNorm = this._model.bcNorm.getData();
+      const type = this._model.bcType.getData();
+      const data = this._model.bcData.getData();
+      const norm = this._model.bcNorm.getData();
 
       const bc = await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/boundary_conditions`,
-        body: { bcType, bcData, bcNorm },
+        endpoint: `/lb_solver/boundary_condition`,
+        body: { type, data, norm },
       });
 
       this._model.setOutputMessage("Boundary conditions submitted");

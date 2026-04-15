@@ -16,7 +16,7 @@ export abstract class JSONWritable {
   protected filePath = path.join(__dirname, "../simulation.json");
 
   /**
-   * Returns a unique key for this object's data in the JSON file.
+   * Returns a unique key for object's data in the JSON file.
    * This key is used to identify and merge the object's JSON representation
    * with existing data in the file.
    * @returns A string key for the JSON object.
@@ -24,7 +24,7 @@ export abstract class JSONWritable {
   abstract getKey(): string;
 
   /**
-   * Converts the object to a JSON-serializable representation.
+   * Converts the object to a JSON representation.
    * Subclasses must implement this to define how their data is structured in JSON.
    * @returns An object that can be serialized to JSON.
    */

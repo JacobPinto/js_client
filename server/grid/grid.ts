@@ -8,14 +8,24 @@ import e from "express";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const router = express.Router();
- 
+// #TBD 
+// Client server/sided object.
+// 1.every CSO has a id 
+// 2.all the members of the cso are private expect constructor and getter. to control the state of the CSO tightly
+// 2.a the state of the CSO is mostly controlled by the endpoints.
+// 3. every CSO on the server side needs to be owned by a manager object.
+// Client side
+// communication interface between GUi and server
+// it must contain an unique id which matches the server side
 
 class Block { 
+  // private.
   blockId: number;
-  nb_points: [number, number]; // 3d dynamic array for one two or three dimensions, but for now we will stick to 2d
+  nb_points: [number, number]; // 3d dynamic array for one two or three dimensions, but for now we will stick to 2d #TBD
   start_coords: [number, number]; // same as above
   end_coords: [number, number]; // same as above
 
+  // public
   constructor(
     blockId: number,
     nb_points: [number, number],
@@ -33,7 +43,7 @@ class Block {
     if (data.start_coords) this.start_coords = data.start_coords;
     if (data.end_coords) this.end_coords = data.end_coords;
   }
-
+// private.
   validate() {
     const [nx, ny] = this.nb_points; 
     const [x1, y1] = this.start_coords;
@@ -146,7 +156,7 @@ router.post("/:gridId/block", (req, res) => {
   }
 
   grid.addBlock(block);
-  grid.write();
+  grid.write(); // improvement: this is not an ideal design
 
   res.json({ success: true, block });
 });

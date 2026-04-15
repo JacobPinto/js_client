@@ -1,4 +1,10 @@
 import express from "express";
+import { JSONWritable } from "../jsonWritable.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
@@ -9,6 +15,7 @@ export enum BoundaryType {
 
 // Base Class for Boundary Conditions
 class BoundaryCondition {
+  // unique id for the boundary condition
   private _type: BoundaryType;
   private _data?: number[]; // vector of data for the boundary condition
   private _norm: number; // normal vector for the boundary condition, if applicable
@@ -17,6 +24,18 @@ class BoundaryCondition {
     this._type = type;
     this._data = data; 
     this._norm = norm;
+  }
+
+  get type() {
+    return this._type;
+  }
+
+  get data() {
+    return this._data;
+  }
+
+  get norm() {
+    return this._norm;
   }
 }
 
@@ -36,7 +55,7 @@ class BounceBack extends BoundaryCondition {
 }
 
 
-class LBSolver {
+class LBSolver extends JSONWritable {
 
   // method to write its data to a json file
 
@@ -59,6 +78,24 @@ class LBSolver {
 
   //list of boundary conditions for the lb solver
   private _boundaryConditions: BoundaryCondition[] = [];
+
+  getKey(): string {
+    return "lbSolver";
+  }
+
+  toJSON() {
+    return {
+      eqn_str: this._eqn_str,
+      velocity: this._velocity,// 
+      viscosity: this._viscosity,
+      run: this._run,
+      boundaryConditions: this._boundaryConditions.map((bc) => ({
+        type: bc.type,
+        data: bc.data,
+        norm: bc.norm,
+      })),
+    };
+  }
 
   /* ===== SETTERS ===== */
 
@@ -120,6 +157,57 @@ class LBSolver {
 //In-memory storage for LB Solvers 
 const solver = new LBSolver();
 
+function initializeLBSolver() {
+  try {
+    const simulationPath = path.join(__dirname, "../../simulation.json");
+
+    if (fs.existsSync(simulationPath)) {
+      const raw = fs.readFileSync(simulationPath, "utf-8");
+      const data = JSON.parse(raw);
+
+      if (data.lbSolver) {
+        const solverData = data.lbSolver;
+
+        // Set values properly
+        if (solverData.eqn_str) {
+          solver.setEquation(solverData.eqn_str);
+        }
+
+        if (
+          solverData.velocity !== null &&
+          solverData.viscosity !== null
+        ) {
+          solver.setInitialConditions(
+            solverData.velocity,
+            solverData.viscosity
+          );
+        }
+
+        if (solverData.run !== undefined) {
+          solver.setRun(solverData.run);
+        }
+
+        // Restore boundary conditions
+        if (solverData.boundaryConditions) {
+          solverData.boundaryConditions.forEach((bc: any) => {
+            const boundary = new BoundaryCondition(
+              bc.type,
+              bc.data,
+              bc.norm
+            );
+            solver.addBoundaryCondition(boundary);
+          });
+        }
+
+        console.log("Loaded LB Solver from simulation.json");
+      }
+    }
+  } catch (err) {
+    console.warn("Could not initialize LB Solver:", err);
+  }
+}
+
+
 //routes
 // POST Equation String
 router.post("/eqn_str", (req, res) => {
@@ -134,6 +222,7 @@ router.post("/eqn_str", (req, res) => {
     }
 
     solver.setEquation(eqn_str);
+    solver.write(); // Write to JSON file after setting the equation
 
     res.json({
       message: "Equation set successfully",
@@ -158,7 +247,8 @@ router.post("/initial_conditions", (req, res) => {
       });
     }
     solver.setInitialConditions(velocity, viscosity);
-
+    solver.write();
+    
     res.json({
       message: "Initial conditions set successfully",
       velocity: solver.velocity,
@@ -183,6 +273,7 @@ router.post("/run", (req, res) => {
       });
     }
     solver.setRun(run);
+    solver.write();
 
     res.json({
       message: "Run set successfully",
@@ -207,6 +298,7 @@ router.post("/boundary_condition", (req, res) => {
 
     const bc = new BoundaryCondition(type, data, norm);
     solver.addBoundaryCondition(bc);
+    solver.write();
 
     res.json({
       message: "Boundary condition added successfully",

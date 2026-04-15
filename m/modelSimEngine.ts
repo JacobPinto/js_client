@@ -38,7 +38,7 @@ export class ModelSimEngine {
   private _velocity = new ModelGeneric<number>();
   private _viscosity = new ModelGeneric<number>();
   private _bcType = new ModelGeneric<string>();
-  private _bcData = new ModelGeneric<number[]>();
+  private _bcData = new ModelGeneric<number>();
   private _bcNorm = new ModelGeneric<number>();
   private _run = new ModelGeneric<number>();
 
@@ -234,7 +234,7 @@ export class ModelSimEngine {
     this._bcType.setData(bcType);
   } 
 
-  public setBcData(bcData: number[]) {
+  public setBcData(bcData: number) {
     this._bcData.setData(bcData);
   }
 

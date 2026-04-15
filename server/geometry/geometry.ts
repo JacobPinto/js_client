@@ -30,7 +30,7 @@ class GeometryInfo extends JSONWritable {
   }
 
   getKey(): string {
-    return `geometry_${this._name}`;
+    return `geometry_${this._name}`; // #TBD remove name
   }
 
   toJSON(): any {
