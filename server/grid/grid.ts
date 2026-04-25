@@ -3,7 +3,6 @@ import { JSONWritable } from "../jsonWritable.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import e from "express";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,178 +17,221 @@ const router = express.Router();
 // communication interface between GUi and server
 // it must contain an unique id which matches the server side
 
+// type BlockUpdate = {
+//   nb_points?: [number, number];
+//   start_coords?: [number, number];
+//   end_coords?: [number, number];
+// };
+
 class Block { 
   // private.
-  blockId: number;
-  nb_points: [number, number]; // 3d dynamic array for one two or three dimensions, but for now we will stick to 2d #TBD
-  start_coords: [number, number]; // same as above
-  end_coords: [number, number]; // same as above
+  private blockId: number;
+  private nb_points: number[]; // dynamic array for one, two, or three dimensions
+  private start_coords: number[]; // dynamic array for one, two, or three dimensions
+  private end_coords: number[]; // dynamic array for one, two, or three dimensions
 
-  // public
   constructor(
     blockId: number,
-    nb_points: [number, number],
-    start_coords: [number, number],
-    end_coords: [number, number]
+    nb_points: number[],
+    start_coords: number[],
+    end_coords: number[]
   ) {
     this.blockId = blockId;
     this.nb_points = nb_points;
     this.start_coords = start_coords;
     this.end_coords = end_coords;
+
+    // if (!this.validate()) {
+    //   throw new Error("Invalid block parameters");
+    // }
   }
 
-  update(data: Partial<Block>) { 
-    if (data.nb_points) this.nb_points = data.nb_points;
-    if (data.start_coords) this.start_coords = data.start_coords;
-    if (data.end_coords) this.end_coords = data.end_coords;
+  getId() {
+    return this.blockId;
   }
-// private.
-  validate() {
-    const [nx, ny] = this.nb_points; 
-    const [x1, y1] = this.start_coords;
-    const [x2, y2] = this.end_coords;
 
-    return nx > 0 && ny > 0 && x2 > x1 && y2 > y1;
+  toJSON() {
+    return {
+      blockId: this.blockId,
+      nb_points: this.nb_points,
+      start_coords: this.start_coords,
+      end_coords: this.end_coords,
+    };
   }
+  
+
+  // private update(data: BlockUpdate) { 
+  //   if (data.nb_points) this.nb_points = data.nb_points;
+  //   if (data.start_coords) this.start_coords = data.start_coords;
+  //   if (data.end_coords) this.end_coords = data.end_coords;
+  // }
+
+  // private validate() {
+  //   const [nx, ny] = this.nb_points; 
+  //   const [x1, y1] = this.start_coords;
+  //   const [x2, y2] = this.end_coords;
+
+  //   return nx > 0 && ny > 0 && x2 > x1 && y2 > y1;
+  // }
 }
 // Grid class is a collection of blocks.
 
+/* =========================
+   GRID (CSO)
+========================= */
 class Grid extends JSONWritable {
-  gridId: number;
-  blocks: Block[];
+  private gridId: number;
+  private blocks: Map<number, Block>;
 
-  constructor(gridId: number, blocks: Block[] = []) {
+  constructor(gridId: number) {
     super();
     this.gridId = gridId;
-    this.blocks = blocks;
+    this.blocks = new Map();
+  }
+
+  getId() {
+    return this.gridId;
   }
 
   getKey() {
-    return "grid";
+    return `grid_${this.gridId}`;
+  }
+
+  addBlock(block: Block) {
+    if (this.blocks.has(block.getId())) {
+      throw new Error("Block ID already exists");
+    }
+    this.blocks.set(block.getId(), block);
+  }
+
+  removeBlock(blockId: number) {
+    return this.blocks.delete(blockId);
   }
 
   toJSON() {
     return {
       gridId: this.gridId,
-      blocks: this.blocks.map(block => ({
-      blockId: block.blockId,
-      nb_points: block.nb_points,
-      start_coords: block.start_coords,
-      end_coords: block.end_coords,
-    })),
+      blocks: Array.from(this.blocks.values()).map(b => b.toJSON()),
     };
   }
-
-   addBlock(block: Block) {
-    this.blocks.push(block);
-  }
-
-  removeBlock(blockId: number) {
-    const index = this.blocks.findIndex(b => b.blockId === blockId);
-    if (index === -1) return false;
-
-    this.blocks.splice(index, 1);
-    return true;
-  }
-
 }
 
+/* =========================
+   GRID MANAGER (OWNER)
+========================= */
+class GridManager {
+  private grids: Map<number, Grid> = new Map();
 
-//In-Memory Storage
-const grids: Grid[] = [];
-
-// Initialize grids from simulation.json
-function initializeGrids() {
-  try {
-    const simulationPath = path.join(__dirname, "../../simulation.json");
-    
-    if (fs.existsSync(simulationPath)) {
-      const data = JSON.parse(fs.readFileSync(simulationPath, 'utf-8'));
-      if (data.grid) {
-        const gridData = data.grid;
-        const grid = new Grid(gridData.gridId, gridData.blocks.map((b: any) => 
-          new Block(b.blockId, b.nb_points, b.start_coords, b.end_coords)
-        ));
-        grids.push(grid);
-        console.log(`Loaded grid from simulation.json`);
-      }
+  createGrid(gridId: number) {
+    if (this.grids.has(gridId)) {
+      throw new Error("Grid already exists");
     }
-  } catch (err) {
-    console.warn('Could not initialize grids from simulation.json:', err);
+    const grid = new Grid(gridId);
+    this.grids.set(gridId, grid);
+    return grid;
+  }
+
+  getGrid(gridId: number) {
+    return this.grids.get(gridId);
+  }
+
+  deleteGrid(gridId: number) {
+    return this.grids.delete(gridId);
+  }
+
+  loadFromFile() {
+    try {
+      const simulationPath = path.join(__dirname, "../../simulation.json");
+
+      if (fs.existsSync(simulationPath)) {
+        const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
+
+        // Load all grids with keys matching pattern grid_*
+        Object.keys(data).forEach((key) => {
+          if (key.startsWith("grid_")) {
+            const gridData = data[key];
+            const grid = new Grid(gridData.gridId);
+
+            gridData.blocks.forEach((b: any) => {
+              const block = new Block(
+                b.blockId,
+                b.nb_points,
+                b.start_coords,
+                b.end_coords
+              );
+              grid.addBlock(block);
+            });
+
+            this.grids.set(grid.getId(), grid);
+            console.log(`Loaded grid ${gridData.gridId} from simulation.json`);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("Init failed:", err);
+    }
   }
 }
-initializeGrids();
 
-//Routes
+const gridManager = new GridManager();
+gridManager.loadFromFile();
+
+/* =========================
+   ROUTES
+========================= */
 
 // CREATE GRID
 router.post("/", (req, res) => {
-  const { gridId } = req.body;
+  try {
+    const { gridId } = req.body;
+    const grid = gridManager.createGrid(gridId);
+    grid.write();
 
-  const existing = grids.find(g => g.gridId === gridId);
-  if (existing) {
-    return res.status(400).json({ error: "Grid already exists" });
+    res.json({ success: true, grid });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-
-  const grid = new Grid(gridId);
-  grids.push(grid);
-  grid.write();
-
-  res.json({ success: true, grid });
 });
 
-
-// CREATE BLOCK inside GRID
+// CREATE BLOCK
 router.post("/:gridId/block", (req, res) => {
-  const { gridId } = req.params;
-  const { blockId, nb_points, start_coords, end_coords } = req.body;
+  try {
+    const { gridId } = req.params;
+    const { blockId, nb_points, start_coords, end_coords } = req.body;
 
-  const grid = grids.find(g => g.gridId === Number(gridId));
-  if (!grid) {
-    return res.status(404).json({ error: "Grid not found" });
+    const grid = gridManager.getGrid(Number(gridId));
+    if (!grid) return res.status(404).json({ error: "Grid not found" });
+
+    const block = new Block(blockId, nb_points, start_coords, end_coords);
+    grid.addBlock(block);
+    grid.write();
+
+    res.json({ success: true, block });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
-
-  const block = new Block(blockId, nb_points, start_coords, end_coords);
-
-  if (!block.validate()) {
-    return res.status(400).json({ error: "Invalid block" });
-  }
-
-  grid.addBlock(block);
-  grid.write(); // improvement: this is not an ideal design
-
-  res.json({ success: true, block });
 });
-
 
 // DELETE BLOCK
 router.delete("/:gridId/block/:blockId", (req, res) => {
-  const { gridId, blockId } = req.params;
-
-  const grid = grids.find(g => g.gridId === Number(gridId));
+  const grid = gridManager.getGrid(Number(req.params.gridId));
   if (!grid) return res.status(404).json({ error: "Grid not found" });
 
-  const removed = grid.removeBlock(Number(blockId));
+  const removed = grid.removeBlock(Number(req.params.blockId));
   if (!removed) return res.status(404).json({ error: "Block not found" });
 
-  grid.write(); // Persist changes
+  grid.write();
   res.json({ success: true });
 });
 
 // DELETE GRID
 router.delete("/:gridId", (req, res) => {
-  const index = grids.findIndex(g => g.gridId === Number(req.params.gridId));
+  const deleted = gridManager.deleteGrid(Number(req.params.gridId));
+  if (!deleted) return res.status(404).json({ error: "Grid not found" });
 
-  if (index === -1) {
-    return res.status(404).json({ error: "Grid not found" });
-  }
-
-  grids.splice(index, 1);
-  
-  // Clean up from JSON by writing empty grid data
   const simulationPath = path.join(__dirname, "../../simulation.json");
   if (fs.existsSync(simulationPath)) {
-    const data = JSON.parse(fs.readFileSync(simulationPath, 'utf-8'));
+    const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
     delete data.grid;
     fs.writeFileSync(simulationPath, JSON.stringify(data, null, 2));
   }
