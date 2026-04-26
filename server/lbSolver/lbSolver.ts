@@ -56,22 +56,19 @@ class BounceBack extends BoundaryCondition {
 
 
 class LBSolver extends JSONWritable {
-
   // method to write its data to a json file
 
-// #TBD there should be a write method to add this data to a json file 
-// this write method shouldnt override other methods on the json file.
-// same for grid and geometry
+  // #TBD there should be a write method to add this data to a json file
+  // this write method shouldnt override other methods on the json file.
+  // same for grid and geometry
 
+  private _lbId: number;
   private _eqn_str: string | null = null;
   private _velocity: number | null = null;
   private _viscosity: number | null = null;
-  // private type: BoundaryType = "constant_velocity_wall";
-  // private norm: number = 0;
-  // private data?: number;
   private _run: number = 0;
 
-  // #TDB base class for the boundary conditions 
+  // #TDB base class for the boundary conditions
   // for each type of boundary conditions there will be a child class and child class will extend the base class
   // some members of the boundry condition class type will be a enum, data should be a vector, list of boundary condn bassed on interface class.
   //this list of boundry condn stored in lbsolver class
@@ -79,14 +76,24 @@ class LBSolver extends JSONWritable {
   //list of boundary conditions for the lb solver
   private _boundaryConditions: BoundaryCondition[] = [];
 
+  constructor(lbId: number) {
+    super();
+    this._lbId = lbId;
+  }
+
+  getId() {
+    return this._lbId;
+  }
+
   getKey(): string {
-    return "lbSolver";
+    return `lbSolver_${this._lbId}`;
   }
 
   toJSON() {
     return {
+      id: this._lbId,
       eqn_str: this._eqn_str,
-      velocity: this._velocity,// 
+      velocity: this._velocity, //
       viscosity: this._viscosity,
       run: this._run,
       boundaryConditions: this._boundaryConditions.map((bc) => ({
@@ -127,6 +134,8 @@ class LBSolver extends JSONWritable {
     this._eqn_str = null;
     this._velocity = null;
     this._viscosity = null;
+    this._run = 0;
+    this._boundaryConditions = [];
   }
 
   /* ===== GETTERS ===== */
@@ -150,174 +159,138 @@ class LBSolver extends JSONWritable {
   get boundaryConditions() {
     return this._boundaryConditions;
   }
-
 }
 
+class LBSolverManager {
+  private solvers: Map<number, LBSolver> = new Map();
 
-//In-memory storage for LB Solvers 
-const solver = new LBSolver();
-
-function initializeLBSolver() {
-  try {
-    const simulationPath = path.join(__dirname, "../../simulation.json");
-
-    if (fs.existsSync(simulationPath)) {
-      const raw = fs.readFileSync(simulationPath, "utf-8");
-      const data = JSON.parse(raw);
-
-      if (data.lbSolver) {
-        const solverData = data.lbSolver;
-
-        // Set values properly
-        if (solverData.eqn_str) {
-          solver.setEquation(solverData.eqn_str);
-        }
-
-        if (
-          solverData.velocity !== null &&
-          solverData.viscosity !== null
-        ) {
-          solver.setInitialConditions(
-            solverData.velocity,
-            solverData.viscosity
-          );
-        }
-
-        if (solverData.run !== undefined) {
-          solver.setRun(solverData.run);
-        }
-
-        // Restore boundary conditions
-        if (solverData.boundaryConditions) {
-          solverData.boundaryConditions.forEach((bc: any) => {
-            const boundary = new BoundaryCondition(
-              bc.type,
-              bc.data,
-              bc.norm
-            );
-            solver.addBoundaryCondition(boundary);
-          });
-        }
-
-        console.log("Loaded LB Solver from simulation.json");
-      }
+  createSolver(id: number) {
+    if (this.solvers.has(id)) {
+      throw new Error("Solver already exists");
     }
-  } catch (err) {
-    console.warn("Could not initialize LB Solver:", err);
+    const solver = new LBSolver(id);
+    this.solvers.set(id, solver);
+    return solver;// remove
+  }
+
+  getSolver(id: number) {
+    return this.solvers.get(id);
+  }
+
+  deleteSolver(id: number) {
+    return this.solvers.delete(id);
+  }
+
+  loadFromFile() {
+    try {
+      const simulationPath = path.join(__dirname, "../../simulation.json");
+
+      if (fs.existsSync(simulationPath)) {
+        const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
+
+        Object.keys(data).forEach((key) => {
+          if (key.startsWith("lbSolver_")) {
+            const s = data[key];
+
+            const solver = new LBSolver(s.id);
+
+            if (s.eqn_str) solver.setEquation(s.eqn_str);
+            if (s.velocity !== null && s.viscosity !== null) {
+              solver.setInitialConditions(s.velocity, s.viscosity);
+            }
+            if (s.run !== undefined) solver.setRun(s.run);
+
+            if (s.boundaryConditions) {
+              s.boundaryConditions.forEach((bc: any) => {
+                solver.addBoundaryCondition(
+                  new BoundaryCondition(bc.type, bc.data, bc.norm)
+                );
+              });
+            }
+
+            this.solvers.set(solver.getId(), solver);
+            console.log(`Loaded solver ${s.id}`);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("LBSolver init failed:", err);
+    }
   }
 }
+
+const solverManager = new LBSolverManager();
+solverManager.loadFromFile();
 
 
 //routes
-// POST Equation String
-router.post("/eqn_str", (req, res) => {
+// CREATE SOLVER
+router.post("/", (req, res) => {
   try {
+    const { id } = req.body;
+    const solver = solverManager.createSolver(id);
+    solver.write();// #TBD remove
 
-    const { eqn_str } = req.body;
-
-    if (!eqn_str) {
-      return res.status(400).json({
-        error: "eqn_str is required",
-      });
-    }
-
-    solver.setEquation(eqn_str);
-    solver.write(); // Write to JSON file after setting the equation
-
-    res.json({
-      message: "Equation set successfully",
-      eqn_str: solver.eqn_str,
-    });
-  } catch {
-    res.status(500).json({
-      error: "Failed to set equation",
-    });
+    res.json({ success: true, solver });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
   }
 });
 
-// POST Initial Conditions
-router.post("/initial_conditions", (req, res) => {
-  try {
+// SET EQUATION
+router.post("/:id/eqn_str", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.id));
+  if (!solver) return res.status(404).json({ error: "Solver not found" });
 
-    const { velocity, viscosity } = req.body;
+  solver.setEquation(req.body.eqn_str);
+  solver.write();
 
-    if (velocity === undefined || viscosity === undefined) {
-      return res.status(400).json({
-        error: "velocity & viscosity required",
-      });
-    }
-    solver.setInitialConditions(velocity, viscosity);
-    solver.write();
-    
-    res.json({
-      message: "Initial conditions set successfully",
-      velocity: solver.velocity,
-      viscosity: solver.viscosity,
-    });
-  } catch {
-    res.status(500).json({
-      error: "Failed to set initial conditions",
-    });
-  }
+  res.json({ success: true });
 });
 
-// POST run
-router.post("/run", (req, res) => {
-  try {
+// INITIAL CONDITIONS
+router.post("/:id/initial_conditions", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.id));
+  if (!solver) return res.status(404).json({ error: "Solver not found" });
 
-    const { run } = req.body;
+  const { velocity, viscosity } = req.body;
+  solver.setInitialConditions(velocity, viscosity);
+  solver.write();
 
-    if (run === undefined) {
-      return res.status(400).json({
-        error: "run is required",
-      });
-    }
-    solver.setRun(run);
-    solver.write();
-
-    res.json({
-      message: "Run set successfully",
-      run: solver.run,
-    });
-  } catch {
-    res.status(500).json({
-      error: "Failed to set run",
-    });
-  } 
+  res.json({ success: true });
 });
 
-// POST Boundary Condition
-router.post("/boundary_condition", (req, res) => {
-  try {
-    const { type, data, norm } = req.body;
-    if (!type || !norm) {
-      return res.status(400).json({
-        error: "type and norm are required",
-      });
-    }
+// RUN
+router.post("/:id/run", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.id));
+  if (!solver) return res.status(404).json({ error: "Solver not found" });
 
-    const bc = new BoundaryCondition(type, data, norm);
-    solver.addBoundaryCondition(bc);
-    solver.write();
+  solver.setRun(req.body.run);
+  solver.write();
 
-    res.json({
-      message: "Boundary condition added successfully",
-      boundaryCondition: bc,
-    });
-  } catch {
-    res.status(500).json({
-      error: "Failed to add boundary condition",
-    });
-  }
+  res.json({ success: true });
 });
 
-// DELETE
-router.delete("/", (req, res) => {
-  solver.reset();
+// ADD BC
+router.post("/:id/boundary_condition", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.id));
+  if (!solver) return res.status(404).json({ error: "Solver not found" });
 
-  res.json({
-    message: "LB Solver reset successfully",
-  });
+  const { type, data, norm } = req.body;
+
+  const bc = new BoundaryCondition(type, data, norm);
+  solver.addBoundaryCondition(bc);
+  solver.write();
+
+  res.json({ success: true });
+});
+
+// DELETE SOLVER
+router.delete("/:id", (req, res) => {
+  const deleted = solverManager.deleteSolver(Number(req.params.id));
+  if (!deleted) return res.status(404).json({ error: "Solver not found" });
+
+  res.json({ success: true });
 });
 
 export default router;

@@ -142,6 +142,10 @@ export class ControllerSimEngine {
     this.model.setBlockId(id);
   }
 
+  public onLbIdChange(id: number) {
+    this.model.setLbId(id);
+  }
+
   public onNbPointsChange(v: [number, number]) {
     this.model.setNbPoints(v);
   }
@@ -190,14 +194,10 @@ export class ControllerSimEngine {
       const formData = new FormData();
       formData.append("file", file);
 
-
-      const response = await fetch(
-        `http://localhost:3000/geometry/loadfile`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const response = await fetch(`http://localhost:3000/geometry/loadfile`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
         throw new Error("Upload failed");
@@ -252,7 +252,6 @@ export class ControllerSimEngine {
       this._model.setOutputMessage(
         `Client "${created.name}" successfully created.`,
       );
-
     } catch (err) {
       console.error("[Controller] Submit failed:", (err as Error).message);
       this._model.setOutputMessage(`Submit failed: ${(err as Error).message}`);
@@ -305,17 +304,15 @@ export class ControllerSimEngine {
   }
 
   public async submitGrid() {
-    try {      
-
+    try {
       const gridId = this._model.gridId.getData();
       const blockId = this._model.blockId.getData();
 
       await serverRequest({
-      method: "POST",
-      endpoint: `/grid`,
-      body: { gridId },
-    });
-    
+        method: "POST",
+        endpoint: `/grid`,
+        body: { gridId },
+      });
 
       const result = await serverRequest({
         method: "POST",
@@ -338,30 +335,62 @@ export class ControllerSimEngine {
     }
   }
 
+  // CREATE SOLVER
+  public async createSolver() {
+    try {
+      const id = this._model.lbId.getData();
+
+      if (id == null) {
+        throw new Error("lbId is required");
+      }
+
+      await serverRequest({
+        method: "POST",
+        endpoint: `/lb_solver`,
+        body: { id },
+      });
+
+      this._model.setOutputMessage(`Solver ${id} created`);
+    } catch (err) {
+      console.error(
+        "[Controller] createSolver failed:",
+        (err as Error).message,
+      );
+      this._model.setOutputMessage(`Create failed: ${(err as Error).message}`);
+    }
+  }
+
   public async submitEqnStr() {
     try {
-      const eqn_str = await serverRequest({
+      const id = this._model.lbId.getData();
+
+      if (id == null) throw new Error("lbId missing");
+
+      await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/eqn_str`,
+        endpoint: `/lb_solver/${id}/eqn_str`,
         body: { eqn_str: this._model.eqn_str.getData() },
       });
+
       this._model.setOutputMessage("Equation string submitted");
     } catch (err) {
       console.error(
         "[Controller] submitEqnStr failed:",
         (err as Error).message,
       );
-      this._model.setOutputMessage(
-        `Equation string submission failed: ${(err as Error).message}`,
-      );
+      this._model.setOutputMessage(`Error: ${(err as Error).message}`);
     }
   }
 
   public async submitInitialConditions() {
     try {
-      const initialConditions = await serverRequest({
+      const id = this._model.lbId.getData();
+
+      if (id == null) throw new Error("lbId missing");
+
+      await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/initial_conditions`,
+        endpoint: `/lb_solver/${id}/initial_conditions`,
         body: {
           velocity: this._model.velocity.getData(),
           viscosity: this._model.viscosity.getData(),
@@ -374,48 +403,52 @@ export class ControllerSimEngine {
         "[Controller] submitInitialConditions failed:",
         (err as Error).message,
       );
-      this._model.setOutputMessage(
-        `Initial conditions submission failed: ${(err as Error).message}`,
-      );
+      this._model.setOutputMessage(`Error: ${(err as Error).message}`);
     }
   }
 
   public async submitBoundaryConditions() {
     try {
-      const type = this._model.bcType.getData();
-      const data = this._model.bcData.getData();
-      const norm = this._model.bcNorm.getData();
+      const id = this._model.lbId.getData();
 
-      const bc = await serverRequest({
+      if (id == null) throw new Error("lbId missing");
+
+      await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/boundary_condition`,
-        body: { type, data, norm },
+        endpoint: `/lb_solver/${id}/boundary_condition`,
+        body: {
+          type: this._model.bcType.getData(),
+          data: this._model.bcData.getData(),
+          norm: this._model.bcNorm.getData(),
+        },
       });
 
-      this._model.setOutputMessage("Boundary conditions submitted");
+      this._model.setOutputMessage("Boundary condition added");
     } catch (err) {
       console.error(
         "[Controller] submitBoundaryConditions failed:",
         (err as Error).message,
       );
-      this._model.setOutputMessage(
-        `Boundary conditions submission failed: ${(err as Error).message}`,
-      );
+      this._model.setOutputMessage(`Error: ${(err as Error).message}`);
     }
   }
 
   public async submitRun() {
     try {
-      const runResult = await serverRequest({
+      const id = this._model.lbId.getData();
+
+      if (id == null) throw new Error("lbId missing");
+
+      await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/run`,
+        endpoint: `/lb_solver/${id}/run`,
+        body: { run: this._model.run.getData() },
       });
-      this._model.setOutputMessage(" Run submitted successfully");
+
+      this._model.setOutputMessage("Run submitted");
     } catch (err) {
       console.error("[Controller] submitRun failed:", (err as Error).message);
-      this._model.setOutputMessage(
-        `Run submission failed: ${(err as Error).message}`,
-      );
+      this._model.setOutputMessage(`Error: ${(err as Error).message}`);
     }
   }
 }

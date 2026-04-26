@@ -34,6 +34,7 @@ export class ModelSimEngine {
   private _grids = new ModelGeneric<any[]>();
 
   // LB Solver params.
+  private _lbId = new ModelGeneric<number>();
   private _eqn_str = new ModelGeneric<string>();
   private _velocity = new ModelGeneric<number>();
   private _viscosity = new ModelGeneric<number>();
@@ -105,6 +106,10 @@ export class ModelSimEngine {
     return this._blockId;
   }
 
+  public get lbId() {
+    return this._lbId;
+  }
+
   public get nbPoints() {
     return this._nbPoints;
   }
@@ -119,14 +124,14 @@ export class ModelSimEngine {
 
   public get eqn_str() {
     return this._eqn_str;
-  }   
+  }
 
   public get velocity() {
     return this._velocity;
-  }   
+  }
 
   public get viscosity() {
-    return this._viscosity; 
+    return this._viscosity;
   }
 
   public get bcType() {
@@ -144,7 +149,6 @@ export class ModelSimEngine {
   public get run() {
     return this._run;
   }
-
 
   // Setters
   public set dimension(dim: Dimensions) {
@@ -206,6 +210,10 @@ export class ModelSimEngine {
     this._blockId.setData(id);
   }
 
+  public setLbId(id: number) {
+    this._lbId.setData(id);
+  }
+
   public setNbPoints(nbPoints: [number, number]) {
     this._nbPoints.setData(nbPoints);
   }
@@ -218,13 +226,13 @@ export class ModelSimEngine {
     this._endCoords.setData(coords);
   }
 
-  public setEqn_str(eqn_str: string) {  
+  public setEqn_str(eqn_str: string) {
     this._eqn_str.setData(eqn_str);
   }
 
   public setVelocity(velocity: number) {
     this._velocity.setData(velocity);
-  } 
+  }
 
   public setViscosity(viscosity: number) {
     this._viscosity.setData(viscosity);
@@ -232,7 +240,7 @@ export class ModelSimEngine {
 
   public setBcType(bcType: string) {
     this._bcType.setData(bcType);
-  } 
+  }
 
   public setBcData(bcData: number) {
     this._bcData.setData(bcData);

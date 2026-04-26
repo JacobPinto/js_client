@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 // #TBD 
 // Client server/sided object.
-// 1.every CSO has a id 
+// 1.every CSO has a id.
 // 2.all the members of the cso are private expect constructor and getter. to control the state of the CSO tightly
 // 2.a the state of the CSO is mostly controlled by the endpoints.
 // 3. every CSO on the server side needs to be owned by a manager object.
@@ -128,7 +128,7 @@ class GridManager {
     }
     const grid = new Grid(gridId);
     this.grids.set(gridId, grid);
-    return grid;
+    return grid;// remove
   }
 
   getGrid(gridId: number) {
@@ -185,7 +185,7 @@ router.post("/", (req, res) => {
   try {
     const { gridId } = req.body;
     const grid = gridManager.createGrid(gridId);
-    grid.write();
+    grid.write(); 
 
     res.json({ success: true, grid });
   } catch (err: any) {
@@ -204,7 +204,7 @@ router.post("/:gridId/block", (req, res) => {
 
     const block = new Block(blockId, nb_points, start_coords, end_coords);
     grid.addBlock(block);
-    grid.write();
+    grid.write(); 
 
     res.json({ success: true, block });
   } catch (err: any) {

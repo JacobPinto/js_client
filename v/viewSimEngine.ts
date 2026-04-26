@@ -240,6 +240,33 @@ export class ViewSimEngine {
 
       .build();
 
+    const solverButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("CreateSolver")
+      .setButtonDisplayName("Create Solver")
+      .setSubmitLabel("Create")
+      .setQuestions({
+        lbId: "LB Solver ID",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const lbId = Number(this.getFieldValue("lbId"));
+        if (!Number.isNaN(lbId)) {
+          this._controller.onLbIdChange(lbId);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        const lbId = Number(this.getFieldValue("lbId"));
+
+        if (Number.isNaN(lbId)) {
+          console.error("Invalid lbId");
+          return;
+        }
+        this._controller.onLbIdChange(lbId);
+        this._controller.createSolver();
+      })
+      .build();
+
     const initialConditionsButton = buttonBuilder
       .setButtonType(TextEntryWithButton)
       .setButtonName("InitialConditions")
@@ -287,60 +314,61 @@ export class ViewSimEngine {
       })
       .build();
 
-   const boundaryConditionButton = buttonBuilder
-  .setButtonType(TextEntryWithDropdownAndButton)
-  .setButtonName("BoundaryConditions")
-  .setButtonDisplayName("Boundary Conditions")
-  .setSubmitLabel("Submit")
+    const boundaryConditionButton = buttonBuilder
+      .setButtonType(TextEntryWithDropdownAndButton)
+      .setButtonName("BoundaryConditions")
+      .setButtonDisplayName("Boundary Conditions")
+      .setSubmitLabel("Submit")
 
-  .setQuestions({
-    type: "Type",
-    norm: "Normal",
-    data: "Data",
-  })
+      .setQuestions({
+        type: "Type",
+        norm: "Normal",
+        data: "Data",
+      })
 
-  .setContextObj({
-    type: {
-      options: {
-        constant_velocity: "Constant Velocity",
-        bounce_back: "Bounce Back",
-      },
-    },
-    norm: {},
-    data: {},
-  })
+      .setContextObj({
+        type: {
+          options: {
+            constant_velocity: "Constant Velocity",
+            bounce_back: "Bounce Back",
+          },
+        },
+        norm: {},
+        data: {},
+      })
 
-  .setUpdate(function (this: TextEntryWithDropdownAndButton) {
-    const type = this.getDropdownValue("type");
-    const norm = this.getTextValue("norm");
-    const data = this.getTextValue("data");
+      .setUpdate(function (this: TextEntryWithDropdownAndButton) {
+        const type = this.getDropdownValue("type");
+        const norm = this.getTextValue("norm");
+        const data = this.getTextValue("data");
 
-    // Conditional UI
-    const rows = this._form.querySelectorAll("div");
-    const dataRow = rows[2];
-    if (dataRow) {
-      (dataRow as HTMLElement).style.display =
-        type === "constant_velocity" ? "flex" : "none";
-    }
+        // Conditional UI
+        const rows = this._form.querySelectorAll("div");
+        const dataRow = rows[2];
+        if (dataRow) {
+          (dataRow as HTMLElement).style.display =
+            type === "constant_velocity" ? "flex" : "none";
+        }
 
-    if (type) {
-      this._controller.onBcTypeChange(type);
-    }
+        if (type) {
+          this._controller.onBcTypeChange(type);
+        }
 
-    if (!Number.isNaN(Number(norm))) {
-      this._controller.onBcNormChange(Number(norm));
-    }
+        if (!Number.isNaN(Number(norm))) {
+          this._controller.onBcNormChange(Number(norm));
+        }
 
-    if (type === "constant_velocity" && !Number.isNaN(Number(data))) {
-      this._controller.onBcDataChange(Number(data));
-    }
-  })
+        if (type === "constant_velocity" && !Number.isNaN(Number(data))) {
+          this._controller.onBcDataChange(Number(data));
+        }
+      })
 
-  .setOnClick(function (this: TextEntryWithDropdownAndButton) {
-    this._controller.submitBoundaryConditions();
-  })
+      .setOnClick(function (this: TextEntryWithDropdownAndButton) {
+        this._controller.submitBoundaryConditions();
+      })
 
-  .build();
+      .build();
+
     const runButton = buttonBuilder
       .setButtonType(TextEntryWithButton)
       .setButtonName("Run")
@@ -385,6 +413,7 @@ export class ViewSimEngine {
       eqbutton1,
       runButton,
       clientForm,
+      solverButton,
     ]);
 
     // Create workbench
