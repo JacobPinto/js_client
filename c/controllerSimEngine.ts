@@ -305,14 +305,16 @@ export class ControllerSimEngine {
 
   public async submitGrid() {
     try {
-      const gridId = this._model.gridId.getData();
       const blockId = this._model.blockId.getData();
 
-      await serverRequest({
+      const gridResult = await serverRequest({
         method: "POST",
         endpoint: `/grid`,
-        body: { gridId },
+        body: {},
       });
+
+      const gridId = gridResult.gridId;
+      this._model.setGridId(gridId);
 
       const result = await serverRequest({
         method: "POST",
@@ -338,19 +340,17 @@ export class ControllerSimEngine {
   // CREATE SOLVER
   public async createSolver() {
     try {
-      const id = this._model.lbId.getData();
 
-      if (id == null) {
-        throw new Error("lbId is required");
-      }
-
-      await serverRequest({
+      const lbresult = await serverRequest({
         method: "POST",
         endpoint: `/lb_solver`,
-        body: { id },
+        body: {},
       });
 
-      this._model.setOutputMessage(`Solver ${id} created`);
+      const lbId = lbresult.lbId;
+      this._model.setLbId(lbId);
+
+      this._model.setOutputMessage(`Solver ${lbId} created`);
     } catch (err) {
       console.error(
         "[Controller] createSolver failed:",
@@ -362,13 +362,13 @@ export class ControllerSimEngine {
 
   public async submitEqnStr() {
     try {
-      const id = this._model.lbId.getData();
+      const lbId = this._model.lbId.getData();
 
-      if (id == null) throw new Error("lbId missing");
+      if (lbId == null) throw new Error("lbId missing");
 
       await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/${id}/eqn_str`,
+        endpoint: `/lb_solver/${lbId}/eqn_str`,
         body: { eqn_str: this._model.eqn_str.getData() },
       });
 
@@ -384,13 +384,13 @@ export class ControllerSimEngine {
 
   public async submitInitialConditions() {
     try {
-      const id = this._model.lbId.getData();
+      const lbId = this._model.lbId.getData();
 
-      if (id == null) throw new Error("lbId missing");
+      if (lbId == null) throw new Error("lbId missing");
 
       await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/${id}/initial_conditions`,
+        endpoint: `/lb_solver/${lbId}/initial_conditions`,
         body: {
           velocity: this._model.velocity.getData(),
           viscosity: this._model.viscosity.getData(),
@@ -409,13 +409,13 @@ export class ControllerSimEngine {
 
   public async submitBoundaryConditions() {
     try {
-      const id = this._model.lbId.getData();
+      const lbId = this._model.lbId.getData();
 
-      if (id == null) throw new Error("lbId missing");
+      if (lbId == null) throw new Error("lbId missing");
 
       await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/${id}/boundary_condition`,
+        endpoint: `/lb_solver/${lbId}/boundary_condition`,
         body: {
           type: this._model.bcType.getData(),
           data: this._model.bcData.getData(),
@@ -435,13 +435,13 @@ export class ControllerSimEngine {
 
   public async submitRun() {
     try {
-      const id = this._model.lbId.getData();
+      const lbId = this._model.lbId.getData();
 
-      if (id == null) throw new Error("lbId missing");
+      if (lbId == null) throw new Error("lbId missing");
 
       await serverRequest({
         method: "POST",
-        endpoint: `/lb_solver/${id}/run`,
+        endpoint: `/lb_solver/${lbId}/run`,
         body: { run: this._model.run.getData() },
       });
 

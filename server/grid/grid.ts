@@ -3,6 +3,7 @@ import { JSONWritable } from "../jsonWritable.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { idCounter } from "../idCounter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -128,7 +129,7 @@ class GridManager {
     }
     const grid = new Grid(gridId);
     this.grids.set(gridId, grid);
-    return grid;// remove
+    return grid;
   }
 
   getGrid(gridId: number) {
@@ -166,6 +167,8 @@ class GridManager {
             console.log(`Loaded grid ${gridData.gridId} from simulation.json`);
           }
         });
+        const loadedIds = Array.from(this.grids.keys());
+        idCounter.sync("grid", loadedIds);
       }
     } catch (err) {
       console.warn("Init failed:", err);
@@ -176,6 +179,7 @@ class GridManager {
 const gridManager = new GridManager();
 gridManager.loadFromFile();
 
+
 /* =========================
    ROUTES
 ========================= */
@@ -183,11 +187,11 @@ gridManager.loadFromFile();
 // CREATE GRID
 router.post("/", (req, res) => {
   try {
-    const { gridId } = req.body;
+    const gridId = idCounter.next("grid");
     const grid = gridManager.createGrid(gridId);
     grid.write(); 
 
-    res.json({ success: true, grid });
+    res.json({ success: true, gridId, grid });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
@@ -226,13 +230,14 @@ router.delete("/:gridId/block/:blockId", (req, res) => {
 
 // DELETE GRID
 router.delete("/:gridId", (req, res) => {
+  const { gridId } = req.params;
   const deleted = gridManager.deleteGrid(Number(req.params.gridId));
   if (!deleted) return res.status(404).json({ error: "Grid not found" });
 
   const simulationPath = path.join(__dirname, "../../simulation.json");
   if (fs.existsSync(simulationPath)) {
     const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
-    delete data.grid;
+    delete data[`grid_${gridId}`];
     fs.writeFileSync(simulationPath, JSON.stringify(data, null, 2));
   }
 

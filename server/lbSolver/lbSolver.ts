@@ -3,6 +3,7 @@ import { JSONWritable } from "../jsonWritable.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { idCounter } from "../idCounter.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -212,6 +213,8 @@ class LBSolverManager {
             console.log(`Loaded solver ${s.id}`);
           }
         });
+        const loadedIds = Array.from(this.solvers.keys());
+        idCounter.sync("lb_solver", loadedIds);
       }
     } catch (err) {
       console.warn("LBSolver init failed:", err);
@@ -227,19 +230,19 @@ solverManager.loadFromFile();
 // CREATE SOLVER
 router.post("/", (req, res) => {
   try {
-    const { id } = req.body;
-    const solver = solverManager.createSolver(id);
+    const lbId = idCounter.next("lb_solver");
+    const solver = solverManager.createSolver(lbId);
     solver.write();// #TBD remove
 
-    res.json({ success: true, solver });
+    res.json({ success: true, lbId, solver });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
   }
 });
 
 // SET EQUATION
-router.post("/:id/eqn_str", (req, res) => {
-  const solver = solverManager.getSolver(Number(req.params.id));
+router.post("/:lbId/eqn_str", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.lbId));
   if (!solver) return res.status(404).json({ error: "Solver not found" });
 
   solver.setEquation(req.body.eqn_str);
@@ -249,8 +252,8 @@ router.post("/:id/eqn_str", (req, res) => {
 });
 
 // INITIAL CONDITIONS
-router.post("/:id/initial_conditions", (req, res) => {
-  const solver = solverManager.getSolver(Number(req.params.id));
+router.post("/:lbId/initial_conditions", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.lbId));
   if (!solver) return res.status(404).json({ error: "Solver not found" });
 
   const { velocity, viscosity } = req.body;
@@ -261,8 +264,8 @@ router.post("/:id/initial_conditions", (req, res) => {
 });
 
 // RUN
-router.post("/:id/run", (req, res) => {
-  const solver = solverManager.getSolver(Number(req.params.id));
+router.post("/:lbId/run", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.lbId));
   if (!solver) return res.status(404).json({ error: "Solver not found" });
 
   solver.setRun(req.body.run);
@@ -272,8 +275,8 @@ router.post("/:id/run", (req, res) => {
 });
 
 // ADD BC
-router.post("/:id/boundary_condition", (req, res) => {
-  const solver = solverManager.getSolver(Number(req.params.id));
+router.post("/:lbId/boundary_condition", (req, res) => {
+  const solver = solverManager.getSolver(Number(req.params.lbId));
   if (!solver) return res.status(404).json({ error: "Solver not found" });
 
   const { type, data, norm } = req.body;
@@ -286,8 +289,9 @@ router.post("/:id/boundary_condition", (req, res) => {
 });
 
 // DELETE SOLVER
-router.delete("/:id", (req, res) => {
-  const deleted = solverManager.deleteSolver(Number(req.params.id));
+router.delete("/:lbId", (req, res) => {
+  const { lbId } = req.params;
+  const deleted = solverManager.deleteSolver(Number(req.params.lbId));
   if (!deleted) return res.status(404).json({ error: "Solver not found" });
 
   res.json({ success: true });
