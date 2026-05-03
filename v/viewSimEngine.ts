@@ -321,12 +321,14 @@ export class ViewSimEngine {
       .setSubmitLabel("Submit")
 
       .setQuestions({
+        bcId: "Boundary Condition ID",
         type: "Type",
         norm: "Normal",
         data: "Data",
       })
 
       .setContextObj({
+        bcId: {},
         type: {
           options: {
             constant_velocity: "Constant Velocity",
@@ -338,6 +340,7 @@ export class ViewSimEngine {
       })
 
       .setUpdate(function (this: TextEntryWithDropdownAndButton) {
+        const bcId = this.getTextValue("bcId");
         const type = this.getDropdownValue("type");
         const norm = this.getTextValue("norm");
         const data = this.getTextValue("data");
@@ -348,6 +351,10 @@ export class ViewSimEngine {
         if (dataRow) {
           (dataRow as HTMLElement).style.display =
             type === "constant_velocity" ? "flex" : "none";
+        }
+
+        if (bcId) {
+          this._controller.onBcIdChange(Number(bcId));
         }
 
         if (type) {

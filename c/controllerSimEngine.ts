@@ -170,6 +170,10 @@ export class ControllerSimEngine {
     this.model.setViscosity(v);
   }
 
+  public onBcIdChange(v: number) {
+    this.model.setBcId(v);
+  }
+
   public onBcTypeChange(v: string) {
     this.model.setBcType(v);
   }
@@ -409,6 +413,7 @@ export class ControllerSimEngine {
 
   public async submitBoundaryConditions() {
     try {
+      const bcId = this._model.bcId.getData();
       const lbId = this._model.lbId.getData();
 
       if (lbId == null) throw new Error("lbId missing");
@@ -417,6 +422,7 @@ export class ControllerSimEngine {
         method: "POST",
         endpoint: `/lb_solver/${lbId}/boundary_condition`,
         body: {
+          id: this._model.bcId.getData(),
           type: this._model.bcType.getData(),
           data: this._model.bcData.getData(),
           norm: this._model.bcNorm.getData(),

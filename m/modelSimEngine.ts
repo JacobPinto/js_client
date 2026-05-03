@@ -38,6 +38,7 @@ export class ModelSimEngine {
   private _eqn_str = new ModelGeneric<string>();
   private _velocity = new ModelGeneric<number>();
   private _viscosity = new ModelGeneric<number>();
+  private _bcId = new ModelGeneric<number>();
   private _bcType = new ModelGeneric<string>();
   private _bcData = new ModelGeneric<number>();
   private _bcNorm = new ModelGeneric<number>();
@@ -132,6 +133,10 @@ export class ModelSimEngine {
 
   public get viscosity() {
     return this._viscosity;
+  }
+
+  public get bcId() {
+    return this._bcId;
   }
 
   public get bcType() {
@@ -236,6 +241,10 @@ export class ModelSimEngine {
 
   public setViscosity(viscosity: number) {
     this._viscosity.setData(viscosity);
+  }
+
+  public setBcId(bcId: number) {
+    this._bcId.setData(bcId);
   }
 
   public setBcType(bcType: string) {
