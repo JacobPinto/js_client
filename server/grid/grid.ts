@@ -25,11 +25,10 @@ const router = express.Router();
 // };
 
 class Block { 
-  // private.
-  private blockId: number;
-  private nb_points: number[]; // dynamic array for one, two, or three dimensions
-  private start_coords: number[]; // dynamic array for one, two, or three dimensions
-  private end_coords: number[]; // dynamic array for one, two, or three dimensions
+  private _blockId: number;
+  private _nb_points: number[]; // dynamic array for one, two, or three dimensions
+  private _start_coords: number[]; // dynamic array for one, two, or three dimensions
+  private _end_coords: number[]; // dynamic array for one, two, or three dimensions
 
   constructor(
     blockId: number,
@@ -37,10 +36,10 @@ class Block {
     start_coords: number[],
     end_coords: number[]
   ) {
-    this.blockId = blockId;
-    this.nb_points = nb_points;
-    this.start_coords = start_coords;
-    this.end_coords = end_coords;
+    this._blockId = blockId;
+    this._nb_points = nb_points;
+    this._start_coords = start_coords;
+    this._end_coords = end_coords;
 
     // if (!this.validate()) {
     //   throw new Error("Invalid block parameters");
@@ -48,29 +47,29 @@ class Block {
   }
 
   getId() {
-    return this.blockId;
+    return this._blockId;
   }
 
   toJSON() {
     return {
-      blockId: this.blockId,
-      nb_points: this.nb_points,
-      start_coords: this.start_coords,
-      end_coords: this.end_coords,
+      blockId: this._blockId,
+      nb_points: this._nb_points,
+      start_coords: this._start_coords,
+      end_coords: this._end_coords,
     };
   }
   
 
   // private update(data: BlockUpdate) { 
-  //   if (data.nb_points) this.nb_points = data.nb_points;
-  //   if (data.start_coords) this.start_coords = data.start_coords;
-  //   if (data.end_coords) this.end_coords = data.end_coords;
+  //   if (data.nb_points) this._nb_points = data.nb_points;
+  //   if (data.start_coords) this._start_coords = data.start_coords;
+  //   if (data.end_coords) this._end_coords = data.end_coords;
   // }
 
   // private validate() {
-  //   const [nx, ny] = this.nb_points; 
-  //   const [x1, y1] = this.start_coords;
-  //   const [x2, y2] = this.end_coords;
+  //   const [nx, ny] = this._nb_points; 
+  //   const [x1, y1] = this._start_coords;
+  //   const [x2, y2] = this._end_coords;
 
   //   return nx > 0 && ny > 0 && x2 > x1 && y2 > y1;
   // }
@@ -81,38 +80,38 @@ class Block {
    GRID (CSO)
 ========================= */
 class Grid extends JSONWritable {
-  private gridId: number;
-  private blocks: Map<number, Block>;
+  private _gridId: number;
+  private _blocks: Map<number, Block>;
 
   constructor(gridId: number) {
     super();
-    this.gridId = gridId;
-    this.blocks = new Map();
+    this._gridId = gridId;
+    this._blocks = new Map();
   }
 
   getId() {
-    return this.gridId;
+    return this._gridId;
   }
 
   getKey() {
-    return `grid_${this.gridId}`;
+    return `grid_${this._gridId}`;
   }
 
   addBlock(block: Block) {
-    if (this.blocks.has(block.getId())) {
+    if (this._blocks.has(block.getId())) {
       throw new Error("Block ID already exists");
     }
-    this.blocks.set(block.getId(), block);
+    this._blocks.set(block.getId(), block);
   }
 
   removeBlock(blockId: number) {
-    return this.blocks.delete(blockId);
+    return this._blocks.delete(blockId);
   }
 
   toJSON() {
     return {
-      gridId: this.gridId,
-      blocks: Array.from(this.blocks.values()).map(b => b.toJSON()),
+      gridId: this._gridId,
+      blocks: Array.from(this._blocks.values()).map(b => b.toJSON()),
     };
   }
 }
