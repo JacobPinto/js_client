@@ -56,11 +56,31 @@ class ConstantVelocityWall extends BoundaryCondition {
 
 // Child Class for Bounce Back Boundary Condition
 class BounceBack extends BoundaryCondition {
-  constructor(bcId: number, data: number[] | undefined, norm: number) {
-    super(bcId, BoundaryType.bounceBack, data, norm);
+  constructor(bcId: number, norm: number) {
+    super(bcId, BoundaryType.bounceBack, undefined, norm);
   }
 }
 
+// FACTORY CLASS for creating boundary conditions based on type
+class BoundaryConditionFactory {
+  static create(
+    type: BoundaryType,
+    bcId: number,
+    data?: number[],
+    norm: number = 0
+  ): BoundaryCondition {
+    switch (type) {
+      case BoundaryType.ConstantVelocityWall:
+        return new ConstantVelocityWall(bcId, data, norm);
+
+      case BoundaryType.bounceBack:
+        return new BounceBack(bcId, norm);
+
+      default:
+        throw new Error(`Unsupported Boundary Type: ${type}`);
+    }
+  }
+}
 
 class LBSolver extends JSONWritable {
   // method to write its data to a json file
@@ -211,7 +231,12 @@ class LBSolverManager {
             if (s.boundaryConditions) {
               s.boundaryConditions.forEach((bc: any) => {
                 solver.addBoundaryCondition(
-                  new BoundaryCondition(bc.bcId, bc.type, bc.data, bc.norm)
+                  BoundaryConditionFactory.create(
+                    bc.type,
+                    bc.id,
+                    bc.data,
+                    bc.norm
+                  )
                 );
               });
             }
@@ -289,7 +314,12 @@ router.post("/:lbId/boundary_condition", (req, res) => {
   const { type, data, norm } = req.body;
 
   const bcId = idCounter.next("boundaryCondition");
-  const bc = new BoundaryCondition(bcId, type, data, norm);
+  const bc = BoundaryConditionFactory.create(
+    type,
+    bcId,
+    data,
+    norm
+  );
   solver.addBoundaryCondition(bc);
   solver.write();
 

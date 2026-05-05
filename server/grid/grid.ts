@@ -120,23 +120,23 @@ class Grid extends JSONWritable {
    GRID MANAGER (OWNER)
 ========================= */
 class GridManager {
-  private grids: Map<number, Grid> = new Map();
+  private _grids: Map<number, Grid> = new Map();
 
   createGrid(gridId: number) {
-    if (this.grids.has(gridId)) {
+    if (this._grids.has(gridId)) {
       throw new Error("Grid already exists");
     }
     const grid = new Grid(gridId);
-    this.grids.set(gridId, grid);
+    this._grids.set(gridId, grid);
     return grid;
   }
 
   getGrid(gridId: number) {
-    return this.grids.get(gridId);
+    return this._grids.get(gridId);
   }
 
   deleteGrid(gridId: number) {
-    return this.grids.delete(gridId);
+    return this._grids.delete(gridId);
   }
 
   loadFromFile() {
@@ -162,11 +162,11 @@ class GridManager {
               grid.addBlock(block);
             });
 
-            this.grids.set(grid.getId(), grid);
+            this._grids.set(grid.getId(), grid);
             console.log(`Loaded grid ${gridData.gridId} from simulation.json`);
           }
         });
-        const loadedIds = Array.from(this.grids.keys());
+        const loadedIds = Array.from(this._grids.keys());
         idCounter.sync("grid", loadedIds);
       }
     } catch (err) {
