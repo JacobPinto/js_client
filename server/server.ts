@@ -38,6 +38,9 @@ app.use(express.urlencoded({extended:true})); // for parsing application/x-www-f
 app.use(express.json()); // for parsing application/json
 //================================
 
+// Serve static files from project root
+app.use(express.static(path.join(__dirname, '..')));
+
 // Routers
 //app.use("/user", userRouter); // For all user related endpoints
 
@@ -75,24 +78,7 @@ app.use("/lb_solver", LBSolverRouter);
 // GET endpoint (req,res, next) is also possible
 app.get('/',(req,res)=>{ 
   console.log("get req");
-
-  // most basic response
-  //res.send('Hello World!');
-
-  // query parameters
-  //console.log(req.query.name);
-
-  // more common
-  //res.sendStatus(500);
-
-  // also
-  //res.status(200).send('OK').json({message: "Hello World!"});
-
-  // send a file to user to download
-  //res.download("server/server.ts");
-
-  // render html/ejs page. Requires views folder in root directory
-  // res.render("server");
+  res.sendFile(path.join(__dirname, '..', 'test.html'));
 });
 
 // Routes to split up the main server file
