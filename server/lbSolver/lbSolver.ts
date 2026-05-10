@@ -198,7 +198,6 @@ class LBSolverManager {
     }
     const solver = new LBSolver(id);
     this.solvers.set(id, solver);
-    return solver;// remove
   }
 
   getSolver(id: number) {
@@ -263,7 +262,12 @@ solverManager.loadFromFile();
 router.post("/", (req, res) => {
   try {
     const lbId = idCounter.next("lb_solver");
-    const solver = solverManager.createSolver(lbId);
+    solverManager.createSolver(lbId);
+    const solver = solverManager.getSolver(lbId);
+
+    if (!solver) {
+      throw new Error("Failed to create solver");
+    }
     solver.write();// #TBD remove
 
     res.json({ success: true, lbId, solver });

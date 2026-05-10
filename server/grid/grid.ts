@@ -127,8 +127,7 @@ class GridManager {
       throw new Error("Grid already exists");
     }
     const grid = new Grid(gridId);
-    this._grids.set(gridId, grid);
-    return grid;
+    this._grids.set(gridId, grid); 
   }
 
   getGrid(gridId: number) {
@@ -187,7 +186,11 @@ gridManager.loadFromFile();
 router.post("/", (req, res) => {
   try {
     const gridId = idCounter.next("grid");
-    const grid = gridManager.createGrid(gridId);
+    gridManager.createGrid(gridId);
+    const grid = gridManager.getGrid(gridId);
+    if (!grid) {
+      throw new Error("Failed to create grid");
+    }
     grid.write(); 
 
     res.json({ success: true, gridId, grid });
