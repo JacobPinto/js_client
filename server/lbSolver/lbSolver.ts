@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 export enum BoundaryType {
-  ConstantVelocityWall = "constant_velocity_wall",
+  ConstantVelocityWall = "constant_velocity",
   bounceBack = "bounce_back",
 }
 
@@ -81,6 +81,7 @@ class BoundaryConditionFactory {
     }
   }
 }
+
 
 class LBSolver extends JSONWritable {
   // method to write its data to a json file
@@ -244,8 +245,17 @@ class LBSolverManager {
             console.log(`Loaded solver ${s.id}`);
           }
         });
-        const loadedIds = Array.from(this.solvers.keys());
-        idCounter.sync("lb_solver", loadedIds);
+        const loadedSolverIds = Array.from(this.solvers.keys());
+        idCounter.sync("lb_solver", loadedSolverIds);
+
+        const bcIds: number[] = [];
+        this.solvers.forEach((solver) => {
+          solver.boundaryConditions.forEach((bc) => {
+            bcIds.push(bc.bcId);
+          });
+        });
+        idCounter.sync("boundaryCondition", bcIds);
+
       }
     } catch (err) {
       console.warn("LBSolver init failed:", err);
