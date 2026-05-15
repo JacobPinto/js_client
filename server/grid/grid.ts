@@ -165,8 +165,22 @@ class GridManager {
             console.log(`Loaded grid ${gridData.gridId} from simulation.json`);
           }
         });
-        const loadedIds = Array.from(this._grids.keys());
-        idCounter.sync("grid", loadedIds);
+        const loadedGridIds = Array.from(this._grids.keys());
+        const loadedBlockIds: number[] = [];
+        
+        this._grids.forEach(grid => {
+          Object.keys(data).forEach((key) => {
+            if (key === `grid_${grid.getId()}`) {
+              const gridData = data[key];
+              gridData.block?.forEach((b: any) => {
+                loadedBlockIds.push(b.blockId);
+              });
+            }
+          });
+        });
+        
+        idCounter.sync("grid", loadedGridIds);
+        idCounter.sync("block", loadedBlockIds);
       }
     } catch (err) {
       console.warn("Init failed:", err);
@@ -205,7 +219,8 @@ router.post("/", (req, res) => {
 router.post("/:gridId/block", (req, res) => {
   try {
     const { gridId } = req.params;
-    const { blockId, nb_points, start_coords, end_coords } = req.body;
+    const blockId = idCounter.next("block");
+    const {nb_points, start_coords, end_coords } = req.body;
 
     const grid = gridManager.getGrid(Number(gridId));
     if (!grid) return res.status(404).json({ error: "Grid not found" });
