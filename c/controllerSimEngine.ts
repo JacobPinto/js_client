@@ -448,7 +448,7 @@ export class ControllerSimEngine {
       await serverRequest({
         method: "POST",
         endpoint: `/lb_solver/${lbId}/run`,
-        body: { run: this._model.run.getData() },
+        body: { iterationCount: this._model.run.getData() },
       });
 
       this._model.setOutputMessage("Run submitted");

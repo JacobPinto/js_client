@@ -14,18 +14,55 @@ export enum BoundaryType {
   bounceBack = "bounce_back",
 }
 
+// Class for Initial Conditions
+class InitialConditions {
+  private _velocity: number;
+  private _viscosity: number;
+
+  constructor(velocity: number, viscosity: number) {
+    this._velocity = velocity;
+    this._viscosity = viscosity;
+  }
+
+  // Getters
+  get velocity() {
+    return this._velocity;
+  }
+
+  get viscosity() {
+    return this._viscosity;
+  }
+}
+// class for Run
+
+class Run {
+  private _iterationCount: number;
+
+  constructor(iterationCount: number) {
+    this._iterationCount = iterationCount;
+  }
+  get iterationCount() {
+    return this._iterationCount;
+  }
+}
+
 // Base Class for Boundary Conditions // rename BoundaryConditionBase
-class BoundaryCondition {
+class BoundaryConditionBase {
   // unique id for the boundary condition
   private _bcId: number;
   private _type: BoundaryType;
   private _data?: number[]; // vector of data for the boundary condition //
-  private _norm: number; // normal vector for the boundary condition, if applicable. normal is also a vector like data
-  
-  constructor(bcId: number, bctype: BoundaryType, data: number[] | undefined, norm: number) {
+  private _norm: number[]; // normal vector for the boundary condition, if applicable. normal is also a vector like data
+
+  constructor(
+    bcId: number,
+    bctype: BoundaryType,
+    data: number[] | undefined,
+    norm: number[],
+  ) {
     this._bcId = bcId;
     this._type = bctype;
-    this._data = data; 
+    this._data = data;
     this._norm = norm;
   }
 
@@ -47,18 +84,17 @@ class BoundaryCondition {
 }
 
 // Child Class for Constant Velocity Wall Boundary Condition
-class ConstantVelocityWall extends BoundaryCondition {
-  constructor(bcId: number, data: number[] | undefined, norm: number) {
+class ConstantVelocityWall extends BoundaryConditionBase {
+  constructor(bcId: number, data: number[] | undefined, norm: number[]) {
     super(bcId, BoundaryType.ConstantVelocityWall, data, norm);
   }
 
   // eeach componenet will have its toJson()
 }
 
-
 // Child Class for Bounce Back Boundary Condition
-class BounceBack extends BoundaryCondition {
-  constructor(bcId: number, norm: number) {
+class BounceBack extends BoundaryConditionBase {
+  constructor(bcId: number, norm: number[]) {
     super(bcId, BoundaryType.bounceBack, undefined, norm);
   }
   // eeach componenet will have its toJson()
@@ -70,8 +106,8 @@ class BoundaryConditionFactory {
     type: BoundaryType,
     bcId: number,
     data?: number[],
-    norm: number = 0
-  ): BoundaryCondition {
+    norm: number[] = [0],
+  ): BoundaryConditionBase {
     switch (type) {
       case BoundaryType.ConstantVelocityWall:
         return new ConstantVelocityWall(bcId, data, norm);
@@ -85,7 +121,6 @@ class BoundaryConditionFactory {
   }
 }
 
-
 class LBSolver extends JSONWritable {
   // method to write its data to a json file
 
@@ -95,9 +130,6 @@ class LBSolver extends JSONWritable {
 
   private _lbId: number;
   private _eqn_str: string | null = null;
-  private _velocity: number | null = null;
-  private _viscosity: number | null = null;
-  private _run: number = 0;
 
   // #TDB base class for the boundary conditions
   // for each type of boundary conditions there will be a child class and child class will extend the base class
@@ -105,7 +137,9 @@ class LBSolver extends JSONWritable {
   //this list of boundry condn stored in lbsolver class
 
   //list of boundary conditions for the lb solver
-  private _boundaryConditions: BoundaryCondition[] = [];
+  private _run: Run | null = null;
+  private _initialConditions: InitialConditions | null = null;
+  private _boundaryConditions: BoundaryConditionBase[] = [];
 
   constructor(lbId: number) {
     super();
@@ -124,14 +158,22 @@ class LBSolver extends JSONWritable {
     return {
       id: this._lbId,
       eqn_str: this._eqn_str,
-      velocity: this._velocity, // base class for initial condition 
-      viscosity: this._viscosity, // base class for initial condition
-      run: this._run,
+      initialConditions: this._initialConditions
+        ? {
+            velocity: this._initialConditions.velocity,
+            viscosity: this._initialConditions.viscosity,
+          }
+        : null,
+      run: this._run
+        ? {
+            iterationCount: this._run.iterationCount,
+          }
+        : null,
       boundaryConditions: this._boundaryConditions.map((bc) => ({
         id: bc.bcId,
         type: bc.type,
-        data: bc.data,// package it has a vector
-        norm: bc.norm,// package has a vector
+        data: bc.data, // package it has a vector
+        norm: bc.norm, // package has a vector
       })),
     };
   }
@@ -143,15 +185,14 @@ class LBSolver extends JSONWritable {
   }
 
   setInitialConditions(velocity: number, viscosity: number) {
-    this._velocity = velocity;
-    this._viscosity = viscosity;
+    this._initialConditions = new InitialConditions(velocity, viscosity);
   }
 
-  setRun(run: number) {
-    this._run = run;
+  setRun(iterationCount: number) {
+    this._run = new Run(iterationCount);
   }
 
-  addBoundaryCondition(bc: BoundaryCondition) {
+  addBoundaryCondition(bc: BoundaryConditionBase) {
     this._boundaryConditions.push(bc);
   }
 
@@ -164,9 +205,8 @@ class LBSolver extends JSONWritable {
 
   reset() {
     this._eqn_str = null;
-    this._velocity = null;
-    this._viscosity = null;
-    this._run = 0;
+    this._initialConditions = null;
+    this._run = null;
     this._boundaryConditions = [];
   }
 
@@ -176,12 +216,8 @@ class LBSolver extends JSONWritable {
     return this._eqn_str;
   }
 
-  get velocity() {
-    return this._velocity;
-  }
-
-  get viscosity() {
-    return this._viscosity;
+  get initialConditions() {
+    return this._initialConditions;
   }
 
   get run() {
@@ -226,10 +262,19 @@ class LBSolverManager {
             const solver = new LBSolver(s.id);
 
             if (s.eqn_str) solver.setEquation(s.eqn_str);
-            if (s.velocity !== null && s.viscosity !== null) {
-              solver.setInitialConditions(s.velocity, s.viscosity);
+            if (s.initialConditions) {
+              solver.setInitialConditions(
+                s.initialConditions.velocity,
+                s.initialConditions.viscosity
+              );
             }
-            if (s.run !== undefined) solver.setRun(s.run);
+
+            // RUN
+            if (s.run) {
+              solver.setRun(
+                s.run.iterationCount
+              );
+            }
 
             if (s.boundaryConditions) {
               s.boundaryConditions.forEach((bc: any) => {
@@ -238,8 +283,8 @@ class LBSolverManager {
                     bc.type,
                     bc.id,
                     bc.data,
-                    bc.norm
-                  )
+                    bc.norm,
+                  ),
                 );
               });
             }
@@ -258,7 +303,6 @@ class LBSolverManager {
           });
         });
         idCounter.sync("boundaryCondition", bcIds);
-
       }
     } catch (err) {
       console.warn("LBSolver init failed:", err);
@@ -268,7 +312,6 @@ class LBSolverManager {
 
 const solverManager = new LBSolverManager();
 solverManager.loadFromFile();
-
 
 //routes
 // CREATE SOLVER
@@ -281,7 +324,7 @@ router.post("/", (req, res) => {
     if (!solver) {
       throw new Error("Failed to create solver");
     }
-    solver.write();// #TBD remove
+    solver.write(); // #TBD remove
 
     res.json({ success: true, lbId, solver });
   } catch (err: any) {
@@ -314,10 +357,20 @@ router.post("/:lbId/initial_conditions", (req, res) => {
 
 // RUN
 router.post("/:lbId/run", (req, res) => {
-  const solver = solverManager.getSolver(Number(req.params.lbId));
-  if (!solver) return res.status(404).json({ error: "Solver not found" });
+  const solver = solverManager.getSolver(
+    Number(req.params.lbId)
+  );
 
-  solver.setRun(req.body.run);
+  if (!solver) {
+    return res.status(404).json({
+      error: "Solver not found",
+    });
+  }
+
+  const { iterationCount } = req.body;
+
+  solver.setRun(iterationCount);
+
   solver.write();
 
   res.json({ success: true });
@@ -331,12 +384,7 @@ router.post("/:lbId/boundary_condition", (req, res) => {
   const { type, data, norm } = req.body;
 
   const bcId = idCounter.next("boundaryCondition");
-  const bc = BoundaryConditionFactory.create(
-    type,
-    bcId,
-    data,
-    norm
-  );
+  const bc = BoundaryConditionFactory.create(type, bcId, data, norm);
   solver.addBoundaryCondition(bc);
   solver.write();
 
@@ -352,4 +400,4 @@ router.delete("/:lbId", (req, res) => {
   res.json({ success: true });
 });
 
-export default router; 
+export default router;
