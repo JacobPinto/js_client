@@ -14,13 +14,13 @@ export enum BoundaryType {
   bounceBack = "bounce_back",
 }
 
-// Base Class for Boundary Conditions
+// Base Class for Boundary Conditions // rename BoundaryConditionBase
 class BoundaryCondition {
   // unique id for the boundary condition
   private _bcId: number;
   private _type: BoundaryType;
-  private _data?: number[]; // vector of data for the boundary condition
-  private _norm: number; // normal vector for the boundary condition, if applicable
+  private _data?: number[]; // vector of data for the boundary condition //
+  private _norm: number; // normal vector for the boundary condition, if applicable. normal is also a vector like data
   
   constructor(bcId: number, bctype: BoundaryType, data: number[] | undefined, norm: number) {
     this._bcId = bcId;
@@ -51,6 +51,8 @@ class ConstantVelocityWall extends BoundaryCondition {
   constructor(bcId: number, data: number[] | undefined, norm: number) {
     super(bcId, BoundaryType.ConstantVelocityWall, data, norm);
   }
+
+  // eeach componenet will have its toJson()
 }
 
 
@@ -59,6 +61,7 @@ class BounceBack extends BoundaryCondition {
   constructor(bcId: number, norm: number) {
     super(bcId, BoundaryType.bounceBack, undefined, norm);
   }
+  // eeach componenet will have its toJson()
 }
 
 // FACTORY CLASS for creating boundary conditions based on type
@@ -114,21 +117,21 @@ class LBSolver extends JSONWritable {
   }
 
   getKey(): string {
-    return `lbSolver_${this._lbId}`;
+    return `lbSolver_${this._lbId}`; // just lbSolver remove id
   }
 
   toJSON() {
     return {
       id: this._lbId,
       eqn_str: this._eqn_str,
-      velocity: this._velocity, //
-      viscosity: this._viscosity,
+      velocity: this._velocity, // base class for initial condition 
+      viscosity: this._viscosity, // base class for initial condition
       run: this._run,
       boundaryConditions: this._boundaryConditions.map((bc) => ({
         id: bc.bcId,
         type: bc.type,
-        data: bc.data,
-        norm: bc.norm,
+        data: bc.data,// package it has a vector
+        norm: bc.norm,// package has a vector
       })),
     };
   }

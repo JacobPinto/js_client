@@ -35,9 +35,7 @@ class GeometryInfo extends JSONWritable {
 
   toJSON(): any {
     return {
-      name: this._name,
-      filePath: this._geometryFilePath,
-      createdAt: this._createdAt,
+      load_file: this._name
     };
   }
 }

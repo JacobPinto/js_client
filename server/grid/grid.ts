@@ -25,7 +25,7 @@ const router = express.Router();
 // };
 
 class Block { 
-  private _blockId: number;
+  private _blockId: number; // #TBD auto generated unique id for the block
   private _nb_points: number[]; // dynamic array for one, two, or three dimensions
   private _start_coords: number[]; // dynamic array for one, two, or three dimensions
   private _end_coords: number[]; // dynamic array for one, two, or three dimensions
@@ -79,7 +79,7 @@ class Block {
 /* =========================
    GRID (CSO)
 ========================= */
-class Grid extends JSONWritable {
+class Cartesion_Grid extends JSONWritable {
   private _gridId: number;
   private _blocks: Map<number, Block>;
 
@@ -110,8 +110,8 @@ class Grid extends JSONWritable {
 
   toJSON() {
     return {
-      gridId: this._gridId,
-      blocks: Array.from(this._blocks.values()).map(b => b.toJSON()),
+      gridId: this._gridId, // #TBD rename grid class to cartesian grid and also remove _id
+      block: Array.from(this._blocks.values()).map(b => b.toJSON()),
     };
   }
 }
@@ -120,13 +120,13 @@ class Grid extends JSONWritable {
    GRID MANAGER (OWNER)
 ========================= */
 class GridManager {
-  private _grids: Map<number, Grid> = new Map();
+  private _grids: Map<number, Cartesion_Grid> = new Map();
 
   createGrid(gridId: number) {
     if (this._grids.has(gridId)) {
       throw new Error("Grid already exists");
     }
-    const grid = new Grid(gridId);
+    const grid = new Cartesion_Grid(gridId);
     this._grids.set(gridId, grid); 
   }
 
@@ -149,19 +149,19 @@ class GridManager {
         Object.keys(data).forEach((key) => {
           if (key.startsWith("grid_")) {
             const gridData = data[key];
-            const grid = new Grid(gridData.gridId);
+            const cartesion_grid = new Cartesion_Grid(gridData.gridId);
 
-            gridData.blocks.forEach((b: any) => {
+            gridData.block.forEach((b: any) => {
               const block = new Block(
                 b.blockId,
                 b.nb_points,
                 b.start_coords,
                 b.end_coords
               );
-              grid.addBlock(block);
+              cartesion_grid.addBlock(block);
             });
 
-            this._grids.set(grid.getId(), grid);
+            this._grids.set(cartesion_grid.getId(), cartesion_grid);
             console.log(`Loaded grid ${gridData.gridId} from simulation.json`);
           }
         });
@@ -175,6 +175,8 @@ class GridManager {
 }
 
 const gridManager = new GridManager();
+
+// all objects live in manager maps in memory, loadedIds are computed from memory objects.
 gridManager.loadFromFile();
 
 
