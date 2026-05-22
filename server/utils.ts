@@ -30,3 +30,33 @@ export function deleteFolder(path: string): string {
   }
   return "serverOK";  
 }
+
+//  tovector helper function to convert string or array input to number array
+
+export function toVector(value: any): number[] {
+  if (Array.isArray(value)) {
+    return value.map(Number);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map(v => v.trim())
+      .filter(v => v !== "")
+      .map(v => {
+        const num = Number(v);
+
+        if (isNaN(num)) {
+          throw new Error(`Invalid vector value: ${v}`);
+        }
+
+        return num;
+      });
+  }
+
+  if (typeof value === "number") {
+    return [value];
+  }
+
+  throw new Error("Invalid vector input");
+}

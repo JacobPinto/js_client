@@ -4,11 +4,13 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { idCounter } from "../idCounter.js";
+import { toVector } from "../utils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
+// all enums and classes will be in lb solver and private
 export enum BoundaryType {
   ConstantVelocityWall = "constant_velocity",
   bounceBack = "bounce_back",
@@ -47,7 +49,7 @@ class Run {
 }
 
 // Base Class for Boundary Conditions // rename BoundaryConditionBase
-class BoundaryConditionBase {
+class BoundaryConditionBase  {
   // unique id for the boundary condition
   private _bcId: number;
   private _type: BoundaryType;
@@ -89,7 +91,15 @@ class ConstantVelocityWall extends BoundaryConditionBase {
     super(bcId, BoundaryType.ConstantVelocityWall, data, norm);
   }
 
-  // eeach componenet will have its toJson()
+  // // each componenet will have its toJson()
+  //  toJSON() {
+  //   return {
+  //     bcId: this.bcId,
+  //     type: this.type,
+  //     norm: this.norm,
+  //     data: this.data,
+  //   };
+  // }
 }
 
 // Child Class for Bounce Back Boundary Condition
@@ -97,7 +107,14 @@ class BounceBack extends BoundaryConditionBase {
   constructor(bcId: number, norm: number[]) {
     super(bcId, BoundaryType.bounceBack, undefined, norm);
   }
-  // eeach componenet will have its toJson()
+  // each componenet will have its toJson()
+  // toJSON() {
+  //   return {
+  //     bcId: this.bcId,
+  //     type: this.type,
+  //     norm: this.norm,
+  //   };
+  // }
 }
 
 // FACTORY CLASS for creating boundary conditions based on type
@@ -154,6 +171,36 @@ class LBSolver extends JSONWritable {
     return `lbSolver_${this._lbId}`; // just lbSolver remove id
   }
 
+  // Override write() to store solvers in a single array instead of individual keys
+  write() {
+    let existing: any = {};
+
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const raw = fs.readFileSync(this.filePath, "utf-8");
+        existing = raw ? JSON.parse(raw) : {};
+      }
+
+      // Ensure solvers array exists
+      if (!Array.isArray(existing.lb_solver)) {
+        existing.lb_solver = [];
+      }
+
+      // Find and update existing solver or add new one
+      const solverIndex = existing.lb_solver.findIndex((s: any) => s.id === this._lbId);
+      if (solverIndex >= 0) {
+        existing.lb_solver[solverIndex] = this.toJSON();
+      } else {
+        existing.lb_solver.push(this.toJSON());
+      }
+
+      fs.writeFileSync(this.filePath, JSON.stringify(existing, null, 2));
+      console.log(`LBSolver ${this._lbId} persisted to ${this.filePath}`);
+    } catch (err) {
+      console.error(`Error writing to ${this.filePath}:`, err);
+    }
+  }
+
   toJSON() {
     return {
       id: this._lbId,
@@ -175,6 +222,10 @@ class LBSolver extends JSONWritable {
         data: bc.data, // package it has a vector
         norm: bc.norm, // package has a vector
       })),
+      // boundaryConditions:
+      // this._boundaryConditions.map((bc) =>
+      //   bc.toJSON()
+      // ),
     };
   }
 
@@ -255,29 +306,29 @@ class LBSolverManager {
       if (fs.existsSync(simulationPath)) {
         const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
 
-        Object.keys(data).forEach((key) => {
-          if (key.startsWith("lbSolver_")) {
-            const s = data[key];
+        // Load all solvers from the 'lb_solver' array
+        if (Array.isArray(data.lb_solver)) {
+          const loadedSolverIds: number[] = [];
+          const loadedBcIds: number[] = [];
 
-            const solver = new LBSolver(s.id);
+          data.lb_solver.forEach((solverData: any) => {
+            const solver = new LBSolver(solverData.id);
+            loadedSolverIds.push(solverData.id);
 
-            if (s.eqn_str) solver.setEquation(s.eqn_str);
-            if (s.initialConditions) {
+            if (solverData.eqn_str) solver.setEquation(solverData.eqn_str);
+            if (solverData.initialConditions) {
               solver.setInitialConditions(
-                s.initialConditions.velocity,
-                s.initialConditions.viscosity
+                solverData.initialConditions.velocity,
+                solverData.initialConditions.viscosity
               );
             }
 
-            // RUN
-            if (s.run) {
-              solver.setRun(
-                s.run.iterationCount
-              );
+            if (solverData.run) {
+              solver.setRun(solverData.run.iterationCount);
             }
 
-            if (s.boundaryConditions) {
-              s.boundaryConditions.forEach((bc: any) => {
+            if (solverData.boundaryConditions) {
+              solverData.boundaryConditions.forEach((bc: any) => {
                 solver.addBoundaryCondition(
                   BoundaryConditionFactory.create(
                     bc.type,
@@ -286,23 +337,17 @@ class LBSolverManager {
                     bc.norm,
                   ),
                 );
+                loadedBcIds.push(bc.id);
               });
             }
 
             this.solvers.set(solver.getId(), solver);
-            console.log(`Loaded solver ${s.id}`);
-          }
-        });
-        const loadedSolverIds = Array.from(this.solvers.keys());
-        idCounter.sync("lb_solver", loadedSolverIds);
-
-        const bcIds: number[] = [];
-        this.solvers.forEach((solver) => {
-          solver.boundaryConditions.forEach((bc) => {
-            bcIds.push(bc.bcId);
+            console.log(`Loaded solver ${solverData.id} from simulation.json`);
           });
-        });
-        idCounter.sync("boundaryCondition", bcIds);
+
+          idCounter.sync("lb_solver", loadedSolverIds);
+          idCounter.sync("boundaryCondition", loadedBcIds);
+        }
       }
     } catch (err) {
       console.warn("LBSolver init failed:", err);
@@ -378,17 +423,45 @@ router.post("/:lbId/run", (req, res) => {
 
 // ADD BC
 router.post("/:lbId/boundary_condition", (req, res) => {
-  const solver = solverManager.getSolver(Number(req.params.lbId));
-  if (!solver) return res.status(404).json({ error: "Solver not found" });
+  const solver = solverManager.getSolver(
+    Number(req.params.lbId)
+  );
 
-  const { type, data, norm } = req.body;
+  if (!solver) {
+    return res.status(404).json({
+      error: "Solver not found",
+    });
+  }
 
-  const bcId = idCounter.next("boundaryCondition");
-  const bc = BoundaryConditionFactory.create(type, bcId, data, norm);
+  const { type } = req.body;
+
+  const data = req.body.data
+    ? toVector(req.body.data)
+    : undefined;
+
+  const norm = req.body.norm
+    ? toVector(req.body.norm)
+    : [0];
+
+  const bcId = idCounter.next(
+    "boundaryCondition"
+  );
+
+  const bc = BoundaryConditionFactory.create(
+    type,
+    bcId,
+    data,
+    norm,
+  );
+
   solver.addBoundaryCondition(bc);
+
   solver.write();
 
-  res.json({ success: true, bcId });
+  res.json({
+    success: true,
+    bcId,
+  });
 });
 
 // DELETE SOLVER

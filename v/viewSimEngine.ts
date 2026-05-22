@@ -345,28 +345,50 @@ export class ViewSimEngine {
         const norm = this.getTextValue("norm");
         const data = this.getTextValue("data");
 
-        // Conditional UI
+        // Helper parser
+        const parseVector = (value: string): number[] => {
+          return value
+            .split(",")
+            .map((v) => v.trim())
+            .filter((v) => v !== "")
+            .map((v) => {
+              const num = Number(v);
+
+              if (isNaN(num)) {
+                throw new Error(`Invalid vector value: ${v}`);
+              }
+
+              return num;
+            });
+        };
+
+        // Hide/show data field
         const rows = this._form.querySelectorAll("div");
-        const dataRow = rows[2];
+        const dataRow = rows[3];
+
         if (dataRow) {
           (dataRow as HTMLElement).style.display =
             type === "constant_velocity" ? "flex" : "none";
         }
 
-        if (bcId) {
+        // Boundary condition id
+        if (bcId && !Number.isNaN(Number(bcId))) {
           this._controller.onBcIdChange(Number(bcId));
         }
 
+        // Boundary type
         if (type) {
           this._controller.onBcTypeChange(type);
         }
 
-        if (!Number.isNaN(Number(norm))) {
-          this._controller.onBcNormChange(Number(norm));
+        // Normal vector
+        if (norm) {
+          this._controller.onBcNormChange(parseVector(norm));
         }
 
-        if (type === "constant_velocity" && !Number.isNaN(Number(data))) {
-          this._controller.onBcDataChange(Number(data));
+        // Data vector
+        if (type === "constant_velocity" && data) {
+          this._controller.onBcDataChange(parseVector(data));
         }
       })
 

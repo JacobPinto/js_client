@@ -1,4 +1,4 @@
-type CSOType = "grid" | "lb_solver" | "boundaryCondition" | "block" ;
+type CSOType = "grid" | "lb_solver" | "boundaryCondition" | "block" ; // bcis should in lbsolver
 
 class IdCounter {
   private _counters: Map<string, number> = new Map();

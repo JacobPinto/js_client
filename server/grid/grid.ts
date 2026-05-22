@@ -114,6 +114,36 @@ class Cartesion_Grid extends JSONWritable {
       block: Array.from(this._blocks.values()).map(b => b.toJSON()),
     };
   }
+
+  // Override write() to store grids in a single array instead of individual keys
+  write() {
+    let existing: any = {};
+
+    try {
+      if (fs.existsSync(this.filePath)) {
+        const raw = fs.readFileSync(this.filePath, "utf-8");
+        existing = raw ? JSON.parse(raw) : {};
+      }
+
+      // Ensure grids array exists
+      if (!Array.isArray(existing.cartesian_grid)) {
+        existing.cartesian_grid = [];
+      }
+
+      // Find and update existing grid or add new one
+      const gridIndex = existing.cartesian_grid.findIndex((g: any) => g.gridId === this._gridId);
+      if (gridIndex >= 0) {
+        existing.cartesian_grid[gridIndex] = this.toJSON();
+      } else {
+        existing.cartesian_grid.push(this.toJSON());
+      }
+
+      fs.writeFileSync(this.filePath, JSON.stringify(existing, null, 2));
+      console.log(`Grid ${this._gridId} persisted to ${this.filePath}`);
+    } catch (err) {
+      console.error(`Error writing to ${this.filePath}:`, err);
+    }
+  }
 }
 
 /* =========================
@@ -145,13 +175,16 @@ class GridManager {
       if (fs.existsSync(simulationPath)) {
         const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
 
-        // Load all grids with keys matching pattern grid_*
-        Object.keys(data).forEach((key) => {
-          if (key.startsWith("grid_")) {
-            const gridData = data[key];
-            const cartesion_grid = new Cartesion_Grid(gridData.gridId);
+        // Load all grids from the 'cartesian_grid' array
+        if (Array.isArray(data.cartesian_grid)) {
+          const loadedGridIds: number[] = [];
+          const loadedBlockIds: number[] = [];
 
-            gridData.block.forEach((b: any) => {
+          data.cartesian_grid.forEach((gridData: any) => {
+            const cartesion_grid = new Cartesion_Grid(gridData.gridId);
+            loadedGridIds.push(gridData.gridId);
+
+            gridData.block?.forEach((b: any) => {
               const block = new Block(
                 b.blockId,
                 b.nb_points,
@@ -159,28 +192,16 @@ class GridManager {
                 b.end_coords
               );
               cartesion_grid.addBlock(block);
+              loadedBlockIds.push(b.blockId);
             });
 
             this._grids.set(cartesion_grid.getId(), cartesion_grid);
             console.log(`Loaded grid ${gridData.gridId} from simulation.json`);
-          }
-        });
-        const loadedGridIds = Array.from(this._grids.keys());
-        const loadedBlockIds: number[] = [];
-        
-        this._grids.forEach(grid => {
-          Object.keys(data).forEach((key) => {
-            if (key === `grid_${grid.getId()}`) {
-              const gridData = data[key];
-              gridData.block?.forEach((b: any) => {
-                loadedBlockIds.push(b.blockId);
-              });
-            }
           });
-        });
-        
-        idCounter.sync("grid", loadedGridIds);
-        idCounter.sync("block", loadedBlockIds);
+
+          idCounter.sync("grid", loadedGridIds);
+          idCounter.sync("block", loadedBlockIds);
+        }
       }
     } catch (err) {
       console.warn("Init failed:", err);
@@ -256,8 +277,10 @@ router.delete("/:gridId", (req, res) => {
   const simulationPath = path.join(__dirname, "../../simulation.json");
   if (fs.existsSync(simulationPath)) {
     const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
-    delete data[`grid_${gridId}`];
-    fs.writeFileSync(simulationPath, JSON.stringify(data, null, 2));
+    if (Array.isArray(data.cartesian_grid)) {
+      data.cartesian_grid = data.cartesian_grid.filter((g: any) => g.gridId !== Number(gridId));
+      fs.writeFileSync(simulationPath, JSON.stringify(data, null, 2));
+    }
   }
 
   res.json({ success: true });

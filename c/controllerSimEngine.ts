@@ -178,11 +178,11 @@ export class ControllerSimEngine {
     this.model.setBcType(v);
   }
 
-  public onBcDataChange(v: number) {
+  public onBcDataChange(v: number[]) {
     this.model.setBcData(v);
   }
 
-  public onBcNormChange(v: number) {
+  public onBcNormChange(v: number[]) {
     this.model.setBcNorm(v);
   }
 
