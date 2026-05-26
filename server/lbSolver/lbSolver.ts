@@ -12,7 +12,7 @@ const router = express.Router();
 
 // all enums and classes will be in lb solver and private
 export enum BoundaryType {
-  ConstantVelocityWall = "constant_velocity",
+  ConstantVelocityWall = "constant_velocity_wall",
   bounceBack = "bounce_back",
 }
 

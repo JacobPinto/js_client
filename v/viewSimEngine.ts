@@ -331,7 +331,7 @@ export class ViewSimEngine {
         bcId: {},
         type: {
           options: {
-            constant_velocity: "Constant Velocity",
+            constant_velocity_wall: "Constant Velocity Wall",
             bounce_back: "Bounce Back",
           },
         },
@@ -368,7 +368,7 @@ export class ViewSimEngine {
 
         if (dataRow) {
           (dataRow as HTMLElement).style.display =
-            type === "constant_velocity" ? "flex" : "none";
+            type === "constant_velocity_wall" ? "flex" : "none";
         }
 
         // Boundary condition id
@@ -387,7 +387,7 @@ export class ViewSimEngine {
         }
 
         // Data vector
-        if (type === "constant_velocity" && data) {
+        if (type === "constant_velocity_wall" && data) {
           this._controller.onBcDataChange(parseVector(data));
         }
       })
