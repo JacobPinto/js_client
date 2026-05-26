@@ -205,7 +205,7 @@ class LBSolver extends JSONWritable {
     return {
       id: this._lbId,
       eqn_str: this._eqn_str,
-      initialConditions: this._initialConditions
+      initial_conditions: this._initialConditions
         ? {
             velocity: this._initialConditions.velocity,
             viscosity: this._initialConditions.viscosity,
@@ -213,10 +213,10 @@ class LBSolver extends JSONWritable {
         : null,
       run: this._run
         ? {
-            iterationCount: this._run.iterationCount,
+            iteration_count: this._run.iterationCount,
           }
         : null,
-      boundaryConditions: this._boundaryConditions.map((bc) => ({
+      boundary_conditions: this._boundaryConditions.map((bc) => ({
         id: bc.bcId,
         type: bc.type,
         data: bc.data, // package it has a vector
