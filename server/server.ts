@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';  
 import path from 'path';
 import {fileURLToPath} from 'url';
+import fs from 'fs';
 
 import { ServerConfig } from './serverConfig.js';
 // import userRouter from './user/user.js'; // use the default export
@@ -74,9 +75,40 @@ app.use("/project", projectRouter);
 app.use("/grid", gridRouter);
 app.use("/lb_solver", LBSolverRouter);  
 
+// // ============ Camera Rendering Pipeline Endpoints ============
+// // Step 1 & 2: POST /camera receives mouse movement data and writes to camera.json
+// app.post('/camera', (req, res) => {
+//   try {
+//     const cameraData = req.body;
+//     const cameraPath = path.join(__dirname, '..', 'camera.json');
+//     fs.writeFileSync(cameraPath, JSON.stringify(cameraData, null, 2));
+//     console.log('Camera data updated:', cameraData);
+//     res.set('Cache-Control', 'no-store');
+//     res.json({ success: true, message: 'Camera data saved' });
+//   } catch (error) {
+//     console.error('Error writing camera.json:', error);
+//     res.status(500).json({ success: false, error: (error as Error).message });
+//   }
+// });
+
+// // Step 3: Serve output.jpeg with no-cache headers
+// app.get('/output.jpeg', (req, res) => {
+//   const outputPath = path.join(__dirname, '..', 'output.jpeg');
+//   if (fs.existsSync(outputPath)) {
+//     res.set('Cache-Control', 'no-store');
+//     res.sendFile(outputPath);
+//   } else {
+//     res.status(404).json({ error: 'output.jpeg not found. Run your render engine to generate it.' });
+//   }
+// });
+
+// // Serve viewer.html at root
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(__dirname, '..', 'viewer.html'));
+// });
 
 // GET endpoint (req,res, next) is also possible
-app.get('/',(req,res)=>{ 
+app.get('/', (req, res) => { 
   console.log("get req");
   res.sendFile(path.join(__dirname, '..', 'test.html'));
 });
