@@ -73,41 +73,52 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use("/geometry", geometryRouter);
 app.use("/project", projectRouter);
 app.use("/grid", gridRouter);
-app.use("/lb_solver", LBSolverRouter);  
+app.use("/lb_solver", LBSolverRouter);
 
-// // ============ Camera Rendering Pipeline Endpoints ============
-// // Step 1 & 2: POST /camera receives mouse movement data and writes to camera.json
-// app.post('/camera', (req, res) => {
-//   try {
-//     const cameraData = req.body;
-//     const cameraPath = path.join(__dirname, '..', 'camera.json');
-//     fs.writeFileSync(cameraPath, JSON.stringify(cameraData, null, 2));
-//     console.log('Camera data updated:', cameraData);
-//     res.set('Cache-Control', 'no-store');
-//     res.json({ success: true, message: 'Camera data saved' });
-//   } catch (error) {
-//     console.error('Error writing camera.json:', error);
-//     res.status(500).json({ success: false, error: (error as Error).message });
-//   }
-// });
+// ============ Camera Rendering Pipeline Endpoints ============
+// This implements the core rendering loop for the simulation:
+// 1. Client captures mouse movements (pan, zoom, rotate) in Canvas
+// 2. Server receives camera state and writes camera.json (Step 2)
+// 3. Server render engine reads camera.json and generates output.jpeg
+// 4. Client fetches output.jpeg with 80ms refresh rate (Step 3)
 
-// // Step 3: Serve output.jpeg with no-cache headers
-// app.get('/output.jpeg', (req, res) => {
-//   const outputPath = path.join(__dirname, '..', 'output.jpeg');
-//   if (fs.existsSync(outputPath)) {
-//     res.set('Cache-Control', 'no-store');
-//     res.sendFile(outputPath);
-//   } else {
-//     res.status(404).json({ error: 'output.jpeg not found. Run your render engine to generate it.' });
-//   }
-// });
+// #TBD
+// camera endpoint should be treated like a class (for eg grid and lbsolver)
+// serve output.jpeg to be served on client.
 
-// // Serve viewer.html at root
-// app.get('/', (req, res) => {
-//   res.sendFile(path.join(__dirname, '..', 'viewer.html'));
-// });
 
-// GET endpoint (req,res, next) is also possible
+
+// Step 1 & 2: POST /camera receives mouse movement data and writes to camera.json
+app.post('/camera', (req, res) => {
+  try {
+    const cameraData = req.body;
+    // Write camera state to disk for render engine to consume
+    const cameraPath = path.join(__dirname, '..', 'camera.json');
+    fs.writeFileSync(cameraPath, JSON.stringify(cameraData, null, 2));
+    console.log('Camera data updated:', cameraData);
+    // Prevent browser caching of this endpoint
+    res.set('Cache-Control', 'no-store');
+    res.json({ success: true, message: 'Camera data saved' });
+  } catch (error) {
+    console.error('Error writing camera.json:', error);
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+});
+
+// Step 3: Serve output.jpeg with no-cache headers
+// Client fetches this every 80ms to display latest render
+app.get('/output.jpeg', (req, res) => {
+  const outputPath = path.join(__dirname, '..', 'output.jpeg');
+  if (fs.existsSync(outputPath)) {
+    // Force fresh fetch every time (no browser caching)
+    res.set('Cache-Control', 'no-store');
+    res.sendFile(outputPath);
+  } else {
+    res.status(404).json({ error: 'output.jpeg not found. Run your render engine to generate it.' });
+  }
+});
+
+// GET endpoint for test.html (main app entry)
 app.get('/', (req, res) => { 
   console.log("get req");
   res.sendFile(path.join(__dirname, '..', 'test.html'));
