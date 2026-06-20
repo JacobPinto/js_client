@@ -89,7 +89,9 @@ export class Canvas {
     };
     // Cache-busting: append timestamp to force fresh fetch from server
     // This ensures we always get the latest render even if server headers allow caching
-    img.src = "/output.jpeg?t=" + Date.now();
+    img.src =
+  "camera/output.jpeg?t=" +
+  Date.now();
   }
 
   private _startImageRefresh(): void {

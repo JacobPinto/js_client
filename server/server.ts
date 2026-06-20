@@ -11,6 +11,7 @@ import { ServerConfig } from './serverConfig.js';
 import geometryRouter from './geometry/geometry.js';
 import projectRouter from './project.js';
 import gridRouter from './grid/grid.js';
+import cameraRouter from './camera/camera.js';
 import LBSolverRouter from './lbSolver/lbSolver.js';
 import { startGrpcServer } from './grpc/grpcServer.js';
 
@@ -73,6 +74,7 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use("/geometry", geometryRouter);
 app.use("/project", projectRouter);
 app.use("/grid", gridRouter);
+app.use("/camera", cameraRouter);
 app.use("/lb_solver", LBSolverRouter);
 
 // ============ Camera Rendering Pipeline Endpoints ============
@@ -86,37 +88,6 @@ app.use("/lb_solver", LBSolverRouter);
 // camera endpoint should be treated like a class (for eg grid and lbsolver)
 // serve output.jpeg to be served on client.
 
-
-
-// Step 1 & 2: POST /camera receives mouse movement data and writes to camera.json
-app.post('/camera', (req, res) => {
-  try {
-    const cameraData = req.body;
-    // Write camera state to disk for render engine to consume
-    const cameraPath = path.join(__dirname, '..', 'camera.json');
-    fs.writeFileSync(cameraPath, JSON.stringify(cameraData, null, 2));
-    console.log('Camera data updated:', cameraData);
-    // Prevent browser caching of this endpoint
-    res.set('Cache-Control', 'no-store');
-    res.json({ success: true, message: 'Camera data saved' });
-  } catch (error) {
-    console.error('Error writing camera.json:', error);
-    res.status(500).json({ success: false, error: (error as Error).message });
-  }
-});
-
-// Step 3: Serve output.jpeg with no-cache headers
-// Client fetches this every 80ms to display latest render
-app.get('/output.jpeg', (req, res) => {
-  const outputPath = path.join(__dirname, '..', 'output.jpeg');
-  if (fs.existsSync(outputPath)) {
-    // Force fresh fetch every time (no browser caching)
-    res.set('Cache-Control', 'no-store');
-    res.sendFile(outputPath);
-  } else {
-    res.status(404).json({ error: 'output.jpeg not found. Run your render engine to generate it.' });
-  }
-});
 
 // GET endpoint for test.html (main app entry)
 app.get('/', (req, res) => { 

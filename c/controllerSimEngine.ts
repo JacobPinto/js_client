@@ -21,7 +21,7 @@ This centralizes all fetch calls in one place.
 */
 
 async function serverRequest(config: ServerRequestConfig) {
-  const response = await fetch(`http://localhost:3000${config.endpoint}`, {
+  const response = await fetch(`http://localhost:4000${config.endpoint}`, {
     method: config.method,
     headers: {
       "Content-Type": "application/json",
@@ -199,7 +199,7 @@ export class ControllerSimEngine {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(`http://localhost:3000/geometry/loadfile`, {
+      const response = await fetch(`http://localhost:4000/geometry/loadfile`, {
         method: "POST",
         body: formData,
       });
@@ -482,7 +482,7 @@ export class ControllerSimEngine {
         },
       };
 
-      const response = await fetch("http://localhost:3000/camera", {
+      const response = await fetch("http://localhost:4000/camera", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
