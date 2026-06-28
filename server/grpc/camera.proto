@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package camera;
+
+message CameraState {
+  float panX = 1;
+  float panY = 2;
+  float zoom = 3;
+  float azimuth = 4;
+  float elevation = 5;
+}
+
+message Ack {
+  bool success = 1;
+}
+
+service CameraService {
+  rpc UpdateCamera(CameraState) returns (Ack);
+}
