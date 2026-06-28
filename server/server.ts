@@ -14,6 +14,7 @@ import gridRouter from './grid/grid.js';
 import cameraRouter from './camera/camera.js';
 import LBSolverRouter from './lbSolver/lbSolver.js';
 import { startGrpcServer } from './grpc/grpcServer.js';
+import { startGrpcServerCamera } from './grpc/grpcServerCamera.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -123,5 +124,6 @@ app.listen(ServerConfig.port, () => {
   console.log(`HTTP server running at http://localhost:${ServerConfig.port}`);
 
   // Start gRPC server after HTTP server starts
-  startGrpcServer();
+  //startGrpcServer();
+  startGrpcServerCamera();
 });

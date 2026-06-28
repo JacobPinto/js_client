@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
+import { grpcClientCamera } from "../grpc/grpcClientCamera.js";
 import { JSONWritable } from "../jsonWritable.js";
 
 export interface CameraState {
@@ -77,22 +78,55 @@ cameraRouter.post("/", (req, res) => {
       return;
     }
 
-    const camera = new Camera(
-      Number(pan.x),
-      Number(pan.y),
-      Number(zoom),
-      Number(rotate.azimuth),
-      Number(rotate.elevation)
-    );
+    // const camera = new Camera(
+    //   Number(pan.x),
+    //   Number(pan.y),
+    //   Number(zoom),
+    //   Number(rotate.azimuth),
+    //   Number(rotate.elevation)
+    // );
 
-    camera.write();
+    // camera.write();
+
+    // res.set("Cache-Control", "no-store");
+
+    // res.json({
+    //   success: true,
+    //   message: "Camera state updated",
+    // });
+
+    grpcClientCamera.UpdateCamera(
+  {
+    panX: Number(pan.x),
+    panY: Number(pan.y),
+    zoom: Number(zoom),
+    azimuth: Number(rotate.azimuth),
+    elevation: Number(rotate.elevation),
+  },
+  // doc how error handling works
+  (err: Error | null, response: any) => {
+    if (err) {
+      console.error("[camera] gRPC error:", err);
+
+      res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+
+      return;
+    }
 
     res.set("Cache-Control", "no-store");
 
     res.json({
       success: true,
-      message: "Camera state updated",
+      grpc: response,
     });
+  }
+);
+
+
+
   } catch (error) {
     console.error("[camera] write failed:", error);
 
