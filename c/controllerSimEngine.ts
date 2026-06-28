@@ -2,6 +2,7 @@ import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 
 import { ModelSimEngine } from "../m/modelSimEngine.js";
+import { CameraState } from "../v/canvas.js";
 
 /*
 interface for server requests.
@@ -20,7 +21,7 @@ This centralizes all fetch calls in one place.
 */
 
 async function serverRequest(config: ServerRequestConfig) {
-  const response = await fetch(`http://localhost:3000${config.endpoint}`, {
+  const response = await fetch(`http://localhost:4000${config.endpoint}`, {
     method: config.method,
     headers: {
       "Content-Type": "application/json",
@@ -198,7 +199,7 @@ export class ControllerSimEngine {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(`http://localhost:3000/geometry/loadfile`, {
+      const response = await fetch(`http://localhost:4000/geometry/loadfile`, {
         method: "POST",
         body: formData,
       });
@@ -455,6 +456,48 @@ export class ControllerSimEngine {
     } catch (err) {
       console.error("[Controller] submitRun failed:", (err as Error).message);
       this._model.setOutputMessage(`Error: ${(err as Error).message}`);
+    }
+  }
+
+  // CAMERA STATE HANDLING
+  /**
+   * Handle camera state changes from Canvas component
+   * 
+   * This implements Step 2 of the rendering pipeline:
+   * Receives camera state (pan, zoom, rotate) from Canvas
+   * Sends to server's /camera endpoint to write camera.json
+   * @param state - CameraState from Canvas containing pan, zoom, rotate values
+   */
+  public async onCameraStateChange(state: CameraState): Promise<void> {
+    try {
+      const payload = {
+        pan: {
+          x: parseFloat(state.pan.x.toFixed(4)),
+          y: parseFloat(state.pan.y.toFixed(4)),
+        },
+        zoom: parseFloat(state.zoom.toFixed(6)),
+        rotate: {
+          azimuth: parseFloat(state.rotate.azimuth.toFixed(4)),
+          elevation: parseFloat(state.rotate.elevation.toFixed(4)),
+        },
+      };
+
+      const response = await fetch("http://localhost:4000/camera", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      this._model.setOutputMessage("Camera state updated");
+    } catch (err) {
+      console.error("[Controller] Camera update failed:", (err as Error).message);
+      this._model.setOutputMessage(
+        `Camera update failed: ${(err as Error).message}`,
+      );
     }
   }
 }
