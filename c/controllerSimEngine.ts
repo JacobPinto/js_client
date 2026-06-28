@@ -28,19 +28,14 @@ async function serverRequest(config: ServerRequestConfig) {
     },
     body: config.body ? JSON.stringify(config.body) : undefined,
   });
+
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
   return response.json();
 }
 
-/**
- * ControllerSimEngine
- * 
- * MVC Controller that manages interactions between the View and Model.
- * Handles user input events, validates data, and coordinates model updates.
- * Acts as an intermediary that processes view events and updates the simulation model.
- */
 export class ControllerSimEngine {
   private _model: ModelSimEngine;
 
@@ -116,8 +111,6 @@ export class ControllerSimEngine {
     this._model.vertex = vertexFormat;
   }
 
-  // Handle input changes for client details
-
   public onClientNameChange(v: string) {
     this.model.setClientName(v);
   }
@@ -125,9 +118,6 @@ export class ControllerSimEngine {
   public onClientEmailChange(v: string) {
     this.model.setClientEmail(v);
   }
-
-
-  // Handle input changes for speed and acceleration values/units
 
   public onSpeedValueChange(v: number) {
     this.model.setSpeedValue(v);
@@ -240,14 +230,9 @@ export class ControllerSimEngine {
 
 */
 
-  // SUBMISSION HANDLERS 
-  // Handle form submissions and data processing
+  // CLIENT SUBMISSION
+  //Sends client information to the backend server.
 
-  /**
-   * Submits client information to the backend server.
-   * Validates client name and email, sends HTTP POST request, and updates output message.
-   * Handles errors with user-friendly feedback.
-   */
   public async submitClient() {
     try {
       const name = this._model.clientName.getData();
@@ -261,26 +246,23 @@ export class ControllerSimEngine {
 
       this._model.setOutputMessage("Submitting client...");
 
-      const created = await createClient("http://localhost:3001", {
-        name,
-        email,
+      // Send POST request to server to create new client
+      const created = await serverRequest({
+        method: "POST",
+        endpoint: "/user/createnew",
+        body: { name, email },
       });
 
       console.log("[Controller] Client created:", created);
-      this._model.setOutputMessage(`Client "${created.name}" successfully created.`);
+      this._model.setOutputMessage(
+        `Client "${created.name}" successfully created.`,
+      );
     } catch (err) {
       console.error("[Controller] Submit failed:", (err as Error).message);
       this._model.setOutputMessage(`Submit failed: ${(err as Error).message}`);
     }
   }
 
-  /*
-
-   * Submits physical parameters (speed and acceleration with units).
-   * Validates all required fields and provides error feedback.
-   * Updates the model output message with submission status or error details.
-   * 
-   */
   submitPhysicalParams() {
     const speed = this._model.speedValue.getData();
     const speedUnit = this._model.speedUnit.getData();
@@ -288,28 +270,24 @@ export class ControllerSimEngine {
     const acceleration = this._model.accelerationValue.getData();
     const accelerationUnit = this._model.accelerationUnit.getData();
 
-    //Speed value must be a valid number
     if (speed == null || Number.isNaN(speed)) {
       console.error("[Controller] Speed value is required");
       this._model.setOutputMessage("Speed value is required.");
       return;
     }
 
-    //Speed unit must be selected
     if (!speedUnit) {
       console.error("[Controller] Speed unit is required");
       this._model.setOutputMessage("Speed unit is required.");
       return;
     }
 
-    // Acceleration value must be a valid number
     if (acceleration == null || Number.isNaN(acceleration)) {
       console.error("[Controller] Acceleration value is required");
       this._model.setOutputMessage("Acceleration value is required.");
       return;
     }
 
-    // Acceleration unit must be selected
     if (!accelerationUnit) {
       console.error("[Controller] Acceleration unit is required");
       this._model.setOutputMessage("Acceleration unit is required.");
@@ -322,11 +300,11 @@ export class ControllerSimEngine {
       acceleration,
       accelerationUnit,
     });
-    
+
     this._model.setOutputMessage(
       ` Physical Parameters Submitted:
        Speed: ${speed} (${speedUnit})
-       Acceleration: ${acceleration} (${accelerationUnit})`
+       Acceleration: ${acceleration} (${accelerationUnit})`,
     );
   }
 

@@ -1,7 +1,7 @@
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 import { FormElementParam } from "./buttonParams.js";
 
-// ================= Tailwind CSS Style Constants =================
+/* ================= Tailwind Design ================= */
 
 // Toolbar button
 const TOOLBAR_BUTTON =
@@ -71,7 +71,7 @@ export class InputElement {
     this._controller = controller;
   }
 
-  // Creates the toolbar button that opens this element's view
+  /* Toolbar trigger button */
   render(): HTMLElement {
     const button = document.createElement("button");
     button.type = "button";
@@ -80,12 +80,10 @@ export class InputElement {
     return button;
   }
 
-  // Called by observers when model data changes
   update(value: any): void {
     this._update?.(value);
   }
 
-  // Returns the full form/input view for display
   getView(): HTMLElement {
     throw new Error("getView() must be implemented by subclass.");
   }
@@ -120,8 +118,8 @@ export class SimpleButton extends InputElement {
   }
 }
 
-// Text Input with Submit Button 
-// Form with text input fields and Clear/Submit buttons
+//TextEntryWithButton
+
 export class TextEntryWithButton extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -185,7 +183,6 @@ export class TextEntryWithButton extends InputElement {
     return this._view;
   }
 
-  // Retrieves value from a specific text input field
   public getFieldValue(fieldName: string): string | undefined {
     const input = this._form.querySelector(
       `input[name="${fieldName}"]`,
@@ -194,7 +191,7 @@ export class TextEntryWithButton extends InputElement {
   }
 }
 
-//  Text Input with Dropdown and Submit and clear Buttons
+// TextEntryWithDropdownAndButton
 
 export class TextEntryWithDropdownAndButton extends InputElement {
   public _form!: HTMLFormElement;
@@ -233,7 +230,6 @@ export class TextEntryWithDropdownAndButton extends InputElement {
       const select = document.createElement("select");
       select.className = INPUT + " w-40";
 
-      // Retrieve options from context for dropdown
       const options = this._contextObj[key]?.options ?? {};
       Object.entries(options).forEach(([v, l]) => {
         const opt = document.createElement("option");
@@ -244,11 +240,9 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 
       select.addEventListener("change", () => this._update?.());
 
-      // Keep input and dropdown paired in same row
       // Add dropdown to SAME ROW as input
       inputRow.appendChild(select);
 
-      // Store references for retrieving values
       this._inputs[key] = input;
       this._selects[key] = select;
     });
@@ -283,19 +277,17 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     return this._view;
   }
 
-  // Get text input value by field key
   getTextValue(key: string): string {
     return this._inputs[key]?.value ?? "";
   }
 
-  // Get dropdown select value by field key
   getDropdownValue(key: string): string {
     return this._selects[key]?.value ?? "";
   }
 }
 
-// =================== Radio Button Group ===================
-// Multiple radio options where only one can be selected
+// RadioButton
+
 export class RadioButton extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -332,7 +324,6 @@ export class RadioButton extends InputElement {
     return this._view;
   }
 
-  // Get currently selected radio button value
   public getValue(): string | null {
     const selected = this._form.querySelector(
       "input:checked",
@@ -341,8 +332,8 @@ export class RadioButton extends InputElement {
   }
 }
 
-//  Checkbox 
-// Multiple checkboxes for multi-select options
+// Checkbox
+
 export class Checkbox extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -382,6 +373,7 @@ export class Checkbox extends InputElement {
 
 export class FileEntry extends InputElement {
   public _form!: HTMLFormElement;
+  private _inputs: Record<string, HTMLInputElement> = {};
 
   getView(): HTMLElement {
     if (this._view) return this._view;
@@ -400,29 +392,71 @@ export class FileEntry extends InputElement {
 
       const span = document.createElement("span");
       span.textContent = labelText;
+      span.className = "font-medium";
 
       const input = document.createElement("input");
       input.type = "file";
       input.name = key;
+      input.className = INPUT;
+
+      // Show selected filename
+      const fileNameDisplay = document.createElement("span");
+      fileNameDisplay.className = "text-sm text-gray-500 mt-1";
 
       input.addEventListener("change", (e) => {
         const target = e.target as HTMLInputElement;
-        if (target.files) {
-          this._onClick(target.files);
+
+        if (!target.files || target.files.length === 0) {
+          console.warn("No file selected");
+          return;
         }
+
+        const file = target.files[0]; 
+
+        this._onClick?.call(this, file);
       });
 
-      label.append(span, input);
+      label.append(span, input, fileNameDisplay);
       this._form.appendChild(label);
+      this._inputs[key] = input;
     });
+
+    // Add Clear and Submit buttons
+    const buttonRow = document.createElement("div");
+    buttonRow.className = "flex justify-end gap-4 pt-4";
+
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.textContent = "Clear";
+    clearBtn.className = CLEAR;
+    clearBtn.addEventListener("click", () => {
+      this._form.reset();
+      Object.values(this._inputs).forEach((input) => {
+        const display = input.nextElementSibling as HTMLElement;
+        if (display) display.textContent = "";
+      });
+    });
+
+    const submit = document.createElement("button");
+    submit.type = "button";
+    submit.textContent = this._submitLabel ?? "Upload";
+    submit.className = SUBMIT;
+    submit.addEventListener("click", () => this._onClick());
+
+    buttonRow.append(clearBtn, submit);
+    this._form.appendChild(buttonRow);
 
     this._view = this._form;
     return this._view;
   }
+
+  public getFile(key: string): File | undefined {
+    return this._inputs[key]?.files?.[0];
+  }
 }
 
-// Dropdown 
-// Single select dropdown with options and submit button
+// Dropdown
+
 export class Dropdown extends InputElement {
   public _form!: HTMLFormElement;
 
@@ -453,7 +487,6 @@ export class Dropdown extends InputElement {
     submit.type = "button";
     submit.textContent = this._submitLabel ?? "Submit";
     submit.className = SUBMIT;
-
     submit.addEventListener("click", () => {
       this._onClick(select.value);
     });

@@ -1,9 +1,10 @@
-//import { TextEntryWithButton, Checkbox, RadioButton, FileEntry, Dropdown, SimpleButton } from './button.js';
 import {
   InputElement,
   RadioButton,
   TextEntryWithButton,
   TextEntryWithDropdownAndButton,
+  FileEntry,
+  Dropdown,
 } from "./button.js";
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
@@ -12,7 +13,6 @@ import { Canvas } from "./canvas.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { Output } from "./output.js";
-import { ModelSimEngine } from "../m/modelSimEngine.js";
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 
 export class ViewSimEngine {
@@ -49,11 +49,7 @@ export class ViewSimEngine {
       })
       .setUpdate(function (this: RadioButton, dim: Dimensions) {
         if (!this._controller) return;
-
-        // Ensure the form exists (view may not have been rendered yet)
-        if (!this._form) {
-          this.getView();
-        }
+        if (!this._form) return;
 
         console.log(`[ShaderButton] Reacting to dimension: ${dim}`);
         const radios = this._form.querySelectorAll(
@@ -114,7 +110,6 @@ export class ViewSimEngine {
       })
       .build();
 
-
     const physicalParams = buttonBuilder
       .setButtonType(TextEntryWithDropdownAndButton)
       .setButtonName("PhysicalParams")
@@ -169,10 +164,260 @@ export class ViewSimEngine {
 
         this._controller.onSpeedUnitChange(speedUnitMap[speedUnit]);
         this._controller.onAccelerationUnitChange(accUnitMap[accUnit]);
-
       })
       .setOnClick(function (this: TextEntryWithDropdownAndButton) {
         this._controller.submitPhysicalParams();
+      })
+      .build();
+
+    const loadfilebutton = buttonBuilder
+      .setButtonType(FileEntry)
+      .setButtonName("LoadFile")
+      .setButtonDisplayName("Load File")
+      .setQuestions({
+        file: "Select a file",
+      })
+      .setOnClick(function (this: FileEntry, file?: File) {
+        if (file) {
+          this._controller.onFileUpload(file);
+        } else {
+          console.warn("No file selected.");
+        }
+      })
+      .build();
+
+    const gridButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("CreateGrid")
+      .setButtonDisplayName("Create Grid")
+      .setSubmitLabel("Create")
+      .setQuestions({
+        gridId: "Grid ID",
+        blockId: "Block ID",
+        nbx: "Nb Points X",
+        nby: "Nb Points Y",
+        startx1: "Start X",
+        starty1: "Start Y",
+        endx2: "End X",
+        endy2: "End Y",
+      })
+
+      .setUpdate(function (this: TextEntryWithButton) {
+        const gridId = Number(this.getFieldValue("gridId"));
+        const blockId = Number(this.getFieldValue("blockId"));
+
+        const nbx = Number(this.getFieldValue("nbx"));
+        const nby = Number(this.getFieldValue("nby"));
+
+        const x1 = Number(this.getFieldValue("startx1"));
+        const y1 = Number(this.getFieldValue("starty1"));
+
+        const x2 = Number(this.getFieldValue("endx2"));
+        const y2 = Number(this.getFieldValue("endy2"));
+
+        if (!Number.isNaN(gridId)) {
+          this._controller.onGridIdChange(gridId);
+        }
+
+        if (!Number.isNaN(blockId)) {
+          this._controller.onBlockIdChange(blockId);
+        }
+
+        if (!Number.isNaN(nbx) && !Number.isNaN(nby)) {
+          this._controller.onNbPointsChange([nbx, nby]);
+        }
+
+        if (!Number.isNaN(x1) && !Number.isNaN(y1)) {
+          this._controller.onStartCoordsChange([x1, y1]);
+        }
+
+        if (!Number.isNaN(x2) && !Number.isNaN(y2)) {
+          this._controller.onEndCoordsChange([x2, y2]);
+        }
+      })
+
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitGrid();
+      })
+
+      .build();
+
+    const solverButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("CreateSolver")
+      .setButtonDisplayName("Create Solver")
+      .setSubmitLabel("Create")
+      .setQuestions({
+        lbId: "LB Solver ID",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const lbId = Number(this.getFieldValue("lbId"));
+        if (!Number.isNaN(lbId)) {
+          this._controller.onLbIdChange(lbId);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        const lbId = Number(this.getFieldValue("lbId"));
+
+        if (Number.isNaN(lbId)) {
+          console.error("Invalid lbId");
+          return;
+        }
+        this._controller.onLbIdChange(lbId);
+        this._controller.createSolver();
+      })
+      .build();
+
+    const initialConditionsButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("InitialConditions")
+      .setButtonDisplayName("Initial Conditions")
+      .setSubmitLabel("Submit")
+      .setQuestions({
+        velocity: "Velocity",
+        viscosity: "Viscosity",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const velocity = Number(this.getFieldValue("velocity"));
+        const viscosity = Number(this.getFieldValue("viscosity"));
+
+        if (!Number.isNaN(velocity)) {
+          this._controller.onVelocityChange(velocity);
+        }
+
+        if (!Number.isNaN(viscosity)) {
+          this._controller.onViscosityChange(viscosity);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitInitialConditions();
+      })
+      .build();
+
+    const eqbutton1 = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("Equation")
+      .setButtonDisplayName("Equation String")
+      .setSubmitLabel("Submit")
+      .setQuestions({
+        eqn_str: "Equation String",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const eqn_str = this.getFieldValue("eqn_str");
+        if (eqn_str) {
+          this._controller.onEqn_strChange(eqn_str);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitEqnStr();
+      })
+      .build();
+
+    const boundaryConditionButton = buttonBuilder
+      .setButtonType(TextEntryWithDropdownAndButton)
+      .setButtonName("BoundaryConditions")
+      .setButtonDisplayName("Boundary Conditions")
+      .setSubmitLabel("Submit")
+
+      .setQuestions({
+        bcId: "Boundary Condition ID",
+        type: "Type",
+        norm: "Normal",
+        data: "Data",
+      })
+
+      .setContextObj({
+        bcId: {},
+        type: {
+          options: {
+            constant_velocity_wall: "Constant Velocity Wall",
+            bounce_back: "Bounce Back",
+          },
+        },
+        norm: {},
+        data: {},
+      })
+
+      .setUpdate(function (this: TextEntryWithDropdownAndButton) {
+        const bcId = this.getTextValue("bcId");
+        const type = this.getDropdownValue("type");
+        const norm = this.getTextValue("norm");
+        const data = this.getTextValue("data");
+
+        // Helper parser
+        const parseVector = (value: string): number[] => {
+          return value
+            .split(",")
+            .map((v) => v.trim())
+            .filter((v) => v !== "")
+            .map((v) => {
+              const num = Number(v);
+
+              if (isNaN(num)) {
+                throw new Error(`Invalid vector value: ${v}`);
+              }
+
+              return num;
+            });
+        };
+
+        // Hide/show data field
+        const rows = this._form.querySelectorAll("div");
+        const dataRow = rows[3];
+
+        if (dataRow) {
+          (dataRow as HTMLElement).style.display =
+            type === "constant_velocity_wall" ? "flex" : "none";
+        }
+
+        // Boundary condition id
+        if (bcId && !Number.isNaN(Number(bcId))) {
+          this._controller.onBcIdChange(Number(bcId));
+        }
+
+        // Boundary type
+        if (type) {
+          this._controller.onBcTypeChange(type);
+        }
+
+        // Normal vector
+        if (norm) {
+          this._controller.onBcNormChange(parseVector(norm));
+        }
+
+        // Data vector
+        if (type === "constant_velocity_wall" && data) {
+          this._controller.onBcDataChange(parseVector(data));
+        }
+      })
+
+      .setOnClick(function (this: TextEntryWithDropdownAndButton) {
+        this._controller.submitBoundaryConditions();
+      })
+
+      .build();
+
+    const runButton = buttonBuilder
+      .setButtonType(TextEntryWithButton)
+      .setButtonName("Run")
+      .setButtonDisplayName("Run Simulation")
+      .setSubmitLabel("Run")
+      .setQuestions({
+        run: "Run",
+      })
+      .setUpdate(function (this: TextEntryWithButton) {
+        const run = Number(this.getFieldValue("run"));
+        if (!Number.isNaN(run)) {
+          this._controller.onRunChange(run);
+        }
+      })
+      .setOnClick(function (this: TextEntryWithButton, e: Event) {
+        e.preventDefault();
+        this._controller.submitRun();
       })
       .build();
 
@@ -182,83 +427,24 @@ export class ViewSimEngine {
     // Store buttons
     this._buttons.push(dimensionsButton, shaderButton, vertexButton);
 
-    /*
-    const colorDropdown = new ButtonBuilder()
-      .setButtonType(Dropdown)
-      .setButtonName("Color")
-      .setButtonDisplayName("Color")
-      .setQuestions({
-        red: Color.Red,
-        blue: Color.Blue,
-        green: Color.Green
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        console.log("Selected color:", selected ?? this.getValue());
-      })
-      .build();
-
-    const shaderDropdown = new ButtonBuilder()
-      .setButtonType(Dropdown)
-      .setButtonName("ShaderType")
-      .setButtonDisplayName("Shader Type")
-      .setQuestions({
-        flat: ShaderType.Flat,
-        smooth: ShaderType.Smooth
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        console.log("Shader type:", selected ?? this.getValue());
-      })
-      .build();
-
-    const vertexDropdown = new ButtonBuilder()
-      .setButtonType(Dropdown)
-      .setButtonName("VertexFormat")
-      .setButtonDisplayName("Vertex Format")
-      .setQuestions({
-        list: VertexFormat.List,
-        strip: VertexFormat.Strip,
-        index: VertexFormat.Index
-      })
-      .setOnClick(function (this: Dropdown, selected?: string) {
-        console.log("Vertex format:", selected ?? this.getValue());
-      })
-      .build();
-
-      // remove simple button
-    const simpleBtn = new ButtonBuilder()
-      .setButtonType(SimpleButton)
-      .setButtonName("Apply")
-      .setButtonDisplayName("Apply")
-      .setOnClick(function (this: SimpleButton, value?: string) {
-        console.log("Simple button clicked:", value ?? this._name);
-      })
-      .build();
-
-      */
-
     const grid = new Toolbar("Grid", [gridButton]);
 
-    const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
-    toolbar2.getElement().classList.add('toolbar-vertical');
-  
+    const geometry = new Toolbar("Geometry", [loadfilebutton]);
 
-    // small toolbar
-    const smallToolbar = new Toolbar(" Toolbar 1", [
-      shaderButton,
+    const LBSolver = new Toolbar("LB Solver", [
+      initialConditionsButton,
+      boundaryConditionButton,
+      eqbutton1,
+      runButton,
       clientForm,
-      dimensionsButton,
-    ]);
-
-    const smallToolbar1 = new Toolbar(" Toolbar 2", [
-      dimensionsButton,
-      vertexButton,
-      physicalParams,
+      solverButton,
     ]);
 
     // Create workbench
     this._workbench = new Workbench("mainWorkbench", [
-      smallToolbar,
-      smallToolbar1,
+      geometry,
+      grid,
+      LBSolver,
     ]);
 
     // Create canvas and wire state changes to controller
@@ -297,5 +483,4 @@ export class ViewSimEngine {
       root.appendChild(container);
     }
   }
-
 }
