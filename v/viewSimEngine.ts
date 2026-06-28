@@ -8,6 +8,7 @@ import {
 import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
 import { Workbench } from "./workbench.js";
+import { Canvas } from "./canvas.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { Output } from "./output.js";
@@ -17,6 +18,8 @@ import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 export class ViewSimEngine {
   private _workbench: Workbench;
   private _buttons: InputElement[] = [];
+  private _canvas: Canvas | null = null;
+  private _output: Output | null = null;
 
   constructor(controller: ControllerSimEngine) {
     // Create ButtonBuilder
@@ -233,12 +236,7 @@ export class ViewSimEngine {
 
       */
 
-    /*
-
-    
-      // Create toolbars
-    const toolbar1 = new Toolbar('basicInputs', [myButton1, myButton2]);
-    toolbar1.getElement().classList.add('toolbar-horizontal');
+    const grid = new Toolbar("Grid", [gridButton]);
 
     const toolbar2 = new Toolbar('fileToolsDropdown', [myButton3, myButton4, myButton5]);
     toolbar2.getElement().classList.add('toolbar-vertical');
@@ -263,20 +261,40 @@ export class ViewSimEngine {
       smallToolbar1,
     ]);
 
-    const output = new Output();
+    // Create canvas and wire state changes to controller
+    // Canvas displays server-rendered output.jpeg and captures mouse interactions
+    this._canvas = new Canvas();
+    this._canvas.onStateChange((state) => {
+      // When user interacts with canvas (pan/zoom/rotate), send state to controller
+      // Controller will POST to /camera endpoint, which writes camera.json
+      // Server render engine reads camera.json and generates new output.jpeg
+      controller.onCameraStateChange(state);
+    });
 
-    // register as observer
-    controller.model.outputMessage.register(output);
+    // Create output message display for feedback
+    this._output = new Output();
 
-    // append to UI
-    this._workbench.getElement().appendChild(output.getElement());
-
+    // register output as observer for model notifications
+    controller.model.outputMessage.register(this._output);
   } // end constructor
 
   render(): void {
     const root = document.getElementById("app");
     if (root) {
-      root.appendChild(this._workbench.getElement());
+      // Create root container to hold all components
+      const container = document.createElement("div");
+      container.className = "flex flex-col w-full h-screen overflow-hidden";
+      
+      // Add workbench, canvas, and output in order
+      container.appendChild(this._workbench.getElement());
+      if (this._canvas) {
+        container.appendChild(this._canvas.getElement());
+      }
+      if (this._output) {
+        container.appendChild(this._output.getElement());
+      }
+      
+      root.appendChild(container);
     }
   }
 
