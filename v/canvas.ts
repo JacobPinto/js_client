@@ -49,7 +49,24 @@ export class Canvas {
   constructor() {
     this._container = document.createElement("div");
     this._container.className =
-      "flex flex-col flex-1 overflow-hidden bg-gray-900 border-t border-gray-700";
+      "relative w-full h-full overflow-hidden bg-gray-900";
+
+    // Canvas
+    this._canvas = document.createElement("canvas");
+    this._canvas.className =
+      "block w-full h-full cursor-crosshair bg-gray-800";
+    this._canvas.style.display = "block";
+
+    const ctx = this._canvas.getContext("2d");
+    if (!ctx) throw new Error("Failed to get canvas context");
+    this._ctx = ctx;
+
+    this._canvas.width = 1024;
+    this._canvas.height = 768;
+    this._canvas.style.width = "1024px";
+    this._canvas.style.height = "768px";
+
+    this._container.appendChild(this._canvas);
 
     // Hint text
     const hint = document.createElement("div");
@@ -58,18 +75,6 @@ export class Canvas {
     hint.textContent =
       "Left-drag: pan  •  Scroll: zoom  •  Right-drag: azimuth/elevation";
     this._container.appendChild(hint);
-
-    // Canvas
-    this._canvas = document.createElement("canvas");
-    this._canvas.className =
-      "flex-1 block mx-auto my-auto cursor-crosshair bg-gray-800";
-    this._canvas.style.display = "block";
-
-    const ctx = this._canvas.getContext("2d");
-    if (!ctx) throw new Error("Failed to get canvas context");
-    this._ctx = ctx;
-
-    this._container.appendChild(this._canvas);
 
     this._setupMouseHandlers();
     this._loadImage();
@@ -80,8 +85,8 @@ export class Canvas {
     const img = new Image();
     img.onload = () => {
       this._img = img;
-      this._canvas.width = img.naturalWidth;
-      this._canvas.height = img.naturalHeight;
+      this._canvas.width = 1024;
+      this._canvas.height = 768;
       this._drawImage();
     };
     img.onerror = () => {
@@ -90,7 +95,7 @@ export class Canvas {
     // Cache-busting: append timestamp to force fresh fetch from server
     // This ensures we always get the latest render even if server headers allow caching
     img.src =
-  "camera/output.jpeg?t=" +
+  "v/output.jpeg?t=" +
   Date.now();
   }
 

@@ -11,8 +11,14 @@ const TOOLBAR_BUTTON =
   "hover:bg-white hover:shadow-md " +
   "transition-all duration-200 text-sm font-medium";
 
+// Modal overlay (backdrop)
+const MODAL_OVERLAY = "fixed inset-0 bg-black/40 flex items-center justify-center z-50";
+
+// Modal content wrapper
+const MODAL_CONTENT = "bg-white rounded-lg shadow-lg border border-gray-200 p-6 w-[360px] max-h-[90vh] overflow-y-auto";
+
 // Form container
-const FORM_CONTAINER = "flex flex-col gap-4";
+const FORM_CONTAINER = "flex flex-col gap-3";
 
 // Titles
 const FORM_TITLE = "text-sm font-semibold text-gray-800";
@@ -21,20 +27,20 @@ const FORM_TITLE = "text-sm font-semibold text-gray-800";
 
 const LABEL = "flex flex-col gap-1 text-sm text-gray-600";
 
-const ROW = "flex items-center gap-4 text-sm text-gray-700";
+const ROW = "flex items-center gap-3 text-sm text-gray-700";
 
-const LABEL_TEXT = "w-32 text-gray-600";
+const LABEL_TEXT = "w-20 text-sm font-medium text-gray-600";
 
 // Input + Select
 const INPUT =
-  "w-full px-3 py-2 rounded-md border border-gray-300 " +
+  "w-full h-9 px-3 rounded-md border border-gray-300 " +
   "bg-white text-sm text-gray-700 placeholder-gray-400 " +
   "shadow-sm transition focus:outline-none " +
   "focus:border-blue-500 focus:ring-2 focus:ring-blue-200";
 
 // Submit button
 const SUBMIT =
-  "px-6 py-2 rounded-md" +
+  "h-10 w-24 rounded-md" +
   "bg-gray-100 " +
   "text-gray-700 " +
   "border border-gray-200 " +
@@ -80,6 +86,13 @@ export class InputElement {
     return button;
   }
 
+  /**
+   * Returns the button's display name for overlay titles
+   */
+  getName(): string {
+    return this._displayName;
+  }
+
   update(value: any): void {
     this._update?.(value);
   }
@@ -95,8 +108,11 @@ export class SimpleButton extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     const container = document.createElement("div");
-    container.className = "p-6 border rounded-lg shadow-sm flex flex-col gap-4";
+    container.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -113,7 +129,8 @@ export class SimpleButton extends InputElement {
 
     container.append(heading, btn);
 
-    this._view = container;
+    overlay.appendChild(container);
+    this._view = overlay;
     return this._view;
   }
 }
@@ -126,8 +143,11 @@ export class TextEntryWithButton extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     this._form = document.createElement("form");
-    this._form.className = FORM_CONTAINER;
+    this._form.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -154,7 +174,7 @@ export class TextEntryWithButton extends InputElement {
     });
 
     const buttonRow = document.createElement("div");
-    buttonRow.className = "flex justify-end gap-4 pt-4";
+    buttonRow.className = "flex justify-between pt-5";
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
@@ -179,7 +199,8 @@ export class TextEntryWithButton extends InputElement {
     buttonRow.append(clearBtn, submit);
     this._form.appendChild(buttonRow);
 
-    this._view = this._form;
+    overlay.appendChild(this._form);
+    this._view = overlay;
     return this._view;
   }
 
@@ -201,8 +222,11 @@ export class TextEntryWithDropdownAndButton extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     this._form = document.createElement("form");
-    this._form.className = FORM_CONTAINER;
+    this._form.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -248,7 +272,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     });
 
     const buttonRow = document.createElement("div");
-    buttonRow.className = "flex justify-end gap-4 pt-4";
+    buttonRow.className = "flex justify-between pt-5";
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
@@ -273,7 +297,8 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     buttonRow.append(clearBtn, submit);
     this._form.appendChild(buttonRow);
 
-    this._view = this._form;
+    overlay.appendChild(this._form);
+    this._view = overlay;
     return this._view;
   }
 
@@ -294,9 +319,11 @@ export class RadioButton extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     this._form = document.createElement("form");
-    this._form.className =
-      "rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3";
+    this._form.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -320,7 +347,8 @@ export class RadioButton extends InputElement {
       this._form.appendChild(label);
     });
 
-    this._view = this._form;
+    overlay.appendChild(this._form);
+    this._view = overlay;
     return this._view;
   }
 
@@ -340,8 +368,11 @@ export class Checkbox extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     this._form = document.createElement("form");
-    this._form.className = FORM_CONTAINER;
+    this._form.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -364,7 +395,8 @@ export class Checkbox extends InputElement {
       this._form.appendChild(label);
     });
 
-    this._view = this._form;
+    overlay.appendChild(this._form);
+    this._view = overlay;
     return this._view;
   }
 }
@@ -378,8 +410,11 @@ export class FileEntry extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     this._form = document.createElement("form");
-    this._form.className = FORM_CONTAINER;
+    this._form.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -423,7 +458,7 @@ export class FileEntry extends InputElement {
 
     // Add Clear and Submit buttons
     const buttonRow = document.createElement("div");
-    buttonRow.className = "flex justify-end gap-4 pt-4";
+    buttonRow.className = "flex justify-between pt-5";
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
@@ -446,7 +481,8 @@ export class FileEntry extends InputElement {
     buttonRow.append(clearBtn, submit);
     this._form.appendChild(buttonRow);
 
-    this._view = this._form;
+    overlay.appendChild(this._form);
+    this._view = overlay;
     return this._view;
   }
 
@@ -463,8 +499,11 @@ export class Dropdown extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
+    const overlay = document.createElement("div");
+    overlay.className = MODAL_OVERLAY;
+
     this._form = document.createElement("form");
-    this._form.className = FORM_CONTAINER;
+    this._form.className = MODAL_CONTENT;
 
     const heading = document.createElement("h2");
     heading.textContent = this._displayName;
@@ -493,7 +532,8 @@ export class Dropdown extends InputElement {
 
     this._form.appendChild(submit);
 
-    this._view = this._form;
+    overlay.appendChild(this._form);
+    this._view = overlay;
     return this._view;
   }
 }
