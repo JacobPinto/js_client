@@ -10,6 +10,7 @@ import { ButtonBuilder } from "./buttonBuilder.js";
 import { Toolbar } from "./toolbar.js";
 import { Workbench } from "./workbench.js";
 import { Canvas } from "./canvas.js";
+import { OverlayPanel } from "./overlayPanel.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
 import { Output } from "./output.js";
@@ -20,6 +21,7 @@ export class ViewSimEngine {
   private _buttons: InputElement[] = [];
   private _canvas: Canvas | null = null;
   private _output: Output | null = null;
+  private _overlay: OverlayPanel | null = null;
 
   constructor(controller: ControllerSimEngine) {
     // Create ButtonBuilder
@@ -421,12 +423,20 @@ export class ViewSimEngine {
       })
       .build();
 
-    // Register observers
-    controller.model.dimension.register(shaderButton);
+    // Create canvas and wire state changes to controller
+    // Canvas displays server-rendered output.jpeg and captures mouse interactions
+    this._canvas = new Canvas();
+    this._canvas.onStateChange((state) => {
+      // When user interacts with canvas (pan/zoom/rotate), send state to controller
+      // Controller will POST to /camera endpoint, which writes camera.json
+      // Server render engine reads camera.json and generates new output.jpeg
+      controller.onCameraStateChange(state);
+    });
 
-    // Store buttons
-    this._buttons.push(dimensionsButton, shaderButton, vertexButton);
+    // Create overlay panel for displaying forms on top of canvas
+    this._overlay = new OverlayPanel();
 
+    // Create toolbars
     const grid = new Toolbar("Grid", [gridButton]);
 
     const geometry = new Toolbar("Geometry", [loadfilebutton]);
@@ -440,22 +450,12 @@ export class ViewSimEngine {
       solverButton,
     ]);
 
-    // Create workbench
+    // Create workbench with canvas and overlay
     this._workbench = new Workbench("mainWorkbench", [
       geometry,
       grid,
       LBSolver,
-    ]);
-
-    // Create canvas and wire state changes to controller
-    // Canvas displays server-rendered output.jpeg and captures mouse interactions
-    this._canvas = new Canvas();
-    this._canvas.onStateChange((state) => {
-      // When user interacts with canvas (pan/zoom/rotate), send state to controller
-      // Controller will POST to /camera endpoint, which writes camera.json
-      // Server render engine reads camera.json and generates new output.jpeg
-      controller.onCameraStateChange(state);
-    });
+    ], this._canvas, this._overlay);
 
     // Create output message display for feedback
     this._output = new Output();
@@ -467,20 +467,12 @@ export class ViewSimEngine {
   render(): void {
     const root = document.getElementById("app");
     if (root) {
-      // Create root container to hold all components
-      const container = document.createElement("div");
-      container.className = "flex flex-col w-full h-screen overflow-hidden";
-      
-      // Add workbench, canvas, and output in order
-      container.appendChild(this._workbench.getElement());
-      if (this._canvas) {
-        container.appendChild(this._canvas.getElement());
-      }
+      root.appendChild(this._workbench.getElement());
+      // Append output message display (positioned at bottom-left)
       if (this._output) {
-        container.appendChild(this._output.getElement());
+        root.appendChild(this._output.getElement());
       }
-      
-      root.appendChild(container);
     }
   }
+
 }
