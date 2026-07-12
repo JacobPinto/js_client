@@ -26,7 +26,7 @@ export class Canvas {
   private _ctx: CanvasRenderingContext2D;
   private _img: HTMLImageElement | null = null;
   private _writing: boolean = false;
-  private _writeTimer: NodeJS.Timeout | null = null;
+  private _writeTimer: ReturnType<typeof setTimeout> | null = null;
 
   private _state: CameraState = {
     pan: { x: 0, y: 0 },
