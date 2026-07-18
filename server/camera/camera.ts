@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import jsonWriter from "../base/jsonWriter.js";
+import { createGrpcClient } from "../base/grpcClient.js";
 //import { grpcClientCamera } from "../grpc/grpcClientCamera.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,15 +62,27 @@ export class Camera {
 // This is the camera of the main/central canvas
 class CentralCameraManager {
   private _camera: Camera;
+  private _grpc: ReturnType<typeof createGrpcClient>;
 
   constructor() {
     this._camera = new Camera("centralCamera", 0, 0, 1, 0, 0);
+    this._grpc = createGrpcClient(
+      path.join(__dirname, "proto", "camera.proto"),
+      "camera.CameraService",
+      "localhost:50051"
+    );
   }
 
   updateState(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
     this._camera.setState(panX, panY, zoom, azimuth, elevation);
-    jsonWriter.postMessage({ type: "keyValue", key: "camera", data: this._camera.toJSON(),
-                           filePath: this._camera.getPath() });
+
+    // Write state to JSON on background thread
+    //jsonWriter.postMessage({ type: "keyValue", key: "camera", data: this._camera.toJSON(),
+    //                       filePath: this._camera.getPath() });
+
+    // Forward state to gRPC server
+    this._grpc.call("UpdateCamera", { panX, panY, zoom, azimuth, elevation })
+      .catch((err: Error) => console.error("[camera] gRPC error:", err));
   }
 }
 
