@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "fs";
+import jsonWriter from "../base/jsonWriter.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { idCounter } from "../idCounter.js";
@@ -112,32 +113,7 @@ class Cartesion_Grid {
 
   // Override write() to store grids in a single array instead of individual keys
   write() {
-    let existing: any = {};
-
-    try {
-      if (fs.existsSync(SIMULATION_PATH)) {
-        const raw = fs.readFileSync(SIMULATION_PATH, "utf-8");
-        existing = raw ? JSON.parse(raw) : {};
-      }
-
-      // Ensure grids array exists
-      if (!Array.isArray(existing.cartesian_grid)) {
-        existing.cartesian_grid = [];
-      }
-
-      // Find and update existing grid or add new one
-      const gridIndex = existing.cartesian_grid.findIndex((g: any) => g.gridId === this._gridId);
-      if (gridIndex >= 0) {
-        existing.cartesian_grid[gridIndex] = this.toJSON();
-      } else {
-        existing.cartesian_grid.push(this.toJSON());
-      }
-
-      fs.writeFileSync(SIMULATION_PATH, JSON.stringify(existing, null, 2));
-      console.log(`Grid ${this._gridId} persisted to ${SIMULATION_PATH}`);
-    } catch (err) {
-      console.error(`Error writing to ${SIMULATION_PATH}:`, err);
-    }
+    jsonWriter.postMessage({ type: "arrayMerge", arrayKey: "cartesian_grid", idField: "gridId", id: this._gridId, data: this.toJSON() });
   }
 }
 

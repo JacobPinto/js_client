@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "fs";
+import jsonWriter from "../base/jsonWriter.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { idCounter } from "../idCounter.js";
@@ -146,6 +147,8 @@ class LBSolver {
   // same for grid and geometry
 
   private _lbId: number;
+  private _name: string;
+  private _outputFilePath: string;
   private _eqn_str: string | null = null;
 
   // #TDB base class for the boundary conditions
@@ -160,6 +163,8 @@ class LBSolver {
 
   constructor(lbId: number) {
     this._lbId = lbId;
+    this._name = `lbSolver_${lbId}`;
+    this._outputFilePath = path.join("clientInput", this._name);
   }
 
   getId() {
@@ -168,32 +173,8 @@ class LBSolver {
 
   // write() to store solvers in a single array instead of individual keys
   write() {
-    let existing: any = {};
-
-    try {
-      if (fs.existsSync(SIMULATION_PATH)) {
-        const raw = fs.readFileSync(SIMULATION_PATH, "utf-8");
-        existing = raw ? JSON.parse(raw) : {};
-      }
-
-      // Ensure solvers array exists
-      if (!Array.isArray(existing.lb_solver)) {
-        existing.lb_solver = [];
-      }
-
-      // Find and update existing solver or add new one
-      const solverIndex = existing.lb_solver.findIndex((s: any) => s.id === this._lbId);
-      if (solverIndex >= 0) {
-        existing.lb_solver[solverIndex] = this.toJSON();
-      } else {
-        existing.lb_solver.push(this.toJSON());
-      }
-
-      fs.writeFileSync(SIMULATION_PATH, JSON.stringify(existing, null, 2));
-      console.log(`LBSolver ${this._lbId} persisted to ${SIMULATION_PATH}`);
-    } catch (err) {
-      console.error(`Error writing to ${SIMULATION_PATH}:`, err);
-    }
+    jsonWriter.postMessage({ type: "arrayMerge", arrayKey: "lb_solver", idField: "id",
+                           id: this._lbId, data: this.toJSON(), filePath: this._outputFilePath });
   }
 
   toJSON() {

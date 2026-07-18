@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { idCounter } from "../idCounter.js";
+import jsonWriter from "../base/jsonWriter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,7 @@ const SIMULATION_PATH = path.join(__dirname, "../../simulation.json");
 class GeometryInfo {
   private _id: number;
   private _name: string;
+  private _outputFilePath: string;
   private _createdAt: Date;
   private _geometryFilePath: string;
 
@@ -27,6 +29,7 @@ class GeometryInfo {
   ) {
     this._id = id;
     this._name = name;
+    this._outputFilePath = path.join("clientInput", this._name);    
     this._geometryFilePath = filePath;
     this._createdAt = new Date();
   }
@@ -55,40 +58,8 @@ class GeometryInfo {
   }
 
   write() {
-    let existing: any = {};
-
-    try {
-      if (fs.existsSync(SIMULATION_PATH)) {
-        existing = JSON.parse(
-          fs.readFileSync(SIMULATION_PATH, "utf-8")
-        );
-      }
-
-      if (!Array.isArray(existing.geometry)) {
-        existing.geometry = [];
-      }
-
-      const index = existing.geometry.findIndex(
-        (g: any) => g.id === this._id
-      );
-
-      if (index >= 0) {
-        existing.geometry[index] = this.toJSON();
-      } else {
-        existing.geometry.push(this.toJSON());
-      }
-
-      fs.writeFileSync(
-        SIMULATION_PATH,
-        JSON.stringify(existing, null, 2)
-      );
-
-      console.log(
-        `Geometry ${this._id} persisted to ${SIMULATION_PATH}`
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    jsonWriter.postMessage({ type: "arrayMerge", arrayKey: "geometry", idField: "id",
+                            id: this._id, data: this.toJSON(), filePath: this._outputFilePath });
   }
 }
 

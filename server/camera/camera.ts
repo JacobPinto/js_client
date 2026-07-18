@@ -1,9 +1,12 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import { Worker } from "worker_threads";
 import { fileURLToPath } from "url";
+import jsonWriter from "../base/jsonWriter.js";
 //import { grpcClientCamera } from "../grpc/grpcClientCamera.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface CameraState {
   pan: { x: number; y: number };
@@ -12,15 +15,16 @@ export interface CameraState {
 }
 
 export class Camera {
-  // Shared WSL path visible to both Windows and Ubuntu
-  protected filePath =
-  "\\\\wsl$\\Ubuntu-24.04\\home\\muziba\\vulkan_testing\\muziba_share\\camera.json";
 
+  private _name: string;
+  private _outputFilePath: string;
   private _pan: { x: number; y: number };
   private _zoom: number;
   private _rotate: { azimuth: number; elevation: number };
 
-  constructor(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
+  constructor(name: string, panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
+    this._name = name;
+    this._outputFilePath = path.join(__dirname, "../../clientInput/", this._name + ".json");
     this._pan = { x: panX, y: panY };
     this._zoom = zoom;
     this._rotate = {
@@ -28,7 +32,6 @@ export class Camera {
       elevation,
     };
   }
-
 
   setState(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
     this._pan = { x: panX, y: panY };
@@ -47,8 +50,8 @@ export class Camera {
     };
   }
 
-  getState(): CameraState {
-    return this.toJSON();
+  getPath(): string {
+    return this._outputFilePath;
   }
 }
 
@@ -56,19 +59,15 @@ export class Camera {
 // This is the camera of the main/central canvas
 class CentralCameraManager {
   private _camera: Camera;
-  private _worker: Worker;
 
   constructor() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    this._camera = new Camera(0, 0, 1, 0, 0);
-    this._worker = new Worker(path.join(__dirname, "../base/jsonWritableWorker.js"));
-    this._worker.on("error", (err) => console.error("[CentralCameraManager] worker error:", err));
+    this._camera = new Camera("centralCamera", 0, 0, 1, 0, 0);
   }
 
   updateState(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
     this._camera.setState(panX, panY, zoom, azimuth, elevation);
-    this._worker.postMessage({ key: "camera", data: this._camera.toJSON() });
+    jsonWriter.postMessage({ type: "keyValue", key: "camera", data: this._camera.toJSON(),
+                           filePath: this._camera.getPath() });
   }
 }
 
