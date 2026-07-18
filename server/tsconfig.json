@@ -1,12 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "../dist/server"
   },
   "include": [
-    "*.ts",
-    "user/**/*.ts",
-    "grpc/**/*.ts",
-    "geometry/**/*.ts"
+    "**/*.ts"
   ]
 }

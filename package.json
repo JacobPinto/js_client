@@ -4,11 +4,11 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build && npm run organize-grpc",
+    "build": "tsc --build",
     "clean": "tsc --build --clean",
     "organize-grpc": "node -e \"const fs = require('fs'); const path = require('path'); const grpcDir = 'dist/server/grpc'; if (!fs.existsSync(grpcDir)) fs.mkdirSync(grpcDir, {recursive: true}); ['grpcServer', 'grpcClient'].forEach(f => {  ['js', 'js.map', 'd.ts'].forEach(ext => { const src = path.join('dist/server', f + '.' + ext); if (fs.existsSync(src)) fs.renameSync(src, path.join(grpcDir, f + '.' + ext)); }); }); if (fs.existsSync('server/grpc/client.proto') && !fs.existsSync(path.join(grpcDir, 'client.proto'))) fs.copyFileSync('server/grpc/client.proto', path.join(grpcDir, 'client.proto'));\"",
     "lint": "eslint . --ext .ts",
-    "dev:server": "nodemon --exec ts-node server/server.ts",
+    "dev:server": "nodemon --exec tsx server/server.ts",
     "start:server": "node dist/server/server.js",
     "grpc:test": "node dist/server/grpc/grpcClient.js"
   },
@@ -26,6 +26,7 @@
     "globals": "^16.4.0",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2"
   },

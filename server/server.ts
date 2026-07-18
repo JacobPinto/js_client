@@ -13,8 +13,8 @@ import projectRouter from './project.js';
 import gridRouter from './grid/grid.js';
 import cameraRouter from './camera/camera.js';
 import LBSolverRouter from './lbSolver/lbSolver.js';
-import { startGrpcServer } from './grpc/grpcServer.js';
-import { startGrpcServerCamera } from './grpc/grpcServerCamera.js';
+//import { startGrpcServer } from './grpc/grpcServer.js';
+//import { startGrpcServerCamera } from './grpc/grpcServerCamera.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,7 +75,7 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use("/geometry", geometryRouter);
 app.use("/project", projectRouter);
 app.use("/grid", gridRouter);
-app.use("/camera", cameraRouter);
+//app.use("/camera", cameraRouter);
 app.use("/lb_solver", LBSolverRouter);
 
 // ============ Camera Rendering Pipeline Endpoints ============
@@ -120,10 +120,11 @@ app.use("/users", userRouter);*/
 // Redirect a respose through another endpoint
 
 // Listen on port
+
 app.listen(ServerConfig.port, () => {
   console.log(`HTTP server running at http://localhost:${ServerConfig.port}`);
 
   // Start gRPC server after HTTP server starts
   //startGrpcServer();
-  startGrpcServerCamera();
+  //startGrpcServerCamera();
 });
