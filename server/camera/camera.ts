@@ -82,6 +82,7 @@ class CentralCameraManager {
 
     // Forward state to gRPC server
     this._grpc.call("UpdateCamera", { panX, panY, zoom, azimuth, elevation })
+      .then((response: unknown) => console.log("[camera] gRPC response:", response))
       .catch((err: Error) => console.error("[camera] gRPC error:", err));
   }
 }
