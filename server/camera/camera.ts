@@ -8,11 +8,13 @@ import jsonWriter from "../base/jsonWriter.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 export interface CameraState {
   pan: { x: number; y: number };
   zoom: number;
   rotate: { azimuth: number; elevation: number };
 }
+
 
 export class Camera {
 
@@ -78,6 +80,10 @@ const centralCameraManager = new CentralCameraManager();
 const cameraRouter = express.Router();
 
 /**
+ * The post method for the camera class. The data coming in is used to update the
+ * camera object. This notifies a worker thread which writes the camera state to a JSON file.
+ *
+ * Curl test by: 
  * curl -X POST http://localhost:4000/camera/ -H "Content-Type: application/json" -d '{"pan": {"x":1,"y":1}, "zoom": 1, "rotate": {"azimuth": 1, "elevation": 1}}'
  */
 cameraRouter.post("/", (req, res) => {
@@ -98,48 +104,12 @@ cameraRouter.post("/", (req, res) => {
                                      Number(rotate.azimuth), Number(rotate.elevation)
                                     );
 
-    // camera.write();
-
     res.json({
        success: true,
        message: "Camera state updated.",
     });
-
-    /*
-    grpcClientCamera.UpdateCamera(
-  {
-    panX: Number(pan.x),
-    panY: Number(pan.y),
-    zoom: Number(zoom),
-    azimuth: Number(rotate.azimuth),
-    elevation: Number(rotate.elevation),
-  },
-  // doc how error handling works
-  (err: Error | null, response: any) => {
-    if (err) {
-      console.error("[camera] gRPC error:", err);
-
-      res.status(500).json({
-        success: false,
-        error: err.message,
-      });
-
-      return;
-    }
-
-    res.set("Cache-Control", "no-store");
-
-    res.json({
-      success: true,
-      grpc: response,
-    });
-  }
-);*/
-
-
-
   } catch (error) {
-    console.error("[camera] write failed:", error);
+    console.error("Camera write/update failed:", error);
 
     res.status(500).json({
       success: false,
