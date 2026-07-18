@@ -1,5 +1,4 @@
 import express from "express";
-import { JSONWritable } from "../jsonWritable.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -7,6 +6,7 @@ import { idCounter } from "../idCounter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const SIMULATION_PATH = path.join(__dirname, "../../simulation.json");
 const router = express.Router();
 // #TBD 
 // Client server/sided object.
@@ -79,22 +79,17 @@ class Block {
 /* =========================
    GRID (CSO)
 ========================= */
-class Cartesion_Grid extends JSONWritable {
+class Cartesion_Grid {
   private _gridId: number;
   private _blocks: Map<number, Block>;
 
   constructor(gridId: number) {
-    super();
     this._gridId = gridId;
     this._blocks = new Map();
   }
 
   getId() {
     return this._gridId;
-  }
-
-  getKey() {
-    return `grid_${this._gridId}`;
   }
 
   addBlock(block: Block) {
@@ -120,8 +115,8 @@ class Cartesion_Grid extends JSONWritable {
     let existing: any = {};
 
     try {
-      if (fs.existsSync(this.filePath)) {
-        const raw = fs.readFileSync(this.filePath, "utf-8");
+      if (fs.existsSync(SIMULATION_PATH)) {
+        const raw = fs.readFileSync(SIMULATION_PATH, "utf-8");
         existing = raw ? JSON.parse(raw) : {};
       }
 
@@ -138,10 +133,10 @@ class Cartesion_Grid extends JSONWritable {
         existing.cartesian_grid.push(this.toJSON());
       }
 
-      fs.writeFileSync(this.filePath, JSON.stringify(existing, null, 2));
-      console.log(`Grid ${this._gridId} persisted to ${this.filePath}`);
+      fs.writeFileSync(SIMULATION_PATH, JSON.stringify(existing, null, 2));
+      console.log(`Grid ${this._gridId} persisted to ${SIMULATION_PATH}`);
     } catch (err) {
-      console.error(`Error writing to ${this.filePath}:`, err);
+      console.error(`Error writing to ${SIMULATION_PATH}:`, err);
     }
   }
 }

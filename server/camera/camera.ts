@@ -1,8 +1,9 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
-import { grpcClientCamera } from "../grpc/grpcClientCamera.js";
-import { JSONWritable } from "../jsonWritable.js";
+import { Worker } from "worker_threads";
+import { fileURLToPath } from "url";
+//import { grpcClientCamera } from "../grpc/grpcClientCamera.js";
 
 export interface CameraState {
   pan: { x: number; y: number };
@@ -10,7 +11,7 @@ export interface CameraState {
   rotate: { azimuth: number; elevation: number };
 }
 
-export class Camera extends JSONWritable {
+export class Camera {
   // Shared WSL path visible to both Windows and Ubuntu
   protected filePath =
   "\\\\wsl$\\Ubuntu-24.04\\home\\muziba\\vulkan_testing\\muziba_share\\camera.json";
@@ -19,15 +20,7 @@ export class Camera extends JSONWritable {
   private _zoom: number;
   private _rotate: { azimuth: number; elevation: number };
 
-  constructor(
-    panX: number,
-    panY: number,
-    zoom: number,
-    azimuth: number,
-    elevation: number
-  ) {
-    super();
-
+  constructor(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
     this._pan = { x: panX, y: panY };
     this._zoom = zoom;
     this._rotate = {
@@ -36,8 +29,14 @@ export class Camera extends JSONWritable {
     };
   }
 
-  getKey(): string {
-    return "camera";
+
+  setState(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
+    this._pan = { x: panX, y: panY };
+    this._zoom = zoom;
+    this._rotate = {
+      azimuth,
+      elevation,
+    };
   }
 
   toJSON(): CameraState {
@@ -53,48 +52,61 @@ export class Camera extends JSONWritable {
   }
 }
 
+
+// This is the camera of the main/central canvas
+class CentralCameraManager {
+  private _camera: Camera;
+  private _worker: Worker;
+
+  constructor() {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    this._camera = new Camera(0, 0, 1, 0, 0);
+    this._worker = new Worker(path.join(__dirname, "../base/jsonWritableWorker.js"));
+    this._worker.on("error", (err) => console.error("[CentralCameraManager] worker error:", err));
+  }
+
+  updateState(panX: number, panY: number, zoom: number, azimuth: number, elevation: number) {
+    this._camera.setState(panX, panY, zoom, azimuth, elevation);
+    this._worker.postMessage({ key: "camera", data: this._camera.toJSON() });
+  }
+}
+
+
+const centralCameraManager = new CentralCameraManager();
+
+
 const cameraRouter = express.Router();
 
 /**
- * POST /camera
- * Receives camera updates from canvas
- * Writes camera.json into the shared WSL folder
+ * curl -X POST http://localhost:4000/camera/ -H "Content-Type: application/json" -d '{"pan": {"x":1,"y":1}, "zoom": 1, "rotate": {"azimuth": 1, "elevation": 1}}'
  */
 cameraRouter.post("/", (req, res) => {
   try {
     const { pan, zoom, rotate } = req.body;
 
-    if (
-      pan?.x == null ||
-      pan?.y == null ||
-      zoom == null ||
-      rotate?.azimuth == null ||
-      rotate?.elevation == null
-    ) {
+    if (pan?.x == null || pan?.y == null || zoom == null || rotate?.azimuth == null
+                                                         || rotate?.elevation == null) {
       res.status(400).json({
         success: false,
-        error: "Missing camera fields",
+        error: "Camera state missing.",
       });
       return;
     }
 
-    // const camera = new Camera(
-    //   Number(pan.x),
-    //   Number(pan.y),
-    //   Number(zoom),
-    //   Number(rotate.azimuth),
-    //   Number(rotate.elevation)
-    // );
+    // Update the central camera manager — JSON write happens on a background worker thread
+    centralCameraManager.updateState(Number(pan.x), Number(pan.y), Number(zoom),
+                                     Number(rotate.azimuth), Number(rotate.elevation)
+                                    );
 
     // camera.write();
 
-    // res.set("Cache-Control", "no-store");
+    res.json({
+       success: true,
+       message: "Camera state updated.",
+    });
 
-    // res.json({
-    //   success: true,
-    //   message: "Camera state updated",
-    // });
-
+    /*
     grpcClientCamera.UpdateCamera(
   {
     panX: Number(pan.x),
@@ -123,7 +135,7 @@ cameraRouter.post("/", (req, res) => {
       grpc: response,
     });
   }
-);
+);*/
 
 
 
@@ -153,6 +165,7 @@ cameraRouter.get("/output.jpeg", (req, res) => {
     return;
   }
 
+  // Set headers to prevent caching by the browser
   res.set({
     "Cache-Control": "no-store",
     Pragma: "no-cache",

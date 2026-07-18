@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { JSONWritable } from "../jsonWritable.js";
 import { idCounter } from "../idCounter.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +12,9 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
-class GeometryInfo extends JSONWritable {
+const SIMULATION_PATH = path.join(__dirname, "../../simulation.json");
+
+class GeometryInfo {
   private _id: number;
   private _name: string;
   private _createdAt: Date;
@@ -24,8 +25,6 @@ class GeometryInfo extends JSONWritable {
     name: string,
     filePath: string
   ) {
-    super();
-
     this._id = id;
     this._name = name;
     this._geometryFilePath = filePath;
@@ -48,10 +47,6 @@ class GeometryInfo extends JSONWritable {
     return this._createdAt;
   }
 
-  getKey(): string {
-    return "geometry";
-  }
-
   toJSON() {
     return {
       id: this._id,
@@ -63,9 +58,9 @@ class GeometryInfo extends JSONWritable {
     let existing: any = {};
 
     try {
-      if (fs.existsSync(this.filePath)) {
+      if (fs.existsSync(SIMULATION_PATH)) {
         existing = JSON.parse(
-          fs.readFileSync(this.filePath, "utf-8")
+          fs.readFileSync(SIMULATION_PATH, "utf-8")
         );
       }
 
@@ -84,12 +79,12 @@ class GeometryInfo extends JSONWritable {
       }
 
       fs.writeFileSync(
-        this.filePath,
+        SIMULATION_PATH,
         JSON.stringify(existing, null, 2)
       );
 
       console.log(
-        `Geometry ${this._id} persisted to ${this.filePath}`
+        `Geometry ${this._id} persisted to ${SIMULATION_PATH}`
       );
     } catch (err) {
       console.error(err);

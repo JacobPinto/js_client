@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';  
 import path from 'path';
 import {fileURLToPath} from 'url';
-import fs from 'fs';
+//import fs from 'fs';
 
 import { ServerConfig } from './serverConfig.js';
 // import userRouter from './user/user.js'; // use the default export
@@ -24,8 +24,8 @@ const app = express();
 
 // Boilerplate
 // set html view engine
-app.set("view engine", "ejs");
-app.set('views', path.join(__dirname, 'views'));
+//app.set("view engine", "ejs");
+//app.set('views', path.join(__dirname, 'views'));
 // By involking app.use() we reuse this stuff across multiple endpoints
 // Middleware can also be with router.use(...)
 
@@ -72,11 +72,11 @@ app.use(express.static(path.join(__dirname, '..')));
 */
 
 // Service specific routers
-app.use("/geometry", geometryRouter);
 app.use("/project", projectRouter);
+app.use("/geometry", geometryRouter);
 app.use("/grid", gridRouter);
-//app.use("/camera", cameraRouter);
 app.use("/lb_solver", LBSolverRouter);
+app.use("/camera", cameraRouter);
 
 // ============ Camera Rendering Pipeline Endpoints ============
 // This implements the core rendering loop for the simulation:

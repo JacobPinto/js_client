@@ -1,5 +1,4 @@
 import express from "express";
-import { JSONWritable } from "../jsonWritable.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -7,6 +6,7 @@ import { idCounter } from "../idCounter.js";
 import { toVector } from "../utils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const SIMULATION_PATH = path.join(__dirname, "../../simulation.json");
 
 const router = express.Router();
 
@@ -138,7 +138,7 @@ class BoundaryConditionFactory {
   }
 }
 
-class LBSolver extends JSONWritable {
+class LBSolver {
   // method to write its data to a json file
 
   // #TBD there should be a write method to add this data to a json file
@@ -159,7 +159,6 @@ class LBSolver extends JSONWritable {
   private _boundaryConditions: BoundaryConditionBase[] = [];
 
   constructor(lbId: number) {
-    super();
     this._lbId = lbId;
   }
 
@@ -167,17 +166,13 @@ class LBSolver extends JSONWritable {
     return this._lbId;
   }
 
-  getKey(): string {
-    return `lbSolver_${this._lbId}`; // just lbSolver remove id
-  }
-
-  // Override write() to store solvers in a single array instead of individual keys
+  // write() to store solvers in a single array instead of individual keys
   write() {
     let existing: any = {};
 
     try {
-      if (fs.existsSync(this.filePath)) {
-        const raw = fs.readFileSync(this.filePath, "utf-8");
+      if (fs.existsSync(SIMULATION_PATH)) {
+        const raw = fs.readFileSync(SIMULATION_PATH, "utf-8");
         existing = raw ? JSON.parse(raw) : {};
       }
 
@@ -194,10 +189,10 @@ class LBSolver extends JSONWritable {
         existing.lb_solver.push(this.toJSON());
       }
 
-      fs.writeFileSync(this.filePath, JSON.stringify(existing, null, 2));
-      console.log(`LBSolver ${this._lbId} persisted to ${this.filePath}`);
+      fs.writeFileSync(SIMULATION_PATH, JSON.stringify(existing, null, 2));
+      console.log(`LBSolver ${this._lbId} persisted to ${SIMULATION_PATH}`);
     } catch (err) {
-      console.error(`Error writing to ${this.filePath}:`, err);
+      console.error(`Error writing to ${SIMULATION_PATH}:`, err);
     }
   }
 
