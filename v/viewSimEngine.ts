@@ -13,14 +13,19 @@ import { Canvas } from "./canvas.js";
 import { OverlayPanel } from "./overlayPanel.js";
 import { Dimensions, ShaderType, VertexFormat } from "../m/modelEnums.js";
 import { SpeedUnit, AccelerationUnit } from "../m/quantities.js";
-import { Output } from "./output.js";
+import { OutputPanel } from "./outputPanel.js";
+import { MouseHelpPanel } from "./mouseHelpPanel.js";
+import { BottomPanel } from "./bottomPanel.js";
 import { ControllerSimEngine } from "../c/controllerSimEngine.js";
 
 export class ViewSimEngine {
   private _workbench: Workbench;
   private _buttons: InputElement[] = [];
   private _canvas: Canvas | null = null;
-  private _output: Output | null = null;
+  private _output: OutputPanel | null = null;
+  private _log: OutputPanel | null = null;
+  private _mouseHelp: MouseHelpPanel | null = null;
+  private _bottomPanel: BottomPanel | null = null;
   private _overlay: OverlayPanel | null = null;
 
   constructor(controller: ControllerSimEngine) {
@@ -450,15 +455,31 @@ export class ViewSimEngine {
       solverButton,
     ]);
 
-    // Create workbench with canvas and overlay
-    this._workbench = new Workbench("mainWorkbench", [
-      geometry,
-      grid,
-      LBSolver,
-    ], this._canvas, this._overlay);
 
-    // Create output message display for feedback
-    this._output = new Output();
+    // Output panel
+    this._output = new OutputPanel("Output");
+
+    // Log panel
+    this._log = new OutputPanel("Log");
+
+    // Mouse help panel
+    this._mouseHelp = new MouseHelpPanel();
+
+    // Bottom dock
+    this._bottomPanel = new BottomPanel(
+      this._output,
+      this._mouseHelp,
+      this._log,
+    );
+
+    // Create workbench with canvas and overlay
+    this._workbench = new Workbench(
+      "mainWorkbench",
+      [geometry, grid, LBSolver],
+      this._canvas,
+      this._overlay,
+      this._bottomPanel
+    );
 
     // register output as observer for model notifications
     controller.model.outputMessage.register(this._output);
@@ -468,11 +489,6 @@ export class ViewSimEngine {
     const root = document.getElementById("app");
     if (root) {
       root.appendChild(this._workbench.getElement());
-      // Append output message display (positioned at bottom-left)
-      if (this._output) {
-        root.appendChild(this._output.getElement());
-      }
     }
   }
-
 }

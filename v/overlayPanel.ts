@@ -14,22 +14,11 @@ export class OverlayPanel {
 
   constructor() {
     this._container = document.createElement("div");
-    this._container.className = `
-      absolute
-      top-6
-      left-6
-      z-50
-      hidden
-      bg-white
-      rounded-lg
-      shadow-2xl
-      border
-      border-gray-300
-      w-[620px]
-      max-h-[80vh]
-      overflow-hidden
-      pointer-events-auto
-    `;
+    this._container.className =
+      "absolute z-50 hidden bg-white rounded-lg shadow-2xl border border-gray-300 w-[620px] max-h-[80vh] overflow-hidden pointer-events-auto";
+    this._container.style.position = "absolute";
+    this._container.style.top = "24px";
+    this._container.style.left = "24px";
 
     // ---------- Header ----------
     this._header = document.createElement("div");

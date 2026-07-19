@@ -49,7 +49,7 @@ export class Canvas {
   constructor() {
     this._container = document.createElement("div");
     this._container.className =
-      "relative w-full h-full overflow-hidden bg-gray-900";
+      "relative w-[1074px] h-[768px] overflow-hidden bg-gray-900";
 
     // Canvas
     this._canvas = document.createElement("canvas");
@@ -61,20 +61,12 @@ export class Canvas {
     if (!ctx) throw new Error("Failed to get canvas context");
     this._ctx = ctx;
 
-    this._canvas.width = 1024;
+    this._canvas.width = 1074;
     this._canvas.height = 768;
-    this._canvas.style.width = "1024px";
-    this._canvas.style.height = "768px";
+    this._canvas.style.width = "100%";
+    this._canvas.style.height = "100%";
 
     this._container.appendChild(this._canvas);
-
-    // Hint text
-    const hint = document.createElement("div");
-    hint.className =
-      "absolute bottom-3 left-1/2 transform -translate-x-1/2 bg-gray-950/80 backdrop-blur px-4 py-2 rounded-lg text-xs text-gray-400 pointer-events-none z-10 border border-gray-700 shadow-lg whitespace-nowrap";
-    hint.textContent =
-      "Left-drag: pan  •  Scroll: zoom  •  Right-drag: azimuth/elevation";
-    this._container.appendChild(hint);
 
     this._setupMouseHandlers();
     this._loadImage();
@@ -85,7 +77,7 @@ export class Canvas {
     const img = new Image();
     img.onload = () => {
       this._img = img;
-      this._canvas.width = 1024;
+      this._canvas.width = 1074;
       this._canvas.height = 768;
       this._drawImage();
     };
@@ -109,7 +101,13 @@ export class Canvas {
   private _drawImage(): void {
     if (!this._img) return;
     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-    this._ctx.drawImage(this._img, 0, 0);
+    this._ctx.drawImage(
+      this._img,
+      0,
+      0,
+      this._canvas.width,
+      this._canvas.height,
+    );
   }
 
   private _setupMouseHandlers(): void {
