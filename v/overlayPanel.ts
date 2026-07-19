@@ -25,8 +25,7 @@ export class OverlayPanel {
       shadow-2xl
       border
       border-gray-300
-      min-w-[420px]
-      max-w-[500px]
+      w-[620px]
       max-h-[80vh]
       overflow-hidden
       pointer-events-auto

@@ -27,9 +27,13 @@ const FORM_TITLE = "text-sm font-semibold text-gray-800";
 
 const LABEL = "flex flex-col gap-1 text-sm text-gray-600";
 
-const ROW = "flex items-center gap-3 text-sm text-gray-700";
+// Row that holds input (+ optional select), evenly split
+const ROW_DROPDOWN = "grid grid-cols-2 gap-3";
 
-const LABEL_TEXT = "w-20 text-sm font-medium text-gray-600";
+// When there's only a single input (no dropdown), let it span both columns
+const ROW = "grid grid-cols-1 gap-3";
+
+const LABEL_TEXT = "w-32 text-gray-600";
 
 // Input + Select
 const INPUT =
@@ -174,7 +178,7 @@ export class TextEntryWithButton extends InputElement {
     });
 
     const buttonRow = document.createElement("div");
-    buttonRow.className = "flex justify-between pt-5";
+    buttonRow.className = "flex justify-end gap-4 pt-4";
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
@@ -236,7 +240,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     Object.entries(this._questions).forEach(([key, labelText]) => {
       /* -------- Input Row -------- */
       const inputRow = document.createElement("div");
-      inputRow.className = ROW;
+      inputRow.className = ROW_DROPDOWN;
 
       const labelSpan = document.createElement("span");
       labelSpan.textContent = labelText;
@@ -272,7 +276,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     });
 
     const buttonRow = document.createElement("div");
-    buttonRow.className = "flex justify-between pt-5";
+    buttonRow.className = "flex justify-end gap-4 pt-4";
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
@@ -458,7 +462,7 @@ export class FileEntry extends InputElement {
 
     // Add Clear and Submit buttons
     const buttonRow = document.createElement("div");
-    buttonRow.className = "flex justify-between pt-5";
+    buttonRow.className = "flex justify-end gap-4 pt-4";
 
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
