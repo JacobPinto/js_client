@@ -1,10 +1,12 @@
 import express from "express";
-import fs from "fs";
+import fs, { existsSync, mkdirSync } from "fs";
+import { spawn } from "child_process";
 import jsonWriter from "../base/jsonWriter.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { idCounter } from "../idCounter.js";
 import { toVector } from "../utils.js";
+import { ServerConfig } from "../serverConfig.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SIMULATION_PATH = path.join(__dirname, "../../simulation.json");
@@ -36,8 +38,8 @@ class InitialConditions {
     return this._viscosity;
   }
 }
-// class for Run
 
+// class for Run
 class Run {
   private _iterationCount: number;
 
@@ -257,6 +259,11 @@ class LBSolver {
 }
 
 class LBSolverManager {
+  private _binaryName: string = "Talos";
+  private _privateSolverFolder: string = "Lbm";
+  private _binaryInputFile: string = "input.json";
+  private _binaryOutputPrefix: string = "solution";
+  private _binaryArgs: string[] = [];
   private solvers: Map<number, LBSolver> = new Map();
 
   createSolver(id: number) {
@@ -265,6 +272,41 @@ class LBSolverManager {
     }
     const solver = new LBSolver(id);
     this.solvers.set(id, solver);
+
+    // Create a unique folder for each solver based on its ID
+    const privateSolverFolder = path.join(ServerConfig.workdir, this._privateSolverFolder, id.toString());
+
+    if (!existsSync(privateSolverFolder)) {
+      mkdirSync(privateSolverFolder, { recursive: true });
+    }
+
+    console.log(`Created solver ${id} and its folder at ${privateSolverFolder}`);
+  }
+
+  launchSolver(id: number) {
+    // Setup binary name
+    this._binaryArgs = [path.join(ServerConfig.binaryPath, this._binaryName)];
+
+    // First setup the positional args to get the right solver
+    this._binaryArgs.push("solver");
+    this._binaryArgs.push("lbm");
+
+    const privateSolverFolder = path.join(ServerConfig.workdir, this._privateSolverFolder, id.toString());
+
+    // Setup input file path
+    this._binaryArgs.push("-if", path.join(privateSolverFolder, this._binaryInputFile));
+
+    // Setup output folder
+    this._binaryArgs.push("-of", privateSolverFolder);
+
+    // Setup output prefix
+    //this._binaryArgs.push("-op", this._binaryOutputPrefix);
+
+    // Launch subprocess
+    const solverProcess = spawn(this._binaryArgs[0], this._binaryArgs.slice(1), {
+      cwd: privateSolverFolder,
+      stdio: "inherit",
+    });
   }
 
   getSolver(id: number) {
@@ -335,7 +377,9 @@ const solverManager = new LBSolverManager();
 solverManager.loadFromFile();
 
 //routes
+
 // CREATE SOLVER
+// curl -X POST http://localhost:4000/lb_solver
 router.post("/", (req, res) => {
   try {
     const lbId = idCounter.next("lb_solver");
@@ -371,27 +415,6 @@ router.post("/:lbId/initial_conditions", (req, res) => {
 
   const { velocity, viscosity } = req.body;
   solver.setInitialConditions(velocity, viscosity);
-  solver.write();
-
-  res.json({ success: true });
-});
-
-// RUN
-router.post("/:lbId/run", (req, res) => {
-  const solver = solverManager.getSolver(
-    Number(req.params.lbId)
-  );
-
-  if (!solver) {
-    return res.status(404).json({
-      error: "Solver not found",
-    });
-  }
-
-  const { iterationCount } = req.body;
-
-  solver.setRun(iterationCount);
-
   solver.write();
 
   res.json({ success: true });
@@ -438,6 +461,46 @@ router.post("/:lbId/boundary_condition", (req, res) => {
     success: true,
     bcId,
   });
+});
+
+
+// RUN
+router.post("/:lbId/run", (req, res) => {
+  const solver = solverManager.getSolver(
+    Number(req.params.lbId)
+  );
+
+  if (!solver) {
+    return res.status(404).json({
+      error: "Solver not found",
+    });
+  }
+
+  const { iterationCount } = req.body;
+
+  solver.setRun(iterationCount);
+
+  solver.write();
+
+  res.json({ success: true });
+});
+
+
+router.post("/:lbId/launch", (req, res) => {
+  const solver = solverManager.getSolver(
+    Number(req.params.lbId)
+  );
+
+  if (!solver) {
+    return res.status(404).json({
+      error: "Solver not found",
+    });
+  }
+
+  // Implement the launch logic here
+  solverManager.launchSolver(Number(req.params.lbId));  
+
+  res.json({ success: true });
 });
 
 // DELETE SOLVER
