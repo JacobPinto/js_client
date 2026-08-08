@@ -2,4 +2,6 @@
 *.js.map
 *.lock
 package-lock.json
+*tsbuildinfo
+dist/
 node_modules/

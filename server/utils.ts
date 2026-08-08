@@ -1,0 +1,62 @@
+import fs from "fs";
+
+// Utility to create a unique identifier.
+export function createUID(): string {
+  return 'usr12345';
+}
+
+// Create folder if it does not exist
+export function createFolder(path: string): string {
+  if (!fs.existsSync(path)) {
+    try {
+      fs.mkdirSync(path, { recursive: true });
+    } catch (err) {
+     console.error("Error creating folder: ", path, err);
+     return "serverError: Unable to create folder";
+    }
+  }
+  return "serverOK";
+}
+
+// Delete folder if it exists
+export function deleteFolder(path: string): string {
+  if (fs.existsSync(path)) {
+    try {
+      fs.rmdirSync(path, { recursive: true });
+    } catch (err) {
+     console.error("Error deleting folder: ", path, err);
+     return "serverError: Unable to delete folder";     
+    }
+  }
+  return "serverOK";  
+}
+
+//  tovector helper function to convert string or array input to number array
+
+export function toVector(value: any): number[] {
+  if (Array.isArray(value)) {
+    return value.map(Number);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map(v => v.trim())
+      .filter(v => v !== "")
+      .map(v => {
+        const num = Number(v);
+
+        if (isNaN(num)) {
+          throw new Error(`Invalid vector value: ${v}`);
+        }
+
+        return num;
+      });
+  }
+
+  if (typeof value === "number") {
+    return [value];
+  }
+
+  throw new Error("Invalid vector input");
+}
