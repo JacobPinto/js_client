@@ -1,5 +1,5 @@
-import { OutputPanel } from "./outputPanel";
-import { MouseHelpPanel } from "./mouseHelpPanel";
+import { OutputPanel } from "./outputPanel.js";
+import { MouseHelpPanel } from "./mouseHelpPanel.js";
 
 export class BottomPanel {
   private _container: HTMLDivElement;
