@@ -93,7 +93,7 @@ app.use("/camera", cameraRouter);
 // GET endpoint for test.html (main app entry)
 app.get('/', (req, res) => { 
   console.log("get req");
-  res.sendFile(path.join(__dirname, '..', 'test.html'));
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 // Routes to split up the main server file
