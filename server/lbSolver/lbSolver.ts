@@ -163,10 +163,10 @@ class LBSolver {
   private _initialConditions: InitialConditions | null = null;
   private _boundaryConditions: BoundaryConditionBase[] = [];
 
-  constructor(lbId: number) {
+  constructor(lbId: number, privateSolverFolder: string) {
     this._lbId = lbId;
-    this._name = `lbSolver_${lbId}`;
-    this._outputFilePath = path.join("clientInput", this._name);
+    this._name = "input.json";
+    this._outputFilePath = path.join(privateSolverFolder, this._name);
   }
 
   getId() {
@@ -261,6 +261,7 @@ class LBSolver {
 class LBSolverManager {
   private _binaryName: string = "Talos";
   private _privateSolverFolder: string = "Lbm";
+  // TBD: This is unfortunately duplicated between here and the LBSolver class
   private _binaryInputFile: string = "input.json";
   private _binaryOutputPrefix: string = "solution";
   private _binaryArgs: string[] = [];
@@ -270,11 +271,12 @@ class LBSolverManager {
     if (this.solvers.has(id)) {
       throw new Error("Solver already exists");
     }
-    const solver = new LBSolver(id);
-    this.solvers.set(id, solver);
 
     // Create a unique folder for each solver based on its ID
     const privateSolverFolder = path.join(ServerConfig.workdir, this._privateSolverFolder, id.toString());
+
+    const solver = new LBSolver(id, privateSolverFolder);
+    this.solvers.set(id, solver);
 
     if (!existsSync(privateSolverFolder)) {
       mkdirSync(privateSolverFolder, { recursive: true });
@@ -319,7 +321,7 @@ class LBSolverManager {
 
   loadFromFile() {
     try {
-      const simulationPath = path.join(__dirname, "../../simulation.json");
+      const simulationPath = path.join(__dirname, "../../input.json");
 
       if (fs.existsSync(simulationPath)) {
         const data = JSON.parse(fs.readFileSync(simulationPath, "utf-8"));
@@ -330,7 +332,7 @@ class LBSolverManager {
           const loadedBcIds: number[] = [];
 
           data.lb_solver.forEach((solverData: any) => {
-            const solver = new LBSolver(solverData.id);
+            const solver = new LBSolver(solverData.id, simulationPath);
             loadedSolverIds.push(solverData.id);
 
             if (solverData.eqn_str) solver.setEquation(solverData.eqn_str);

@@ -37,3 +37,4 @@ operations (in case of crash). This can be done by a polling mechanism where the
 git checkout -b branch_muziba origin/master
 git checkout -b branch_jacob origin/master
 
+Bugs: In server/lbSolver there is a duplication of "input.json" name.
