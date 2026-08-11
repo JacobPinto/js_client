@@ -4,10 +4,11 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build && npm run copy-protos && build:css",
+    "build": "tsc --build && npm run copy-protos && npm run copy-static && npm run build:css",
     "build:css": "npx @tailwindcss/cli -i ./index.css -o ./dist/index.css",
     "clean": "tsc --build --clean",
-    "copy-protos": "node copy-proto.js",
+    "copy-protos": "node dist/utils/copy-proto.js",
+    "copy-static": "node dist/utils/copy-static.js",
     "organize-grpc": "node -e \"const fs = require('fs'); const path = require('path'); const grpcDir = 'dist/server/grpc'; if (!fs.existsSync(grpcDir)) fs.mkdirSync(grpcDir, {recursive: true}); ['grpcServer', 'grpcClient'].forEach(f => {  ['js', 'js.map', 'd.ts'].forEach(ext => { const src = path.join('dist/server', f + '.' + ext); if (fs.existsSync(src)) fs.renameSync(src, path.join(grpcDir, f + '.' + ext)); }); }); if (fs.existsSync('server/grpc/client.proto') && !fs.existsSync(path.join(grpcDir, 'client.proto'))) fs.copyFileSync('server/grpc/client.proto', path.join(grpcDir, 'client.proto'));\"",
     "lint": "eslint . --ext .ts",
     "dev:server": "nodemon --exec tsx server/server.ts",
