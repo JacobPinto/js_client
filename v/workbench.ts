@@ -37,8 +37,7 @@ export class Workbench {
     this._container = document.createElement("div");
 
     this._container.className =
-  "grid h-screen w-full bg-gray-100 " +
-  "grid-rows-[auto_auto_1fr_12rem]";
+      "grid h-full w-full min-h-0 bg-[#eef2f7] grid-rows-[auto_auto_1fr_auto]";
 
     //
     // Toolbar selector
@@ -65,10 +64,12 @@ export class Workbench {
     this._workspace = document.createElement("div");
 
     this._workspace.className =
-  "relative overflow-hidden bg-gray-200";
+      "relative min-h-[480px] overflow-hidden bg-[#e9edf6]";
+    this._workspace.style.minHeight = "0";
 
     const canvasWrapper = document.createElement("div");
-    canvasWrapper.className = "absolute inset-0 flex justify-center items-start p-8";
+    canvasWrapper.className = "absolute inset-0 flex items-start justify-center p-6";
+    canvasWrapper.style.minHeight = "0";
 
     if (this._canvas) {
       const canvasElement = this._canvas.getElement();
@@ -141,9 +142,7 @@ export class Workbench {
     );
 
     if (this._bottomPanel) {
-      this._container.appendChild(
-        this._bottomPanel.getElement(),
-      );
+      this._container.appendChild(this._bottomPanel.getElement());
     }
   }
 

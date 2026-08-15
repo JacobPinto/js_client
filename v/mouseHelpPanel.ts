@@ -9,57 +9,44 @@ export class MouseHelpPanel {
   constructor() {
     this._container = document.createElement("div");
 
-    this._container.className =
-      "flex flex-col h-full w-full bg-white";
-
-    //
-    // Header
-    //
+    this._container.className = "flex h-full w-full flex-col bg-white";
 
     const header = document.createElement("div");
-
     header.className =
-      "flex items-center px-4 h-10 border-b border-gray-300 bg-gray-100 flex-shrink-0 font-medium text-gray-700";
-
-    header.textContent = "Mouse Controls";
-
-    //
-    // Content
-    //
+      "flex h-11 items-center border-b border-gray-300 bg-gray-100 px-4 text-sm font-semibold text-gray-700";
+    header.textContent = "Mouse Suggestions";
 
     const content = document.createElement("div");
+    content.className = "flex flex-1 flex-col justify-center gap-3 p-4 text-sm text-gray-700";
 
-    content.className =
-      "flex-1 flex items-center justify-evenly px-8";
+    const rows = [
+      { icon: "◐", label: "Left Click + Drag", text: "to rotate the view" },
+      { icon: "◍", label: "Right Click + Drag", text: "to pan the view" },
+      { icon: "◌", label: "Scroll Wheel", text: "to zoom in / out" },
+    ];
 
-    const pan = document.createElement("img");
-    pan.src = "/v/svg/mouse-pan.svg";
-    pan.alt = "Pan";
-    pan.className =
-      "w-10 h-10 opacity-80 hover:opacity-100 transition-opacity duration-150";
+    rows.forEach(({ icon, label, text }) => {
+      const row = document.createElement("div");
+      row.className = "flex items-center gap-3";
 
-    const rotate = document.createElement("img");
-    rotate.src = "/v/svg/mouse-rotate.svg";
-    rotate.alt = "Rotate";
-    rotate.className =
-      "w-10 h-10 opacity-80 hover:opacity-100 transition-opacity duration-150";
+      const iconWrap = document.createElement("div");
+      iconWrap.className =
+        "flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-gray-50 text-base text-gray-600";
+      iconWrap.textContent = icon;
 
-    const zoom = document.createElement("img");
-    zoom.src = "/v/svg/mouse-scroll.svg";
-    zoom.alt = "Zoom";
-    zoom.className =
-      "w-10 h-10 opacity-80 hover:opacity-100 transition-opacity duration-150";
+      const labelText = document.createElement("span");
+      labelText.className = "font-medium text-gray-700";
+      labelText.textContent = label;
 
-    content.append(
-      pan,
-      rotate,
-      zoom,
-    );
+      const infoText = document.createElement("span");
+      infoText.className = "text-gray-600";
+      infoText.textContent = text;
 
-    this._container.append(
-      header,
-      content,
-    );
+      row.append(iconWrap, labelText, infoText);
+      content.appendChild(row);
+    });
+
+    this._container.append(header, content);
   }
 
   /**

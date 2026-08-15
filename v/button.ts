@@ -112,9 +112,6 @@ export class SimpleButton extends InputElement {
   getView(): HTMLElement {
     if (this._view) return this._view;
 
-    const overlay = document.createElement("div");
-    overlay.className = MODAL_OVERLAY;
-
     const container = document.createElement("div");
     container.className = MODAL_CONTENT;
 
@@ -133,8 +130,7 @@ export class SimpleButton extends InputElement {
 
     container.append(heading, btn);
 
-    overlay.appendChild(container);
-    this._view = overlay;
+    this._view = container;
     return this._view;
   }
 }
@@ -146,9 +142,6 @@ export class TextEntryWithButton extends InputElement {
 
   getView(): HTMLElement {
     if (this._view) return this._view;
-
-    const overlay = document.createElement("div");
-    overlay.className = MODAL_OVERLAY;
 
     this._form = document.createElement("form");
     this._form.className = MODAL_CONTENT;
@@ -203,8 +196,7 @@ export class TextEntryWithButton extends InputElement {
     buttonRow.append(clearBtn, submit);
     this._form.appendChild(buttonRow);
 
-    overlay.appendChild(this._form);
-    this._view = overlay;
+    this._view = this._form;
     return this._view;
   }
 
@@ -225,9 +217,6 @@ export class TextEntryWithDropdownAndButton extends InputElement {
 
   getView(): HTMLElement {
     if (this._view) return this._view;
-
-    const overlay = document.createElement("div");
-    overlay.className = MODAL_OVERLAY;
 
     this._form = document.createElement("form");
     this._form.className = MODAL_CONTENT;
@@ -301,8 +290,7 @@ export class TextEntryWithDropdownAndButton extends InputElement {
     buttonRow.append(clearBtn, submit);
     this._form.appendChild(buttonRow);
 
-    overlay.appendChild(this._form);
-    this._view = overlay;
+    this._view = this._form;
     return this._view;
   }
 
@@ -322,9 +310,6 @@ export class RadioButton extends InputElement {
 
   getView(): HTMLElement {
     if (this._view) return this._view;
-
-    const overlay = document.createElement("div");
-    overlay.className = MODAL_OVERLAY;
 
     this._form = document.createElement("form");
     this._form.className = MODAL_CONTENT;
@@ -351,8 +336,7 @@ export class RadioButton extends InputElement {
       this._form.appendChild(label);
     });
 
-    overlay.appendChild(this._form);
-    this._view = overlay;
+    this._view = this._form;
     return this._view;
   }
 
@@ -371,9 +355,6 @@ export class Checkbox extends InputElement {
 
   getView(): HTMLElement {
     if (this._view) return this._view;
-
-    const overlay = document.createElement("div");
-    overlay.className = MODAL_OVERLAY;
 
     this._form = document.createElement("form");
     this._form.className = MODAL_CONTENT;
@@ -399,8 +380,7 @@ export class Checkbox extends InputElement {
       this._form.appendChild(label);
     });
 
-    overlay.appendChild(this._form);
-    this._view = overlay;
+    this._view = this._form;
     return this._view;
   }
 }
@@ -413,9 +393,6 @@ export class FileEntry extends InputElement {
 
   getView(): HTMLElement {
     if (this._view) return this._view;
-
-    const overlay = document.createElement("div");
-    overlay.className = MODAL_OVERLAY;
 
     this._form = document.createElement("form");
     this._form.className = MODAL_CONTENT;
@@ -485,8 +462,7 @@ export class FileEntry extends InputElement {
     buttonRow.append(clearBtn, submit);
     this._form.appendChild(buttonRow);
 
-    overlay.appendChild(this._form);
-    this._view = overlay;
+    this._view = this._form;
     return this._view;
   }
 

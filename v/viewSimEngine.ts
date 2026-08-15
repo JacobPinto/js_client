@@ -488,19 +488,10 @@ export class ViewSimEngine {
   render(): void {
     const root = document.getElementById("app");
     if (root) {
-      // Create root container to hold all components
       const container = document.createElement("div");
-      container.className = "flex flex-col w-full h-screen overflow-hidden";
-      
-      // Add workbench, canvas, and output in order
+      container.className = "flex h-screen w-full flex-col overflow-hidden";
+
       container.appendChild(this._workbench.getElement());
-      if (this._canvas) {
-        container.appendChild(this._canvas.getElement());
-      }
-      if (this._output) {
-        container.appendChild(this._output.getElement());
-      }
-      
       root.appendChild(container);
     }
   }

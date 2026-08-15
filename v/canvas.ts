@@ -49,36 +49,56 @@ export class Canvas {
   constructor() {
     this._container = document.createElement("div");
     this._container.className =
-      "relative w-[1074px] h-[768px] overflow-hidden bg-gray-900";
+      "relative h-full w-full min-h-[420px] overflow-hidden bg-[#dfe7f2]";
 
     // Canvas
     this._canvas = document.createElement("canvas");
     this._canvas.className =
-      "block w-full h-full cursor-crosshair bg-gray-800";
+      "block h-full w-full cursor-crosshair bg-[#dfe7f2]";
     this._canvas.style.display = "block";
 
     const ctx = this._canvas.getContext("2d");
     if (!ctx) throw new Error("Failed to get canvas context");
     this._ctx = ctx;
 
-    this._canvas.width = 1074;
-    this._canvas.height = 768;
+    this._canvas.width = 1200;
+    this._canvas.height = 700;
     this._canvas.style.width = "100%";
     this._canvas.style.height = "100%";
 
     this._container.appendChild(this._canvas);
 
+    this._bindResize();
     this._setupMouseHandlers();
     this._loadImage();
     this._startImageRefresh();
+  }
+
+  private _bindResize(): void {
+    const resize = () => {
+      const rect = this._container.getBoundingClientRect();
+      const width = Math.max(320, Math.round(rect.width || this._canvas.width));
+      const height = Math.max(260, Math.round(rect.height || this._canvas.height));
+
+      if (this._canvas.width !== width || this._canvas.height !== height) {
+        this._canvas.width = width;
+        this._canvas.height = height;
+        this._drawImage();
+      }
+    };
+
+    resize();
+
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(() => resize());
+      observer.observe(this._container);
+    }
   }
 
   private _loadImage(): void {
     const img = new Image();
     img.onload = () => {
       this._img = img;
-      this._canvas.width = 1074;
-      this._canvas.height = 768;
       this._drawImage();
     };
     img.onerror = () => {
