@@ -16,7 +16,7 @@ export class BottomPanel {
     this._container.style.display = "grid";
     this._container.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
     this._container.style.minHeight = "0";
-    this._container.style.height = "220px";
+    this._container.style.height = "120px";
 
     // Output
 

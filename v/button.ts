@@ -15,7 +15,7 @@ const TOOLBAR_BUTTON =
 const MODAL_OVERLAY = "fixed inset-0 bg-black/40 flex items-center justify-center z-50";
 
 // Modal content wrapper
-const MODAL_CONTENT = "bg-white rounded-lg shadow-lg border border-gray-200 p-6 w-[360px] max-h-[90vh] overflow-y-auto";
+const MODAL_CONTENT = "bg-white rounded-lg shadow-lg border border-gray-200 p-6 w-[260px] max-h-[40vh] overflow-y-auto";
 
 // Form container
 const FORM_CONTAINER = "flex flex-col gap-3";
